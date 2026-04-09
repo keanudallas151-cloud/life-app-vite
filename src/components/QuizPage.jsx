@@ -1,0 +1,550 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { C } from "../systems/theme";
+import { Ic } from "../icons/Ic";
+import { QUIZ_QUESTIONS } from "../data/quiz";
+import { useQuizStats } from "../systems/useQuizStats";
+
+// ── Constants ─────────────────────────────────────────────
+const TOPIC_META = {
+  finance:    { label:"Finance",    col:"#4a8c5c", bg:"#eaf3ec",  icon:"wallet"  },
+  psychology: { label:"Psychology", col:"#7B6FA8", bg:"#f0edf8",  icon:"brain"   },
+  money:      { label:"Money",      col:"#b8975a", bg:"#f7f0e3",  icon:"lock"    },
+  philosophy: { label:"Philosophy", col:"#4a7ab8", bg:"#e8f0f8",  icon:"book"    },
+  business:   { label:"Business",   col:"#c0604a", bg:"#faecea",  icon:"barChart"},
+  general:    { label:"General",    col:"#6c757d", bg:"#f8f9fa",  icon:"globe"   },
+};
+const DIFF_COLORS = { easy:C.green, medium:C.gold, hard:C.red };
+const DIFF_META   = {
+  easy:   { secs:20, label:"Easy",   icon:"🌱", desc:"Foundation questions" },
+  medium: { secs:15, label:"Medium", icon:"🔥", desc:"Tested understanding" },
+  hard:   { secs:10, label:"Hard",   icon:"⚡", desc:"Expert-level concepts" },
+};
+const FORMAT_META = {
+  multiple:  { label:"Multiple Choice", icon:"🎯", desc:"4 options per question" },
+  truefalse: { label:"True / False",    icon:"⚡", desc:"Quick-fire judgement" },
+  blitz:     { label:"Blitz Mode",      icon:"🚀", desc:"8 seconds — no mercy" },
+  daily:     { label:"Daily Challenge", icon:"📅", desc:"Same for everyone today" },
+};
+
+const ACHIEVEMENTS = [
+  { id:"first_blood",  label:"First Blood",    icon:"🎯", desc:"Complete your first quiz",                    check:(s)=>s.totalPlayed>=1                        },
+  { id:"perfect",      label:"Perfectionist",  icon:"💎", desc:"Score 100% on any quiz",                    check:(_s,r)=>r && r.pct===100                     },
+  { id:"streak5",      label:"On Fire",        icon:"🔥", desc:"Get a 5-question streak",                    check:(_s,r)=>r && r.bestStreak>=5                 },
+  { id:"veteran",      label:"Veteran",        icon:"🏆", desc:"Complete 10 quizzes",                        check:(s)=>s.totalPlayed>=10                       },
+  { id:"blitz_win",    label:"Blitz Champion", icon:"⚡", desc:"Score 80%+ in Blitz mode",                  check:(_s,r)=>r && r.format==="blitz"&&r.pct>=80   },
+  { id:"scholar",      label:"Scholar",        icon:"📚", desc:"Answer 100 questions total",                 check:(s)=>s.totalAnswered>=100                    },
+  { id:"hard_carry",   label:"Hard Carry",     icon:"🧠", desc:"Score 80%+ on Hard difficulty",             check:(_s,r)=>r && r.diff==="hard"&&r.pct>=80      },
+  { id:"multi_topic",  label:"Well Rounded",   icon:"🌍", desc:"Complete quizzes in 3 different topics",    check:(s)=>Object.keys(s.topicsPlayed||{}).length>=3},
+];
+
+const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
+
+function getDailySeed() {
+  const d = new Date();
+  return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+}
+function seededShuffle(arr, seed) {
+  const a = [...arr]; let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    const j = Math.abs(s) % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ── Sub-components ────────────────────────────────────────
+function StatCard({ label, value, col }) {
+  return (
+    <div style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 16px", textAlign:"center" }}>
+      <div style={{ fontSize:22, fontWeight:800, color:col||C.ink, fontFamily:"Georgia,serif" }}>{value}</div>
+      <div style={{ fontSize:10, color:C.muted, marginTop:3, letterSpacing:1.5, textTransform:"uppercase" }}>{label}</div>
+    </div>
+  );
+}
+function AchievementBadge({ ach, unlocked }) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px",
+      background:unlocked?C.greenLt:C.white, border:`1px solid ${unlocked?C.green:C.border}`,
+      borderRadius:10, opacity:unlocked?1:0.5 }}>
+      <span style={{ fontSize:20 }}>{ach.icon}</span>
+      <div>
+        <div style={{ fontSize:13, fontWeight:700, color:unlocked?C.green:C.ink }}>{ach.label}</div>
+        <div style={{ fontSize:11, color:C.muted }}>{ach.desc}</div>
+      </div>
+      {unlocked && <span style={{ marginLeft:"auto", fontSize:10, color:C.green, fontWeight:700 }}>✓</span>}
+    </div>
+  );
+}
+function TimerRing({ pct, value, color }) {
+  const r = 35, circ = 2 * Math.PI * r;
+  return (
+    <div style={{ position:"relative", width:84, height:84 }}>
+      <svg width="84" height="84" style={{ transform:"rotate(-90deg)" }}>
+        <circle cx="42" cy="42" r={r} fill="none" stroke={C.light} strokeWidth="7"/>
+        <circle cx="42" cy="42" r={r} fill="none" stroke={color} strokeWidth="7"
+          strokeDasharray={circ} strokeDashoffset={circ*(1-pct)}
+          strokeLinecap="round" style={{ transition:"stroke-dashoffset 1s linear,stroke 0.3s" }}/>
+      </svg>
+      <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <span style={{ fontSize:24, fontWeight:800, color, fontFamily:"Georgia,serif" }}>{value}</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────
+export function QuizPage({ play, userId }) {
+  const { stats, saveStats } = useQuizStats(userId);
+
+  const [phase,     setPhase]    = useState("setup");
+  const [topic,     setTopic]    = useState("finance");
+  const [diff,      setDiff]     = useState("medium");
+  const [fmt,       setFmt]      = useState("multiple");
+  const [qs,        setQs]       = useState([]);
+  const [idx,       setIdx]      = useState(0);
+  const [score,     setScore]    = useState(0);
+  const [chosen,    setChosen]   = useState(null);
+  const [timeLeft,  setTimeLeft] = useState(0);
+  const [streak,    setStreak]   = useState(0);
+  const [bestStreak,setBest]     = useState(0);
+  const [answers,   setAnswers]  = useState([]);
+  const [newAchs,   setNewAchs]  = useState([]);
+  const [showFact,  setShowFact] = useState(false);
+  const [activeTab, setActiveTab]= useState("play");
+
+  const timerRef = useRef(null);
+  const SECS     = { easy:20, medium:15, hard:10 };
+  const maxTime  = fmt==="blitz" ? 8 : SECS[diff];
+  const timerPct   = maxTime > 0 ? timeLeft / maxTime : 0;
+  const timerColor = timerPct>0.5 ? C.green : timerPct>0.25 ? C.gold : C.red;
+
+  const startQuiz = useCallback(() => {
+    play("ok");
+    let selected;
+    if (fmt === "daily") {
+      const seed    = getDailySeed();
+      const allPool = Object.values(QUIZ_QUESTIONS[topic] || {}).flat();
+      selected      = seededShuffle(allPool, seed).slice(0, 10);
+    } else {
+      const pool  = QUIZ_QUESTIONS[topic]?.[diff] || [];
+      const limit = fmt === "blitz" ? 10 : 8;
+      selected    = shuffle(pool).slice(0, limit);
+    }
+    setQs(selected); setIdx(0); setScore(0); setChosen(null);
+    setStreak(0); setBest(0); setAnswers([]); setShowFact(false);
+    setTimeLeft(fmt==="blitz" ? 8 : SECS[diff]);
+    setPhase("playing");
+  }, [topic, diff, fmt, play]);
+
+  // Timer
+  useEffect(() => {
+    if (phase !== "playing" || chosen !== null) return;
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 1) { clearInterval(timerRef.current); handleAnswer(null); return 0; }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, [idx, phase, chosen]);
+
+  const handleAnswer = useCallback((picked) => {
+    if (chosen !== null) return;
+    clearInterval(timerRef.current);
+    setChosen(picked);
+    const q       = qs[idx];
+    const correct = picked === q.a;
+    if (correct) {
+      play("correct");
+      setScore(s => s + 1);
+      setStreak(s => { const ns = s+1; setBest(b => Math.max(b,ns)); return ns; });
+    } else {
+      play("wrong");
+      setStreak(0);
+    }
+    setAnswers(a => [...a, { correct, q, picked }]);
+    setShowFact(true);
+    setTimeout(() => {
+      setShowFact(false);
+      if (idx + 1 >= qs.length) {
+        setPhase("result");
+      } else {
+        setIdx(i => i+1);
+        setChosen(null);
+        setTimeLeft(fmt==="blitz" ? 8 : SECS[diff]);
+      }
+    }, fmt==="blitz" ? 1400 : 2000);
+  }, [chosen, qs, idx, fmt, diff, play]);
+
+  // ── SAVE STATS on result ──────────────────────────────
+  useEffect(() => {
+    if (phase !== "result") return;
+    const pct    = Math.round((score / qs.length) * 100);
+    const result = { pct, diff, format:fmt, topic, bestStreak, score, total:qs.length };
+    const today  = new Date().toLocaleDateString();
+
+    const next = {
+      ...stats,
+      totalPlayed:   (stats.totalPlayed||0) + 1,
+      totalAnswered: (stats.totalAnswered||0) + qs.length,
+      totalCorrect:  (stats.totalCorrect||0) + score,
+      bestStreak:    Math.max(stats.bestStreak||0, bestStreak),
+      topicsPlayed:  { ...stats.topicsPlayed, [topic]: (stats.topicsPlayed?.[topic]||0)+1 },
+      history:       [...(stats.history||[]).slice(-19), { ...result, date: today }],
+      dailyDate:     fmt==="daily" ? today : stats.dailyDate,
+    };
+
+    // Check achievements
+    const earned = [...(stats.achievements||[])];
+    const newly  = [];
+    ACHIEVEMENTS.forEach(ach => {
+      if (!earned.includes(ach.id) && ach.check(next, result)) {
+        earned.push(ach.id);
+        newly.push(ach);
+      }
+    });
+    next.achievements = earned;
+
+    saveStats(next);
+    if (newly.length) setNewAchs(newly);
+  }, [phase]);
+
+  const overallAcc = stats.totalAnswered > 0
+    ? Math.round((stats.totalCorrect / stats.totalAnswered) * 100)
+    : 0;
+
+  // ── SETUP ────────────────────────────────────────────────
+  if (phase === "setup") {
+    const todayDone = stats.dailyDate === new Date().toLocaleDateString();
+    return (
+      <div style={{ paddingBottom:40 }}>
+        {/* Header tabs */}
+        <div style={{ display:"flex", borderBottom:`1px solid ${C.border}`, background:C.white, padding:"0 20px", position:"sticky", top:0, zIndex:10 }}>
+          {[["play","Quiz"],["stats","My Stats"],["achievements","Badges"]].map(([id,label]) => (
+            <button key={id} onClick={() => { play("tap"); setActiveTab(id); }}
+              style={{ padding:"16px 18px", background:"none", border:"none",
+                borderBottom:activeTab===id?`2px solid ${C.green}`:"2px solid transparent",
+                color:activeTab===id?C.green:C.muted, fontSize:13,
+                fontWeight:activeTab===id?700:400, cursor:"pointer", fontFamily:"Georgia,serif" }}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === "achievements" && (
+          <div style={{ padding:"28px 20px", maxWidth:520, margin:"0 auto" }}>
+            <p style={{ margin:"0 0 20px", fontSize:11, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:C.muted }}>
+              {stats.achievements?.length||0}/{ACHIEVEMENTS.length} Unlocked
+            </p>
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {ACHIEVEMENTS.map(a => (
+                <AchievementBadge key={a.id} ach={a} unlocked={stats.achievements?.includes(a.id)} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "stats" && (
+          <div style={{ padding:"28px 20px", maxWidth:520, margin:"0 auto" }}>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:24 }}>
+              <StatCard label="Quizzes Played" value={stats.totalPlayed||0}   col={C.green}/>
+              <StatCard label="Accuracy"        value={`${overallAcc}%`}       col={C.gold}/>
+              <StatCard label="Best Streak"     value={stats.bestStreak||0}    col={C.red}/>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:24 }}>
+              <StatCard label="Total Answered" value={stats.totalAnswered||0}/>
+              <StatCard label="Total Correct"  value={stats.totalCorrect||0}  col={C.green}/>
+            </div>
+            {stats.topicsPlayed && Object.keys(stats.topicsPlayed).length > 0 && (
+              <>
+                <p style={{ margin:"0 0 12px", fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.muted }}>Topics played</p>
+                <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:24 }}>
+                  {Object.entries(stats.topicsPlayed).sort((a,b)=>b[1]-a[1]).map(([t,n]) => {
+                    const meta = TOPIC_META[t];
+                    return (
+                      <div key={t} style={{ display:"flex", alignItems:"center", gap:12, background:C.white, border:`1px solid ${C.border}`, borderRadius:10, padding:"12px 14px" }}>
+                        <div style={{ width:32, height:32, borderRadius:8, background:meta.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          {Ic[meta.icon]?.("none",meta.col,16)}
+                        </div>
+                        <span style={{ flex:1, fontSize:14, fontWeight:600, color:C.ink }}>{meta.label}</span>
+                        <span style={{ fontSize:13, color:meta.col, fontWeight:700 }}>{n} quiz{n!==1?"zes":""}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+            {(stats.history||[]).length > 0 && (
+              <>
+                <p style={{ margin:"0 0 12px", fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.muted }}>Recent history</p>
+                <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                  {[...(stats.history||[])].reverse().slice(0,8).map((h,i) => (
+                    <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:`1px solid ${C.light}` }}>
+                      <span style={{ fontSize:12, color:C.muted, minWidth:70 }}>{h.date}</span>
+                      <span style={{ fontSize:12, color:TOPIC_META[h.topic]?.col||C.ink, fontWeight:600 }}>{TOPIC_META[h.topic]?.label}</span>
+                      <span style={{ fontSize:11, color:C.muted, textTransform:"capitalize" }}>{h.diff}</span>
+                      <span style={{ marginLeft:"auto", fontSize:13, fontWeight:700, color:h.pct>=70?C.green:h.pct>=50?C.gold:C.red }}>{h.pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {activeTab === "play" && (
+          <div style={{ padding:"28px 20px 0", maxWidth:520, margin:"0 auto" }}>
+            {/* Daily Challenge banner */}
+            <div style={{ background:`linear-gradient(135deg,#4a8c5c,#2d6e42)`, borderRadius:14, padding:"16px 20px", marginBottom:24, display:"flex", alignItems:"center", gap:14, cursor:"pointer" }}
+              onClick={() => { play("tap"); setFmt("daily"); }}>
+              <span style={{ fontSize:28 }}>📅</span>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>Daily Challenge</div>
+                <div style={{ fontSize:12, color:"rgba(255,255,255,0.78)", marginTop:2 }}>
+                  {todayDone ? "Completed today ✓" : "New questions every day — same for everyone"}
+                </div>
+              </div>
+              {fmt==="daily" && <span style={{ fontSize:16, color:"#fff" }}>✓</span>}
+            </div>
+
+            {/* Topic */}
+            <p style={{ fontSize:10, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:C.muted, margin:"0 0 12px" }}>Topic</p>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:24 }}>
+              {Object.entries(TOPIC_META).map(([k, meta]) => {
+                const sel = topic===k && fmt!=="daily";
+                return (
+                  <button key={k} onClick={() => { play("tap"); setTopic(k); if(fmt==="daily") setFmt("multiple"); }}
+                    style={{ background:sel?meta.bg:C.white, border:`1.5px solid ${sel?meta.col:C.border}`,
+                      borderRadius:12, padding:"13px 14px", cursor:"pointer", textAlign:"left",
+                      display:"flex", alignItems:"center", gap:10, fontFamily:"Georgia,serif" }}>
+                    <div style={{ width:32, height:32, borderRadius:8, background:sel?meta.col+"22":C.light, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      {Ic[meta.icon]?.("none", sel?meta.col:"#8a8070", 16)}
+                    </div>
+                    <span style={{ fontSize:13, fontWeight:sel?700:400, color:sel?meta.col:C.mid }}>{meta.label}</span>
+                    {sel && <span style={{ marginLeft:"auto", fontSize:10, color:meta.col }}>✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Difficulty */}
+            <p style={{ fontSize:10, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:C.muted, margin:"0 0 12px" }}>Difficulty</p>
+            <div style={{ display:"flex", gap:8, marginBottom:24 }}>
+              {["easy","medium","hard"].map(d => {
+                const dm  = DIFF_META[d];
+                const sel = diff===d && fmt!=="daily";
+                return (
+                  <button key={d} onClick={() => { play("tap"); setDiff(d); if(fmt==="daily") setFmt("multiple"); }}
+                    style={{ flex:1, background:sel?DIFF_COLORS[d]:C.white, border:`1.5px solid ${sel?DIFF_COLORS[d]:C.border}`,
+                      borderRadius:12, padding:"12px 8px", cursor:"pointer", fontFamily:"Georgia,serif", textAlign:"center" }}>
+                    <div style={{ fontSize:16, marginBottom:4 }}>{dm.icon}</div>
+                    <div style={{ fontSize:13, fontWeight:sel?700:400, color:sel?C.white:C.mid, textTransform:"capitalize" }}>{dm.label}</div>
+                    <div style={{ fontSize:10, color:sel?"rgba(255,255,255,0.75)":C.muted, marginTop:2 }}>{dm.secs}s/q</div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Format */}
+            <p style={{ fontSize:10, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:C.muted, margin:"0 0 12px" }}>Format</p>
+            <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:28 }}>
+              {["multiple","truefalse","blitz"].map(f => {
+                const fm  = FORMAT_META[f];
+                const sel = fmt===f;
+                return (
+                  <button key={f} onClick={() => { play("tap"); setFmt(f); }}
+                    style={{ background:sel?C.greenLt:C.white, border:`1.5px solid ${sel?C.green:C.border}`,
+                      borderRadius:12, padding:"14px 18px", cursor:"pointer", textAlign:"left",
+                      display:"flex", alignItems:"center", gap:12, fontFamily:"Georgia,serif" }}>
+                    <span style={{ fontSize:20 }}>{fm.icon}</span>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:14, fontWeight:sel?700:500, color:sel?C.green:C.ink }}>{fm.label}</div>
+                      <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{fm.desc}</div>
+                    </div>
+                    {sel && <div style={{ width:20,height:20,borderRadius:"50%",background:C.green,display:"flex",alignItems:"center",justifyContent:"center" }}><span style={{ color:"#fff",fontSize:11 }}>✓</span></div>}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button onClick={startQuiz}
+              style={{ width:"100%", background:C.green, border:"none", borderRadius:14, padding:"18px", color:"#fff",
+                fontSize:16, fontWeight:700, cursor:"pointer", fontFamily:"Georgia,serif",
+                boxShadow:"0 6px 20px rgba(74,140,92,0.30)" }}>
+              {fmt==="daily" ? "Start Daily Challenge 📅" : "Start Quiz →"}
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── RESULT ───────────────────────────────────────────────
+  if (phase === "result") {
+    const pct      = Math.round((score / qs.length) * 100);
+    const grade    = pct===100?"Perfect! 🎉":pct>=90?"Excellent":pct>=70?"Good work":pct>=50?"Decent":"Keep reading";
+    const topicMeta = TOPIC_META[topic];
+    return (
+      <div style={{ padding:"32px 20px 60px", maxWidth:500, margin:"0 auto" }}>
+        {newAchs.length > 0 && (
+          <div style={{ background:C.ink, borderRadius:14, padding:"16px 20px", marginBottom:20, display:"flex", alignItems:"center", gap:12 }}>
+            <span style={{ fontSize:24 }}>{newAchs[0].icon}</span>
+            <div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.6)", fontFamily:"Georgia,serif" }}>Achievement Unlocked</div>
+              <div style={{ fontSize:15, fontWeight:700, color:"#fff", fontFamily:"Georgia,serif" }}>{newAchs[0].label}</div>
+            </div>
+          </div>
+        )}
+        <div style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:20, padding:28, marginBottom:20, textAlign:"center", boxShadow:"0 4px 20px rgba(0,0,0,0.06)" }}>
+          <div style={{ width:64, height:64, borderRadius:20, background:topicMeta.bg, margin:"0 auto 16px", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            {Ic[topicMeta.icon]?.("none", topicMeta.col, 28)}
+          </div>
+          <h2 style={{ margin:"0 0 4px", fontSize:24, fontWeight:800, color:C.ink, fontFamily:"Georgia,serif" }}>{grade}</h2>
+          <p style={{ margin:"0 0 20px", color:C.muted, fontSize:13, fontStyle:"italic" }}>
+            {topicMeta.label} · {DIFF_META[diff]?.label} · {FORMAT_META[fmt]?.label}
+          </p>
+          <div style={{ fontSize:60, fontWeight:800, color:topicMeta.col, lineHeight:1, fontFamily:"Georgia,serif" }}>
+            {score}<span style={{ fontSize:24, color:C.muted, fontWeight:400 }}>/{qs.length}</span>
+          </div>
+          <p style={{ margin:"6px 0 20px", color:C.muted, fontSize:14 }}>{pct}% correct</p>
+          <div style={{ height:8, background:C.light, borderRadius:20, marginBottom:20, overflow:"hidden" }}>
+            <div style={{ height:"100%", width:`${pct}%`, background:pct>=70?C.green:pct>=50?C.gold:C.red, borderRadius:20, transition:"width 0.6s ease" }}/>
+          </div>
+          <div style={{ display:"flex", justifyContent:"space-around" }}>
+            <div><div style={{ fontSize:22, fontWeight:700, color:C.ink }}>{bestStreak}</div><div style={{ fontSize:10, color:C.muted, letterSpacing:1 }}>BEST STREAK</div></div>
+            <div><div style={{ fontSize:22, fontWeight:700, color:C.ink }}>{qs.length-score}</div><div style={{ fontSize:10, color:C.muted, letterSpacing:1 }}>MISSED</div></div>
+            <div><div style={{ fontSize:22, fontWeight:700, color:DIFF_COLORS[diff] }}>{DIFF_META[diff]?.icon}</div><div style={{ fontSize:10, color:C.muted, letterSpacing:1, textTransform:"uppercase" }}>{diff}</div></div>
+          </div>
+        </div>
+
+        {/* Answer trail */}
+        <div style={{ display:"flex", gap:5, flexWrap:"wrap", justifyContent:"center", marginBottom:20 }}>
+          {answers.map((a,i) => (
+            <div key={i} title={a.q?.q||""} style={{ width:30, height:30, borderRadius:8, background:a.correct?C.green:C.red, display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <span style={{ color:"#fff", fontSize:13 }}>{a.correct?"✓":"✗"}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Review wrong answers */}
+        {answers.filter(a=>!a.correct).length > 0 && (
+          <div style={{ marginBottom:20 }}>
+            <p style={{ fontSize:10, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.red, margin:"0 0 10px" }}>Review missed questions</p>
+            {answers.filter(a=>!a.correct).map((a,i) => (
+              <div key={i} style={{ background:"#fff8f8", border:`1px solid ${C.red}22`, borderRadius:12, padding:"14px 16px", marginBottom:8 }}>
+                <p style={{ margin:"0 0 6px", fontSize:13, fontWeight:700, color:C.ink, fontFamily:"Georgia,serif" }}>{a.q?.q}</p>
+                <p style={{ margin:"0 0 4px", fontSize:12, color:C.green }}>✓ {a.q?.opts?.[a.q?.a]}</p>
+                {a.q?.explain && <p style={{ margin:0, fontSize:11, color:C.muted, fontStyle:"italic", lineHeight:1.6 }}>{a.q.explain}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div style={{ display:"flex", gap:10 }}>
+          <button onClick={() => { play("tap"); setPhase("setup"); setActiveTab("play"); setNewAchs([]); }}
+            style={{ flex:1, background:C.white, border:`1.5px solid ${C.border}`, borderRadius:12, padding:"15px", color:C.mid, fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"Georgia,serif" }}>
+            Change Setup
+          </button>
+          <button onClick={() => { play("ok"); setNewAchs([]); startQuiz(); }}
+            style={{ flex:2, background:C.green, border:"none", borderRadius:12, padding:"15px", color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"Georgia,serif" }}>
+            Play Again →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── PLAYING ──────────────────────────────────────────────
+  const q         = qs[idx];
+  if (!q) return null;
+  const opts       = fmt==="truefalse" ? ["True","False"] : q.opts;
+  const correctIdx = fmt==="truefalse" ? 0 : q.a;
+  const topicMeta  = TOPIC_META[topic];
+
+  return (
+    <div style={{ padding:"20px 20px 40px", maxWidth:520, margin:"0 auto" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <div style={{ width:26, height:26, borderRadius:7, background:topicMeta.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            {Ic[topicMeta.icon]?.("none",topicMeta.col,13)}
+          </div>
+          <span style={{ fontSize:12, color:C.muted, fontFamily:"Georgia,serif", fontStyle:"italic" }}>{topicMeta.label} · {DIFF_META[diff]?.label}</span>
+        </div>
+        <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+          {streak >= 2 && (
+            <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, color:C.gold, fontWeight:700, background:"#fdf6e8", padding:"3px 8px", borderRadius:20 }}>
+              🔥 {streak}
+            </span>
+          )}
+          <span style={{ fontSize:13, fontWeight:700, color:C.green, fontFamily:"Georgia,serif" }}>{score}/{idx}</span>
+        </div>
+      </div>
+
+      <div style={{ display:"flex", gap:3, marginBottom:20 }}>
+        {qs.map((_,i) => (
+          <div key={i} style={{ flex:1, height:4, borderRadius:4,
+            background: answers[i]?.correct===true ? C.green
+              : answers[i]?.correct===false ? C.red
+              : i===idx ? C.gold : C.light }} />
+        ))}
+      </div>
+
+      <div style={{ display:"flex", justifyContent:"center", marginBottom:18 }}>
+        <TimerRing pct={timerPct} value={timeLeft} color={timerColor}/>
+      </div>
+
+      {q.tag && (
+        <div style={{ display:"flex", justifyContent:"center", marginBottom:10 }}>
+          <span style={{ fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", padding:"3px 10px", borderRadius:20, background:topicMeta.bg, color:topicMeta.col }}>
+            {q.tag}
+          </span>
+        </div>
+      )}
+
+      <div style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:16, padding:"22px 20px", marginBottom:16, boxShadow:"0 2px 10px rgba(0,0,0,0.05)" }}>
+        <p style={{ margin:"0 0 4px", fontSize:10, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.muted }}>
+          Question {idx+1} of {qs.length}
+        </p>
+        <p style={{ margin:0, fontSize:17, fontWeight:700, color:C.ink, lineHeight:1.55, fontFamily:"Georgia,serif" }}>{q.q}</p>
+      </div>
+
+      <div style={{ display:"flex", flexDirection:"column", gap:9 }}>
+        {opts.map((opt,i) => {
+          let bg=C.white, border=`1.5px solid ${C.border}`, col=C.ink, fw=400;
+          if (chosen !== null) {
+            if (i===correctIdx)                       { bg=C.greenLt; border=`1.5px solid ${C.green}`; col=C.green; fw=700; }
+            else if (i===chosen && chosen!==correctIdx){ bg="#fef2f2"; border=`1.5px solid ${C.red}`; col=C.red; fw=700; }
+            else                                       { col=C.muted; }
+          }
+          return (
+            <button key={i} onClick={() => handleAnswer(i)} disabled={chosen!==null}
+              style={{ background:bg, border, borderRadius:12, padding:"14px 16px", textAlign:"left",
+                cursor:chosen!==null?"default":"pointer", fontFamily:"Georgia,serif",
+                color:col, fontSize:15, fontWeight:fw, display:"flex", alignItems:"center", gap:12, transition:"all 0.18s" }}>
+              <span style={{ width:28, height:28, borderRadius:"50%", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center",
+                fontSize:12, fontWeight:700, transition:"all 0.18s",
+                background:chosen===null?C.light:i===correctIdx?C.green:i===chosen?C.red:C.light,
+                color:chosen!==null&&(i===correctIdx||i===chosen)?"#fff":C.muted }}>
+                {chosen!==null ? (i===correctIdx?"✓":i===chosen?"✗":String.fromCharCode(65+i)) : String.fromCharCode(65+i)}
+              </span>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+
+      {showFact && chosen !== null && q.explain && (
+        <div style={{ marginTop:14, padding:"14px 16px",
+          background:chosen===correctIdx?C.greenLt:"#fff8f8",
+          border:`1px solid ${chosen===correctIdx?C.green+"44":C.red+"44"}`, borderRadius:12 }}>
+          <p style={{ margin:0, fontSize:13, color:chosen===correctIdx?C.green:C.red, fontFamily:"Georgia,serif", lineHeight:1.7 }}>
+            <span style={{ fontWeight:700 }}>{chosen===correctIdx?"✓ Correct — ":"✗ Incorrect — "}</span>
+            {q.explain}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}

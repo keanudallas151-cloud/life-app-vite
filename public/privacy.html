@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Life.</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --skin:#f5f0e8; --white:#ffffff; --green:#4a8c5c; --greenLt:#eaf3ec;
+      --ink:#141414; --mid:#3a3a3a; --muted:#8a8070; --border:#ddd5c4;
+      --light:#ede8de; --gold:#b8975a;
+    }
+    html { scroll-behavior: smooth; }
+    body { background:var(--skin); color:var(--mid); font-family:Georgia,"Times New Roman",serif; font-size:16px; line-height:1.85; min-height:100vh; }
+
+    nav { position:sticky; top:0; z-index:100; background:rgba(245,240,232,0.94); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 28px; height:60px; display:flex; align-items:center; justify-content:space-between; }
+    .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .nav-icon { width:36px; height:36px; border-radius:10px; background:linear-gradient(145deg,#4a8c5c,#2d6e42); display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(74,140,92,0.3); }
+    .nav-icon span { color:#fff; font-size:16px; font-weight:800; }
+    .nav-title { font-size:18px; font-weight:700; color:var(--ink); }
+    .nav-back { font-size:13px; color:var(--muted); text-decoration:none; font-style:italic; }
+    .nav-back:hover { color:var(--green); }
+
+    .hero { background:var(--white); border-bottom:1px solid var(--border); padding:60px 28px 48px; text-align:center; }
+    .pill { display:inline-block; background:var(--greenLt); color:var(--green); font-size:10px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; padding:5px 14px; border-radius:20px; margin-bottom:18px; }
+    .hero h1 { font-size:clamp(26px,5vw,42px); font-weight:800; color:var(--ink); letter-spacing:-1px; margin-bottom:12px; }
+    .hero-sub { font-size:14px; color:var(--muted); font-style:italic; max-width:460px; margin:0 auto 22px; }
+    .meta { display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap; }
+    .meta-item { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+    .dot { width:5px; height:5px; border-radius:50%; background:var(--green); opacity:0.5; }
+
+    .layout { max-width:860px; margin:0 auto; padding:56px 28px 100px; display:grid; grid-template-columns:210px 1fr; gap:48px; align-items:start; }
+    @media(max-width:680px){ .layout{grid-template-columns:1fr; padding:36px 18px 80px;} .toc{display:none;} }
+
+    .toc { position:sticky; top:76px; background:var(--white); border:1px solid var(--border); border-radius:14px; padding:20px; }
+    .toc-label { font-size:9px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); margin-bottom:14px; }
+    .toc a { display:block; font-size:12.5px; color:var(--mid); text-decoration:none; padding:5px 0 5px 10px; margin-left:-10px; border-left:2px solid transparent; transition:all 0.15s; line-height:1.4; }
+    .toc a:hover { color:var(--green); border-left-color:var(--green); }
+
+    section { margin-bottom:48px; }
+    .sec-num { font-size:9px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:var(--green); opacity:0.7; margin-bottom:6px; }
+    h2 { font-size:20px; font-weight:700; color:var(--ink); margin-bottom:16px; letter-spacing:-0.3px; }
+    p { font-size:15px; color:var(--mid); line-height:1.85; margin-bottom:14px; }
+    ul { list-style:none; padding:0; margin:0 0 14px; }
+    ul li { font-size:15px; color:var(--mid); line-height:1.7; padding:7px 0 7px 22px; position:relative; border-bottom:1px solid var(--light); }
+    ul li:last-child { border-bottom:none; }
+    ul li::before { content:"—"; position:absolute; left:0; color:var(--gold); font-weight:700; }
+    strong { color:var(--ink); font-weight:600; }
+
+    .callout { background:var(--greenLt); border:1px solid rgba(74,140,92,0.18); border-left:3px solid var(--green); border-radius:0 10px 10px 0; padding:16px 20px; margin:18px 0; }
+    .callout p { margin:0; font-size:14px; color:var(--ink); font-style:italic; }
+
+    .divider { height:1px; background:var(--border); margin:0 0 48px; }
+
+    .contact-card { background:var(--white); border:1px solid var(--border); border-radius:14px; padding:28px; margin-top:16px; }
+    .contact-card h3 { font-size:16px; font-weight:700; color:var(--ink); margin-bottom:10px; }
+    .contact-card a { color:var(--green); text-decoration:none; font-weight:600; }
+
+    footer { background:var(--white); border-top:1px solid var(--border); padding:28px; text-align:center; }
+    footer p { font-size:12px; color:var(--muted); font-style:italic; margin-bottom:10px; }
+    .footer-links { display:flex; justify-content:center; gap:20px; flex-wrap:wrap; }
+    .footer-links a { font-size:12px; color:var(--muted); text-decoration:none; }
+    .footer-links a:hover { color:var(--green); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand">
+    <div class="nav-icon"><span>l.</span></div>
+    <span class="nav-title">Life.</span>
+  </a>
+  <a href="/" class="nav-back">← Back to app</a>
+</nav>
+
+<div class="hero">
+  <div class="pill">Legal</div>
+  <h1>Privacy Policy</h1>
+  <p class="hero-sub">How Life. collects, uses, and protects your personal information.</p>
+  <div class="meta">
+    <span class="meta-item"><span class="dot"></span>Effective: 1 April 2026</span>
+    <span class="meta-item"><span class="dot"></span>Last updated: 9 April 2026</span>
+    <span class="meta-item"><span class="dot"></span>Jurisdiction: Australia</span>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="toc">
+    <p class="toc-label">Contents</p>
+    <a href="#overview">Overview</a>
+    <a href="#collect">Information We Collect</a>
+    <a href="#use">How We Use It</a>
+    <a href="#sharing">Sharing &amp; Disclosure</a>
+    <a href="#security">Data Storage &amp; Security</a>
+    <a href="#rights">Your Rights</a>
+    <a href="#cookies">Cookies &amp; Local Storage</a>
+    <a href="#third">Third-Party Services</a>
+    <a href="#children">Children's Privacy</a>
+    <a href="#changes">Changes to This Policy</a>
+    <a href="#contact">Contact Us</a>
+  </aside>
+
+  <div>
+
+    <section id="overview">
+      <p class="sec-num">01</p>
+      <h2>Overview</h2>
+      <div class="callout"><p>Life. is committed to protecting your privacy. We only collect what we need, we never sell your data, and you are always in control of your information.</p></div>
+      <p>This Privacy Policy explains how Life. ("we", "our", or "us") collects, uses, stores, and protects personal information when you use the Life. application and related services (collectively, the "Service").</p>
+      <p>By using Life., you agree to the collection and use of information in accordance with this policy. This policy is governed by the laws of Australia, including the <em>Privacy Act 1988 (Cth)</em> and the Australian Privacy Principles (APPs).</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="collect">
+      <p class="sec-num">02</p>
+      <h2>Information We Collect</h2>
+      <p>We collect the following categories of information:</p>
+      <ul>
+        <li><strong>Account information</strong> — your full name, email address, username, and date of birth, provided when you register</li>
+        <li><strong>OAuth authentication data</strong> — when you sign in via Google, Apple, or Twitter, we receive your name, email, and a provider-issued unique identifier</li>
+        <li><strong>Phone number</strong> — only if you use phone-based login; used solely for one-time password delivery</li>
+        <li><strong>Content interactions</strong> — articles you have read, bookmarks saved, notes written, and quiz answers submitted</li>
+        <li><strong>Community content</strong> — posts, comments, and votes you create in the Life. social feed</li>
+        <li><strong>Usage data</strong> — aggregate, anonymised information about feature use; not linked to your identity</li>
+        <li><strong>Device &amp; browser info</strong> — browser type, OS, and timezone, used for compatibility and security</li>
+      </ul>
+      <p>We do not collect your precise location, financial account details, or government identifiers.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="use">
+      <p class="sec-num">03</p>
+      <h2>How We Use Your Information</h2>
+      <ul>
+        <li>To create and manage your account and authenticate your identity</li>
+        <li>To personalise your content experience via the Tailor onboarding system</li>
+        <li>To sync your bookmarks, notes, reading progress, and quiz results across sessions</li>
+        <li>To display your posts and comments in the community feed</li>
+        <li>To deliver one-time passwords via SMS for phone authentication</li>
+        <li>To detect and prevent fraudulent or abusive activity</li>
+        <li>To improve the app through anonymised, aggregate analysis</li>
+        <li>To communicate service updates or changes to these policies</li>
+      </ul>
+      <p>We will never use your data for purposes beyond those listed without your explicit prior consent.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="sharing">
+      <p class="sec-num">04</p>
+      <h2>Sharing &amp; Disclosure</h2>
+      <p>We do not sell, rent, or trade your personal information to any third party.</p>
+      <p>We may share information only in these limited circumstances:</p>
+      <ul>
+        <li><strong>Infrastructure providers</strong> — Supabase, Netlify, and Twilio process data on our behalf under strict data processing agreements</li>
+        <li><strong>OAuth providers</strong> — Google, Apple, and Twitter receive confirmation of authentication events per their own policies</li>
+        <li><strong>Legal requirements</strong> — if required by law, court order, or to protect users' safety</li>
+        <li><strong>Business transfers</strong> — in a merger or acquisition, data may transfer with advance notice to you</li>
+      </ul>
+      <p>Posts and comments you publish in the Life. community feed are visible to all authenticated users by design.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="security">
+      <p class="sec-num">05</p>
+      <h2>Data Storage &amp; Security</h2>
+      <p>Your data is stored on Supabase infrastructure (SOC 2 Type II compliant), hosted on AWS with encryption at rest and in transit.</p>
+      <ul>
+        <li>All data in transit is encrypted via TLS 1.2 or higher</li>
+        <li>Passwords are hashed with bcrypt — never stored in plain text</li>
+        <li>OAuth tokens are managed by identity providers and never stored by Life.</li>
+        <li>Production database access is restricted to authorised personnel</li>
+        <li>Session tokens expire automatically and are invalidated on sign-out</li>
+      </ul>
+      <p>We retain your data while your account is active. On account deletion, personal information is removed or anonymised within 30 days, except where retention is legally required.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="rights">
+      <p class="sec-num">06</p>
+      <h2>Your Rights</h2>
+      <p>Under the Australian Privacy Act (and GDPR where applicable), you have the right to:</p>
+      <ul>
+        <li><strong>Access</strong> — request a copy of the personal information we hold about you</li>
+        <li><strong>Correction</strong> — request correction of inaccurate or incomplete data</li>
+        <li><strong>Deletion</strong> — request deletion of your account and personal data</li>
+        <li><strong>Portability</strong> — request your data in a portable, machine-readable format</li>
+        <li><strong>Objection</strong> — object to certain uses of your information</li>
+        <li><strong>Withdraw consent</strong> — withdraw consent to processing at any time without affecting prior lawful processing</li>
+      </ul>
+      <p>Contact us at the address below to exercise any of these rights. We respond within 30 days.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="cookies">
+      <p class="sec-num">07</p>
+      <h2>Cookies &amp; Local Storage</h2>
+      <p>Life. uses browser <strong>local storage</strong> (not third-party cookies) to store your preferences on your own device:</p>
+      <ul>
+        <li>Bookmarked articles and reading progress</li>
+        <li>Your written notes</li>
+        <li>Your Tailor personalisation survey results</li>
+      </ul>
+      <p>This data lives on your device only and is not transmitted to our servers. Clearing your browser storage removes it.</p>
+      <p>Supabase authentication uses a secure, HTTP-only session cookie essential to keeping you signed in. We use no advertising, tracking, or analytics cookies.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="third">
+      <p class="sec-num">08</p>
+      <h2>Third-Party Services</h2>
+      <ul>
+        <li><strong>Supabase</strong> — database, auth, and realtime (supabase.com/privacy)</li>
+        <li><strong>Netlify</strong> — hosting and delivery (netlify.com/privacy)</li>
+        <li><strong>Google</strong> — OAuth sign-in (policies.google.com/privacy)</li>
+        <li><strong>Apple</strong> — OAuth sign-in (apple.com/legal/privacy)</li>
+        <li><strong>Twitter / X</strong> — OAuth sign-in (x.com/en/privacy)</li>
+        <li><strong>Twilio</strong> — SMS for phone authentication (twilio.com/en-us/legal/privacy)</li>
+      </ul>
+      <p>We are not responsible for third-party privacy practices. We encourage you to review their policies directly.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="children">
+      <p class="sec-num">09</p>
+      <h2>Children's Privacy</h2>
+      <p>Life. is not intended for children under 13. Our registration process requires users to confirm they are 13 or older. We do not knowingly collect information from children under 13.</p>
+      <p>If you believe a child under 13 has created an account, contact us immediately and we will delete the information promptly. Users aged 13–18 should use Life. with parental awareness and consent.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="changes">
+      <p class="sec-num">10</p>
+      <h2>Changes to This Policy</h2>
+      <p>We may update this policy to reflect changes in our practices or legal obligations. When we make material changes, we will update the date above and, where practicable, notify you via the email address on your account.</p>
+      <p>Continued use of Life. after changes are posted constitutes acceptance. If you disagree with a revised policy, you may request account deletion.</p>
+    </section>
+
+    <div class="contact-card" id="contact">
+      <h3>Contact Us</h3>
+      <p>For privacy enquiries, access requests, or complaints:</p>
+      <p><strong>Life. Privacy</strong><br>
+      Email: <a href="mailto:privacy@lifeapp.com.au">privacy@lifeapp.com.au</a><br>
+      Australia</p>
+      <p style="margin-top:12px; font-size:13px; color:var(--muted); font-style:italic;">We aim to respond within 30 days of receiving your enquiry.</p>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 Life. All rights reserved.</p>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/privacy.html">Privacy Policy</a>
+    <a href="/terms.html">Terms of Service</a>
+    <a href="mailto:privacy@lifeapp.com.au">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>

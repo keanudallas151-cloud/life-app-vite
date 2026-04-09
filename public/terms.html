@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service — Life.</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --skin:#f5f0e8; --white:#ffffff; --green:#4a8c5c; --greenLt:#eaf3ec;
+      --ink:#141414; --mid:#3a3a3a; --muted:#8a8070; --border:#ddd5c4;
+      --light:#ede8de; --gold:#b8975a; --red:#c0392b;
+    }
+    html { scroll-behavior: smooth; }
+    body { background:var(--skin); color:var(--mid); font-family:Georgia,"Times New Roman",serif; font-size:16px; line-height:1.85; min-height:100vh; }
+
+    nav { position:sticky; top:0; z-index:100; background:rgba(245,240,232,0.94); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 28px; height:60px; display:flex; align-items:center; justify-content:space-between; }
+    .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .nav-icon { width:36px; height:36px; border-radius:10px; background:linear-gradient(145deg,#4a8c5c,#2d6e42); display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(74,140,92,0.3); }
+    .nav-icon span { color:#fff; font-size:16px; font-weight:800; }
+    .nav-title { font-size:18px; font-weight:700; color:var(--ink); }
+    .nav-back { font-size:13px; color:var(--muted); text-decoration:none; font-style:italic; }
+    .nav-back:hover { color:var(--green); }
+
+    .hero { background:var(--white); border-bottom:1px solid var(--border); padding:60px 28px 48px; text-align:center; }
+    .pill { display:inline-block; background:var(--greenLt); color:var(--green); font-size:10px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; padding:5px 14px; border-radius:20px; margin-bottom:18px; }
+    .hero h1 { font-size:clamp(26px,5vw,42px); font-weight:800; color:var(--ink); letter-spacing:-1px; margin-bottom:12px; }
+    .hero-sub { font-size:14px; color:var(--muted); font-style:italic; max-width:460px; margin:0 auto 22px; }
+    .meta { display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap; }
+    .meta-item { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+    .dot { width:5px; height:5px; border-radius:50%; background:var(--green); opacity:0.5; }
+
+    .layout { max-width:860px; margin:0 auto; padding:56px 28px 100px; display:grid; grid-template-columns:210px 1fr; gap:48px; align-items:start; }
+    @media(max-width:680px){ .layout{grid-template-columns:1fr; padding:36px 18px 80px;} .toc{display:none;} }
+
+    .toc { position:sticky; top:76px; background:var(--white); border:1px solid var(--border); border-radius:14px; padding:20px; }
+    .toc-label { font-size:9px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); margin-bottom:14px; }
+    .toc a { display:block; font-size:12.5px; color:var(--mid); text-decoration:none; padding:5px 0 5px 10px; margin-left:-10px; border-left:2px solid transparent; transition:all 0.15s; line-height:1.4; }
+    .toc a:hover { color:var(--green); border-left-color:var(--green); }
+
+    section { margin-bottom:48px; }
+    .sec-num { font-size:9px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:var(--green); opacity:0.7; margin-bottom:6px; }
+    h2 { font-size:20px; font-weight:700; color:var(--ink); margin-bottom:16px; letter-spacing:-0.3px; }
+    p { font-size:15px; color:var(--mid); line-height:1.85; margin-bottom:14px; }
+    ul { list-style:none; padding:0; margin:0 0 14px; }
+    ul li { font-size:15px; color:var(--mid); line-height:1.7; padding:7px 0 7px 22px; position:relative; border-bottom:1px solid var(--light); }
+    ul li:last-child { border-bottom:none; }
+    ul li::before { content:"—"; position:absolute; left:0; color:var(--gold); font-weight:700; }
+    strong { color:var(--ink); font-weight:600; }
+
+    .callout { background:var(--greenLt); border:1px solid rgba(74,140,92,0.18); border-left:3px solid var(--green); border-radius:0 10px 10px 0; padding:16px 20px; margin:18px 0; }
+    .callout p { margin:0; font-size:14px; color:var(--ink); font-style:italic; }
+
+    .warn { background:#fef9f0; border:1px solid rgba(184,151,90,0.25); border-left:3px solid var(--gold); border-radius:0 10px 10px 0; padding:16px 20px; margin:18px 0; }
+    .warn p { margin:0; font-size:14px; color:var(--ink); }
+
+    .divider { height:1px; background:var(--border); margin:0 0 48px; }
+
+    .contact-card { background:var(--white); border:1px solid var(--border); border-radius:14px; padding:28px; margin-top:16px; }
+    .contact-card h3 { font-size:16px; font-weight:700; color:var(--ink); margin-bottom:10px; }
+    .contact-card a { color:var(--green); text-decoration:none; font-weight:600; }
+
+    footer { background:var(--white); border-top:1px solid var(--border); padding:28px; text-align:center; }
+    footer p { font-size:12px; color:var(--muted); font-style:italic; margin-bottom:10px; }
+    .footer-links { display:flex; justify-content:center; gap:20px; flex-wrap:wrap; }
+    .footer-links a { font-size:12px; color:var(--muted); text-decoration:none; }
+    .footer-links a:hover { color:var(--green); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand">
+    <div class="nav-icon"><span>l.</span></div>
+    <span class="nav-title">Life.</span>
+  </a>
+  <a href="/" class="nav-back">← Back to app</a>
+</nav>
+
+<div class="hero">
+  <div class="pill">Legal</div>
+  <h1>Terms of Service</h1>
+  <p class="hero-sub">The rules and conditions that govern your use of Life.</p>
+  <div class="meta">
+    <span class="meta-item"><span class="dot"></span>Effective: 1 April 2026</span>
+    <span class="meta-item"><span class="dot"></span>Last updated: 9 April 2026</span>
+    <span class="meta-item"><span class="dot"></span>Jurisdiction: Australia</span>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="toc">
+    <p class="toc-label">Contents</p>
+    <a href="#acceptance">Acceptance of Terms</a>
+    <a href="#eligibility">Eligibility</a>
+    <a href="#accounts">Accounts &amp; Registration</a>
+    <a href="#acceptable">Acceptable Use</a>
+    <a href="#community">Community Rules</a>
+    <a href="#content">Your Content</a>
+    <a href="#ip">Intellectual Property</a>
+    <a href="#disclaimer">Disclaimer</a>
+    <a href="#liability">Limitation of Liability</a>
+    <a href="#termination">Termination</a>
+    <a href="#governing">Governing Law</a>
+    <a href="#changes">Changes to Terms</a>
+    <a href="#contact">Contact Us</a>
+  </aside>
+
+  <div>
+
+    <section id="acceptance">
+      <p class="sec-num">01</p>
+      <h2>Acceptance of Terms</h2>
+      <div class="callout"><p>By accessing or using Life., you agree to be bound by these Terms of Service. If you do not agree to these terms, do not use the Service.</p></div>
+      <p>These Terms of Service ("Terms") constitute a legally binding agreement between you and Life. ("we", "our", or "us") governing your use of the Life. application, website, and all related services (collectively, the "Service").</p>
+      <p>These Terms are governed by and construed in accordance with the laws of the State of New South Wales, Australia, without regard to its conflict of law principles.</p>
+      <p>Please also read our <a href="/privacy.html" style="color:var(--green); font-weight:600; text-decoration:none;">Privacy Policy</a>, which is incorporated into these Terms by reference.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="eligibility">
+      <p class="sec-num">02</p>
+      <h2>Eligibility</h2>
+      <p>You must be at least 13 years of age to use Life. By using the Service, you represent and warrant that you meet this requirement.</p>
+      <p>Users aged between 13 and 18 ("minors") may use Life. only with the awareness and consent of a parent or legal guardian. By allowing a minor to use the Service, a parent or guardian agrees to these Terms on behalf of the minor and accepts responsibility for the minor's use of the Service.</p>
+      <p>If you are accessing Life. on behalf of an organisation, you represent that you have the authority to bind that organisation to these Terms.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="accounts">
+      <p class="sec-num">03</p>
+      <h2>Accounts &amp; Registration</h2>
+      <p>To access most features of Life., you must create an account. When registering, you agree to:</p>
+      <ul>
+        <li>Provide accurate, current, and complete information</li>
+        <li>Maintain and promptly update your account information</li>
+        <li>Keep your password confidential and not share it with any third party</li>
+        <li>Accept responsibility for all activities that occur under your account</li>
+        <li>Notify us immediately at the contact address below if you suspect unauthorised access to your account</li>
+      </ul>
+      <p>You may not create more than one account per person, or create accounts on behalf of others without their explicit permission. We reserve the right to refuse registration or cancel accounts at our discretion.</p>
+      <p>Usernames must be between 6 and 15 characters, contain only letters, numbers, or underscores, and must not impersonate another person or entity.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="acceptable">
+      <p class="sec-num">04</p>
+      <h2>Acceptable Use</h2>
+      <p>You agree to use Life. only for lawful purposes and in a way that does not infringe the rights of others. The following are strictly prohibited:</p>
+      <ul>
+        <li>Using the Service for any illegal purpose or in violation of any local, state, national, or international law</li>
+        <li>Attempting to gain unauthorised access to any part of the Service or its related systems</li>
+        <li>Transmitting any viruses, malware, or malicious code</li>
+        <li>Scraping, crawling, or systematically extracting data from the Service without our written permission</li>
+        <li>Reverse engineering, decompiling, or disassembling any part of the Service</li>
+        <li>Using automated scripts, bots, or tools to access the Service</li>
+        <li>Attempting to bypass or circumvent any security features</li>
+        <li>Selling, transferring, or sublicensing your account to any other person</li>
+        <li>Using the Service in a way that could damage, disable, or impair the Service or servers</li>
+        <li>Collecting or harvesting any personally identifiable information from the Service</li>
+      </ul>
+    </section>
+    <div class="divider"></div>
+
+    <section id="community">
+      <p class="sec-num">05</p>
+      <h2>Community Rules</h2>
+      <p>Life. includes a community feed where users can post, comment, and vote on content. By participating in the community, you agree to the following rules:</p>
+      <ul>
+        <li>Be respectful — do not harass, bully, threaten, or demean other users</li>
+        <li>No hate speech — do not post content that promotes discrimination based on race, ethnicity, religion, gender, sexual orientation, disability, or nationality</li>
+        <li>No spam — do not post repetitive, promotional, or off-topic content</li>
+        <li>No misinformation — do not deliberately spread false financial, medical, or other factual claims</li>
+        <li>No illegal content — do not share content that violates any law, including copyright, defamation, and privacy laws</li>
+        <li>No impersonation — do not pretend to be another person, business, or Life. staff</li>
+        <li>No adult or explicit content — Life. is accessible to users aged 13 and over</li>
+      </ul>
+      <p>We reserve the right to remove any content and suspend or permanently ban any user who violates these community rules, without notice and at our sole discretion.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="content">
+      <p class="sec-num">06</p>
+      <h2>Your Content</h2>
+      <p>You retain ownership of any content you create and post on Life. (your "User Content"), including posts, comments, and notes.</p>
+      <p>By posting User Content, you grant Life. a non-exclusive, worldwide, royalty-free, sublicensable licence to use, display, reproduce, and distribute that content solely in connection with operating and improving the Service.</p>
+      <p>You represent and warrant that:</p>
+      <ul>
+        <li>You own or have the necessary rights to post the User Content</li>
+        <li>Posting the User Content does not violate the rights of any third party, including intellectual property rights or privacy rights</li>
+        <li>The User Content does not violate any applicable law or these Terms</li>
+      </ul>
+      <p>We do not endorse any User Content and expressly disclaim any liability for it. You are solely responsible for any User Content you post.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="ip">
+      <p class="sec-num">07</p>
+      <h2>Intellectual Property</h2>
+      <p>The Service and all of its content — including the app design, text, graphics, logos, icons, audio, and software — are the exclusive property of Life. and are protected by Australian and international copyright, trademark, and other intellectual property laws.</p>
+      <p>Nothing in these Terms grants you any right to use the Life. name, logo, or branding without our prior written permission.</p>
+      <p>Subject to your compliance with these Terms, we grant you a limited, non-exclusive, non-transferable, revocable licence to access and use the Service for your own personal, non-commercial purposes.</p>
+      <p>All educational content within Life. — including articles, quiz questions, and course materials — is provided for informational purposes only and remains the intellectual property of Life.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="disclaimer">
+      <p class="sec-num">08</p>
+      <h2>Disclaimer</h2>
+      <div class="warn"><p><strong>Important:</strong> Life. provides educational and informational content only. Nothing in Life. constitutes financial, legal, medical, or professional advice. Always consult a qualified professional before making financial or other significant decisions.</p></div>
+      <p>The Service is provided "as is" and "as available" without warranties of any kind, either express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, and non-infringement.</p>
+      <p>We do not warrant that:</p>
+      <ul>
+        <li>The Service will be uninterrupted, error-free, or secure</li>
+        <li>Any content on the Service is accurate, complete, or up to date</li>
+        <li>Any defects will be corrected</li>
+        <li>The Service or its servers are free from viruses or other harmful components</li>
+      </ul>
+      <p>You use the Service at your own risk. Your sole remedy for dissatisfaction with the Service is to stop using it.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="liability">
+      <p class="sec-num">09</p>
+      <h2>Limitation of Liability</h2>
+      <p>To the maximum extent permitted by applicable law, Life. and its officers, employees, agents, and licensors shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or goodwill, arising out of or in connection with:</p>
+      <ul>
+        <li>Your use of or inability to use the Service</li>
+        <li>Any content obtained from the Service</li>
+        <li>Unauthorised access to or alteration of your transmissions or data</li>
+        <li>Any other matter relating to the Service</li>
+      </ul>
+      <p>In no event shall Life.'s total aggregate liability to you for all claims arising from or relating to the Service exceed the amount you paid to Life. in the twelve months preceding the claim, or AUD $100, whichever is greater.</p>
+      <p>Some jurisdictions do not allow the exclusion of certain warranties or limitation of liability. In such jurisdictions, our liability is limited to the fullest extent permitted by law.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="termination">
+      <p class="sec-num">10</p>
+      <h2>Termination</h2>
+      <p>You may stop using Life. and delete your account at any time by contacting us at the address below. Upon account deletion, your personal data will be removed in accordance with our Privacy Policy.</p>
+      <p>We reserve the right to suspend or permanently terminate your access to the Service at any time, with or without notice, if we reasonably believe you have violated these Terms, engaged in harmful behaviour, or for any other reason at our sole discretion.</p>
+      <p>Upon termination, your right to use the Service immediately ceases. Provisions of these Terms that by their nature should survive termination shall survive, including intellectual property provisions, disclaimers, and limitations of liability.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="governing">
+      <p class="sec-num">11</p>
+      <h2>Governing Law &amp; Disputes</h2>
+      <p>These Terms are governed by and construed in accordance with the laws of the State of New South Wales, Australia. You agree to submit to the exclusive jurisdiction of the courts of New South Wales for any dispute arising out of or relating to these Terms or the Service.</p>
+      <p>Before initiating any formal legal action, you agree to first contact us and attempt to resolve any dispute informally. We will make reasonable efforts to resolve disputes through good-faith negotiation.</p>
+      <p>If you are a consumer located in Australia, you may also have rights under the Australian Consumer Law, which cannot be excluded by these Terms.</p>
+    </section>
+    <div class="divider"></div>
+
+    <section id="changes">
+      <p class="sec-num">12</p>
+      <h2>Changes to These Terms</h2>
+      <p>We reserve the right to update these Terms at any time. When we make material changes, we will update the "Last updated" date above and, where practicable, notify you via the email address associated with your account.</p>
+      <p>Your continued use of Life. after changes become effective constitutes your acceptance of the revised Terms. If you do not agree to the revised Terms, you must stop using the Service and may request account deletion.</p>
+      <p>We encourage you to review these Terms periodically. Material changes will always be clearly communicated.</p>
+    </section>
+
+    <div class="contact-card" id="contact">
+      <h3>Contact Us</h3>
+      <p>For questions about these Terms, account issues, or to request account deletion:</p>
+      <p><strong>Life.</strong><br>
+      Email: <a href="mailto:legal@lifeapp.com.au">legal@lifeapp.com.au</a><br>
+      Australia</p>
+      <p style="margin-top:12px; font-size:13px; color:var(--muted); font-style:italic;">We aim to respond to all enquiries within 30 business days.</p>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 Life. All rights reserved.</p>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/privacy.html">Privacy Policy</a>
+    <a href="/terms.html">Terms of Service</a>
+    <a href="mailto:legal@lifeapp.com.au">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>
