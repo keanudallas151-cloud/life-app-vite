@@ -44,17 +44,15 @@ export function useUserData(userId) {
         }
         setLoading(false);
       });
-  }, [userId]);
+  }, [userId, isGuest]);
 
   // ── PERSIST to Supabase ────────────────────────────────────
   const persist = useCallback(async (patch) => {
     if (isGuest) return;
-    setLoading(true);
     const { error } = await supabase
       .from("user_data")
       .upsert({ user_id: userId, ...patch, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
     if (error) console.error("useUserData persist:", error.message);
-    setLoading(false);
   }, [userId, isGuest]);
 
   // Debounced persist — notes can change rapidly while typing

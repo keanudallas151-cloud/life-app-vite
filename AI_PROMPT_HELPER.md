@@ -37,9 +37,8 @@ Open this file in VS Code when you want the fastest map of how the app is put to
 - `package.json` - scripts and dependencies
 
 ### Auth and backend
-- `src/supabaseClient.js` - active Supabase client used by the app
-- `src/utils/supabase.ts` - extra Supabase utility file; check whether this is old or planned future code
-- `src/.env` - local env values for development
+- `src/supabaseClient.js` - active Supabase client used by the app (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`)
+- `src/.env` - local env values for development (see `.env.example`)
 
 ### Content and data
 - `src/data/content.js` - main content tree, guided content, content map
@@ -63,6 +62,8 @@ Open this file in VS Code when you want the fastest map of how the app is put to
 - `src/systems/usePostIt.js` - post-it behavior
 - `src/systems/useQuizStats.js` - quiz stats hook
 - `src/systems/useUserData.js` - user-scoped data helper
+- `src/systems/resumeReading.js` - last-opened topic for the home “Continue” card
+- `src/systems/readingStreak.js` - consecutive-day streak when opening topics
 
 ### Assets and icons
 - `src/icons/Ic.jsx` - icon component(s)

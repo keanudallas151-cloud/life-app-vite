@@ -1,16 +1,33 @@
-# React + Vite
+# Life.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A production-minded web app for curated reading on money, psychology, and philosophy — with quizzes, notes, bookmarks, and a community **Post-It** feed. Built with **React (Vite)** and **Supabase** (auth, Postgres, realtime).
 
-Currently, two official plugins are available:
+## Local development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+cp .env.example .env
+# Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY from your Supabase project (Settings → API)
+npm run dev
+```
 
-## React Compiler
+Without env vars the shell still runs, but auth, cloud-synced library data, quiz stats, and Post-It stay offline.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Deploying on Netlify
 
-## Expanding the ESLint configuration
+1. Connect the repo and set the same `VITE_*` environment variables in **Site configuration → Environment variables**.
+2. Build command: `npm run build`, publish directory: `dist` (already set in `netlify.toml`).
+3. In **Supabase → Authentication → URL configuration**, add your Netlify URL to **Redirect URLs** and set **Site URL** to match production (needed for OAuth email links and Google sign-in).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Supabase schema (expected)
+
+The app assumes tables such as `user_data`, `quiz_stats`, `posts`, `comments`, and `post_votes` with RLS appropriate for your security model. If a table is missing, the UI degrades gracefully (console errors; Post-It shows a clear message when the feed cannot load).
+
+## Scripts
+
+| Command        | Description        |
+| -------------- | ------------------ |
+| `npm run dev`  | Vite dev server    |
+| `npm run build`| Production bundle  |
+| `npm run preview` | Preview production build |
+| `npm run lint` | ESLint             |

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase, isSupabaseConfigured } from "../supabaseClient";
 
 const DEFAULT_STATS = {
   totalPlayed:   0,
@@ -46,7 +46,7 @@ export function useQuizStats(userId) {
   const [stats,   setStatsState] = useState({ ...DEFAULT_STATS });
   const [loading, setLoading]    = useState(false);
 
-  const isGuest = !userId || userId === "_";
+  const isGuest = !userId || userId === "_" || !isSupabaseConfigured;
 
   // ── FETCH ──────────────────────────────────────────────
   useEffect(() => {
@@ -62,7 +62,7 @@ export function useQuizStats(userId) {
         setStatsState(fromDB(data));
         setLoading(false);
       });
-  }, [userId]);
+  }, [userId, isGuest]);
 
   // ── SAVE ───────────────────────────────────────────────
   const saveStats = useCallback(async (next) => {

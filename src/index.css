@@ -1,4 +1,17 @@
-/* ── Life. Global Styles ─────────────────────────────────── */
+/* ── Life. Global — editorial / premium shell ───────────────── */
+
+:root {
+  --life-skin: #f5f0e8;
+  --life-ink: #141414;
+  --life-green: #4a8c5c;
+  --life-green-soft: #eaf3ec;
+  --life-muted: #8a8070;
+  --life-border: #ddd5c4;
+  --life-white: #ffffff;
+  --life-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --life-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+  --life-font: Georgia, "Times New Roman", "Iowan Old Style", serif;
+}
 
 *,
 *::before,
@@ -6,12 +19,18 @@
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--life-font);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1, "onum" 1;
+  color: var(--life-ink);
 }
 
 #root {
@@ -20,23 +39,105 @@ body {
   flex-direction: column;
 }
 
-/* Prevent iOS text-size inflation */
-html {
-  -webkit-text-size-adjust: 100%;
-}
-
-/* Smooth scrolling for in-app navigation */
 @media (prefers-reduced-motion: no-preference) {
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
-/* Remove default focus outlines, add accessible ones */
 :focus-visible {
-  outline: 2px solid #4a8c5c;
-  outline-offset: 2px;
+  outline: 2px solid var(--life-green);
+  outline-offset: 3px;
 }
 
-/* Prevent text overflow in long words */
+::selection {
+  background: rgba(74, 140, 92, 0.22);
+  color: var(--life-ink);
+}
+
 h1, h2, h3, p {
   overflow-wrap: break-word;
+}
+
+/* Scrollbars — subtle, desktop */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 140, 92, 0.35) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(74, 140, 92, 0.28);
+  border-radius: 99px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 140, 92, 0.45);
+}
+
+/* Main content: soft entrance when switching primary pages */
+.life-surface-enter {
+  animation: life-surface-in 0.42s var(--life-ease-out) both;
+}
+
+@keyframes life-surface-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .life-surface-enter {
+    animation: none;
+  }
+}
+
+/* Ambient grain on hero (very subtle) */
+.life-grain {
+  position: relative;
+}
+
+.life-grain::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+  border-radius: inherit;
+}
+
+/* Card lift on hover — add class to interactive cards */
+.life-card-hover {
+  transition:
+    box-shadow 0.28s var(--life-ease-soft),
+    transform 0.28s var(--life-ease-soft),
+    border-color 0.22s ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .life-card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(20, 20, 20, 0.06), 0 14px 32px rgba(74, 140, 92, 0.12);
+  }
+}
+
+.life-card-hover:active {
+  transform: translateY(0);
+}
+
+/* Top bar glass */
+.life-topbar {
+  backdrop-filter: saturate(1.2) blur(12px);
+  -webkit-backdrop-filter: saturate(1.2) blur(12px);
 }

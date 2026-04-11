@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase, isSupabaseConfigured } from "../supabaseClient";
 
 // ── Shape helpers ─────────────────────────────────────────
 // Transforms a Supabase post row + its comments array into the
@@ -49,6 +49,13 @@ export function usePostIt(user) {
     setLoading(true);
     setError(null);
 
+    if (!isSupabaseConfigured) {
+      setPosts([]);
+      setError("Post-It needs Supabase (set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY).");
+      setLoading(false);
+      return;
+    }
+
     // Fetch posts
     const { data: postRows, error: pErr } = await supabase
       .from("posts")
@@ -79,13 +86,16 @@ export function usePostIt(user) {
       commentsMap[c.post_id].push(c);
     });
 
+    // Prefer sum of post_votes only. Adding posts.votes on top double-counts once
+    // someone has voted (row still holds the seed value, e.g. 1).
     const votesMap = {};
     (voteRows || []).forEach(v => {
       votesMap[v.post_id] = (votesMap[v.post_id] || 0) + v.dir;
     });
-    // Add base votes from the post row itself
     postRows.forEach(p => {
-      votesMap[p.id] = (votesMap[p.id] || 0) + (p.votes || 0);
+      if ((votesMap[p.id] ?? 0) === 0 && (p.votes || 0) !== 0) {
+        votesMap[p.id] = p.votes;
+      }
     });
     votesRef.current = votesMap;
 
@@ -97,6 +107,7 @@ export function usePostIt(user) {
 
   // ── REALTIME SUBSCRIPTION ───────────────────────────────
   useEffect(() => {
+    if (!isSupabaseConfigured) return;
     const channel = supabase
       .channel("postit_realtime")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" },
@@ -150,7 +161,7 @@ export function usePostIt(user) {
 
   // ── ADD POST ────────────────────────────────────────────
   const addPost = useCallback(async ({ title, body, flair }) => {
-    if (!user?.id) return;
+    if (!isSupabaseConfigured || !user?.id) return;
     const author = user.name
       ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
       : "??";
@@ -169,7 +180,7 @@ export function usePostIt(user) {
 
   // ── ADD COMMENT ─────────────────────────────────────────
   const addComment = useCallback(async (postId, text) => {
-    if (!user?.id || !text.trim()) return;
+    if (!isSupabaseConfigured || !user?.id || !text.trim()) return;
     const author = user.name
       ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
       : "??";
@@ -188,7 +199,7 @@ export function usePostIt(user) {
   // Upserts into post_votes. Realtime handles the UI update.
   // We do an optimistic update here as well so it feels instant.
   const vote = useCallback(async (postId, dir) => {
-    if (!user?.id) return;
+    if (!isSupabaseConfigured || !user?.id) return;
 
     // Mark as pending so realtime handler skips the echo
     pendingVoteIds.current[postId] = (pendingVoteIds.current[postId] || 0) + 1;

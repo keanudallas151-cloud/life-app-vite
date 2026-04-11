@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef } from "react";
-import { C } from "./systems/theme";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { C, S } from "./systems/theme";
+import { getResumeTopic, setResumeTopic, clearResumeTopic } from "./systems/resumeReading";
+import { recordReadingDay, getReadingStreak } from "./systems/readingStreak";
 import { LS } from "./systems/storage";
 import { useSound } from "./systems/useSound";
 import { Ic } from "./icons/Ic";
@@ -9,7 +11,8 @@ import { EbookReader } from "./components/Reader";
 import { QuizPage } from "./components/QuizPage";
 import { PostItFeed } from "./components/PostItFeed";
 import { TailorIntro, TailorQuestions, TailorResult } from "./components/Tailor";
-import { supabase } from "./supabaseClient";
+import { supabase, isSupabaseConfigured } from "./supabaseClient";
+import { useUserData } from "./systems/useUserData";
 
 export default function LifeApp() {
   const play = useSound();
@@ -81,16 +84,48 @@ export default function LifeApp() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // ── USER-SCOPED LOCAL STATE (bookmarks, notes, read tracking) ─
-  // These stay in localStorage — they're non-sensitive app state
+  // ── USER-SCOPED STATE: Supabase user_data when configured, else localStorage ─
   const uid = user?.email || "_";
+  const userIdForData = isSupabaseConfigured && user?.id ? user.id : null;
+  const cloud = useUserData(userIdForData);
+
   const prevUidRef = useRef(uid);
-  const [bookmarks, setBookmarksRaw] = useState(() => LS.get(`bk_${uid}`, []));
-  const [notes, setNotesRaw] = useState(() => LS.get(`nt_${uid}`, {}));
-  const [readKeys, setReadKeysRaw] = useState(() => LS.get(`rd_${uid}`, []));
-  const setBookmarks = v => { setBookmarksRaw(v); LS.set(`bk_${uid}`, v); };
-  const setNotes = v => { setNotesRaw(v); LS.set(`nt_${uid}`, v); };
-  const setReadKeys = v => { setReadKeysRaw(v); LS.set(`rd_${uid}`, v); };
+  const migratedRef = useRef(false);
+
+  const [localBookmarks, setLocalBookmarksRaw] = useState(() => LS.get(`bk_${uid}`, []));
+  const [localNotes, setLocalNotesRaw] = useState(() => LS.get(`nt_${uid}`, {}));
+  const [localReadKeys, setLocalReadKeysRaw] = useState(() => LS.get(`rd_${uid}`, []));
+  const [localProfile, setLocalProfileRaw] = useState(() => LS.get(`tsd_${uid}`, null));
+
+  const bookmarks = userIdForData ? cloud.bookmarks : localBookmarks;
+  const notes = userIdForData ? cloud.notes : localNotes;
+  const readKeys = userIdForData ? cloud.readKeys : localReadKeys;
+  const profile = userIdForData ? cloud.tsdProfile : localProfile;
+
+  const setBookmarks = (v) => {
+    const next = typeof v === "function" ? v(bookmarks) : v;
+    if (userIdForData) cloud.setBookmarks(next);
+    else {
+      setLocalBookmarksRaw(next);
+      LS.set(`bk_${uid}`, next);
+    }
+  };
+  const setNotes = (v) => {
+    const next = typeof v === "function" ? v(notes) : v;
+    if (userIdForData) cloud.setNotes(next);
+    else {
+      setLocalNotesRaw(next);
+      LS.set(`nt_${uid}`, next);
+    }
+  };
+  const setReadKeys = (v) => {
+    const next = typeof v === "function" ? v(readKeys) : v;
+    if (userIdForData) cloud.setReadKeys(next);
+    else {
+      setLocalReadKeysRaw(next);
+      LS.set(`rd_${uid}`, next);
+    }
+  };
 
   // ── APP PAGE STATE ────────────────────────────────────────────
   const [page, setPage] = useState("home");
@@ -118,25 +153,111 @@ export default function LifeApp() {
   const [noteSaved, setNoteSaved] = useState(false);
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+
+  useEffect(() => {
+    if (!showSearch || search.length <= 1) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        setShowSearch(false);
+        setSearch("");
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showSearch, search]);
   const [lifeOpen, setLifeOpen] = useState(true);
   const [libOpen, setLibOpen] = useState(true);
   const [guidedOpen, setGuidedOpen] = useState(true);
   const [savedOpen, setSavedOpen] = useState(false);
   const [socialsOpen, setSocialsOpen] = useState(false);
   const [shareToast, setShareToast] = useState(false);
-  const [profile, setProfileRaw] = useState(() => LS.get(`tsd_${uid}`, null));
-  const setProfile = v => { setProfileRaw(v); LS.set(`tsd_${user?.email || "_"}`, v); };
+  const [resumeTipDismissed, setResumeTipDismissed] = useState(false);
 
-  // Reload user-scoped data when uid changes (e.g. after login/logout)
+  const readerPagesKey = `rp_${uid}`;
+  const [readerPages, setReaderPages] = useState(() => LS.get(readerPagesKey, {}));
   useEffect(() => {
+    setReaderPages(LS.get(`rp_${uid}`, {}));
+  }, [uid]);
+
+  const saveReaderPage = useCallback((contentKey, pageIdx) => {
+    setReaderPages((prev) => {
+      const next = { ...prev, [contentKey]: pageIdx };
+      LS.set(`rp_${uid}`, next);
+      return next;
+    });
+  }, [uid]);
+
+  const searchInputRef = useRef(null);
+
+  const setProfile = (v) => {
+    const next = typeof v === "function" ? v(profile) : v;
+    if (userIdForData) cloud.setTsdProfile(next);
+    else {
+      setLocalProfileRaw(next);
+      LS.set(`tsd_${uid}`, next);
+    }
+  };
+
+  useEffect(() => {
+    migratedRef.current = false;
+  }, [userIdForData]);
+
+  /* One-time copy from localStorage into Supabase when the cloud row is empty.
+     useUserData returns a new object each render; we depend on fields, not `cloud`. */
+  useEffect(() => {
+    if (!userIdForData || cloud.loading || migratedRef.current) return;
+    const hasCloud =
+      (cloud.bookmarks?.length ?? 0) > 0 ||
+      Object.keys(cloud.notes || {}).some((k) => cloud.notes[k]) ||
+      (cloud.readKeys?.length ?? 0) > 0 ||
+      cloud.tsdProfile != null;
+    if (hasCloud) {
+      migratedRef.current = true;
+      return;
+    }
+    const email = user?.email || "_";
+    const lb = LS.get(`bk_${email}`, []);
+    const ln = LS.get(`nt_${email}`, {});
+    const lr = LS.get(`rd_${email}`, []);
+    const lp = LS.get(`tsd_${email}`, null);
+    const hasLocal =
+      lb.length > 0 ||
+      Object.keys(ln).some((k) => ln[k]) ||
+      lr.length > 0 ||
+      lp != null;
+    migratedRef.current = true;
+    if (hasLocal) {
+      cloud.setBookmarks(lb);
+      cloud.setNotes(ln);
+      cloud.setReadKeys(lr);
+      if (lp) cloud.setTsdProfile(lp);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- see block comment above
+  }, [
+    userIdForData,
+    cloud.loading,
+    cloud.bookmarks,
+    cloud.notes,
+    cloud.readKeys,
+    cloud.tsdProfile,
+    user?.email,
+    cloud.setBookmarks,
+    cloud.setNotes,
+    cloud.setReadKeys,
+    cloud.setTsdProfile,
+  ]);
+
+  // localStorage-only: reload when switching accounts / guest key
+  useEffect(() => {
+    if (userIdForData) return;
     if (prevUidRef.current !== uid) {
       prevUidRef.current = uid;
-      setBookmarksRaw(LS.get(`bk_${uid}`, []));
-      setNotesRaw(LS.get(`nt_${uid}`, {}));
-      setReadKeysRaw(LS.get(`rd_${uid}`, []));
-      setProfileRaw(LS.get(`tsd_${uid}`, null));
+      setLocalBookmarksRaw(LS.get(`bk_${uid}`, []));
+      setLocalNotesRaw(LS.get(`nt_${uid}`, {}));
+      setLocalReadKeysRaw(LS.get(`rd_${uid}`, []));
+      setLocalProfileRaw(LS.get(`tsd_${uid}`, null));
     }
-  }, [uid]);
+  }, [uid, userIdForData]);
 
   // ── GOOGLE SIGN IN (live) ─────────────────────────────────────
   const doGoogleSignIn = async () => {
@@ -257,8 +378,45 @@ export default function LifeApp() {
     setPage("reading");
     setSearch("");
     setShowSearch(false);
+    setResumeTipDismissed(false);
+    setResumeTopic(key);
     if (!readKeys.includes(key)) setReadKeys([...readKeys, key]);
+    recordReadingDay();
   };
+
+  const handleSelectRef = useRef(handleSelect);
+  handleSelectRef.current = handleSelect;
+
+  useEffect(() => {
+    if (screen !== "app" || !user) return;
+    const m = /^#read=([^&]+)/.exec(window.location.hash);
+    if (!m?.[1] || !MAP[m[1]]) return;
+    const pack = MAP[m[1]];
+    handleSelectRef.current(pack.key, pack.node);
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }, [screen, user]);
+
+  useEffect(() => {
+    if (screen !== "app") return;
+    const onKey = (e) => {
+      const el = e.target;
+      if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) return;
+      if (el?.isContentEditable) return;
+      if (e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+        e.preventDefault();
+        setShowSearch(true);
+        searchInputRef.current?.focus();
+      }
+      if (e.key === "?" && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        setPage("help");
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [screen]);
+
   const goHome = () => { play("home"); setPage("home"); };
   const toggleBk = () => {
     if (!selKey) return;
@@ -274,14 +432,32 @@ export default function LifeApp() {
   const shareNote = () => {
     if (!selKey || !noteInput.trim()) return;
     play("ok");
+    try {
+      sessionStorage.setItem(
+        "life_postit_draft",
+        JSON.stringify({
+          title: selContent?.title ? `Notes on: ${selContent.title}` : "From reading",
+          body: noteInput.trim(),
+        })
+      );
+    } catch {
+      /* quota / private mode */
+    }
+    setPage("postit");
+    setSidebarOpen(false);
     setShareToast(true);
-    setTimeout(() => setShareToast(false), 2500);
+    setTimeout(() => setShareToast(false), 3200);
   };
 
   const isBookmarked = bookmarks.includes(selKey);
   const related = (selNode?.related || []).map(k => MAP[k]).filter(Boolean);
   const searchResults = search.length > 1 ? allContent.filter(i => i.node.label.toLowerCase().includes(search.toLowerCase()) || i.node.content?.text?.toLowerCase().includes(search.toLowerCase())) : [];
   const initials = user?.name ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "??";
+
+  const resumeSnap = getResumeTopic();
+  const resumePack = resumeSnap?.key ? MAP[resumeSnap.key] : null;
+  const resumeEntry = resumePack ? { key: resumePack.key, node: resumePack.node } : null;
+  const readingStreak = getReadingStreak();
 
   // ── SIDEBAR HELPERS ───────────────────────────────────────────
   const SS = ({ label, open, setOpen, children }) => (
@@ -354,17 +530,17 @@ export default function LifeApp() {
 
   // Landing
   if (screen === "landing") return (
-    <div style={{ minHeight: "100vh", background: C.skin, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Georgia,serif", padding: "40px 28px", position: "relative" }}>
+    <div className="life-grain" style={{ minHeight: "100vh", background: `linear-gradient(165deg, ${C.skin} 0%, #ebe4d6 45%, ${C.skin} 100%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Georgia,serif", padding: "40px 28px 48px", position: "relative" }}>
       <div style={{ marginBottom: 28, textAlign: "center" }}>
-        <div style={{ width: 120, height: 120, borderRadius: "22%", background: `linear-gradient(145deg,${C.green},#2d6e42)`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px", boxShadow: "0 8px 32px rgba(74,140,92,0.35)" }}>
+        <div style={{ width: 120, height: 120, borderRadius: "22%", background: `linear-gradient(145deg,${C.green},#2d6e42)`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px", boxShadow: S.glow }}>
           <span style={{ color: "#fff", fontSize: 52, fontWeight: 800, fontFamily: "Georgia,serif", letterSpacing: -2 }}>l.</span>
         </div>
         <h1 style={{ margin: 0, fontSize: 42, fontWeight: 800, color: C.ink, fontFamily: "Georgia,serif", letterSpacing: -1 }}>Life.</h1>
         <p style={{ margin: "8px 0 0", fontSize: 15, color: C.muted, fontStyle: "italic" }}>Knowledge. Finance. Life.</p>
       </div>
       <div style={{ width: "100%", maxWidth: 340, display: "flex", flexDirection: "column", gap: 14 }}>
-        <button onClick={() => { play("tap"); setScreen("signin"); }} style={{ background: C.white, border: `1.5px solid ${C.border}`, borderRadius: 14, padding: "18px 20px", color: C.ink, fontSize: 17, fontWeight: 600, cursor: "pointer", fontFamily: "Georgia,serif" }}>Sign In</button>
-        <button onClick={() => { play("tap"); setScreen("register"); }} style={{ background: C.green, border: "none", borderRadius: 14, padding: "18px 20px", color: "#fff", fontSize: 17, fontWeight: 700, cursor: "pointer", fontFamily: "Georgia,serif", boxShadow: "0 3px 14px rgba(74,140,92,0.32)" }}>Register</button>
+        <button className="life-card-hover" onClick={() => { play("tap"); setScreen("signin"); }} style={{ background: C.white, border: `1.5px solid ${C.border}`, borderRadius: 14, padding: "18px 20px", color: C.ink, fontSize: 17, fontWeight: 600, cursor: "pointer", fontFamily: "Georgia,serif", boxShadow: S.sm }}>Sign In</button>
+        <button className="life-card-hover" onClick={() => { play("tap"); setScreen("register"); }} style={{ background: C.green, border: "none", borderRadius: 14, padding: "18px 20px", color: "#fff", fontSize: 17, fontWeight: 700, cursor: "pointer", fontFamily: "Georgia,serif", boxShadow: S.glow }}>Register</button>
         <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "4px 16px" }}>
           <div style={{ flex: 1, height: 1, background: C.border }} /><span style={{ color: C.muted, fontSize: 12, fontStyle: "italic", whiteSpace: "nowrap" }}>or continue with</span><div style={{ flex: 1, height: 1, background: C.border }} />
         </div>
@@ -388,8 +564,8 @@ export default function LifeApp() {
 
   // Sign In
   if (screen === "signin") return (
-    <div style={{ minHeight: "100vh", background: C.skin, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Georgia,serif", padding: "40px 28px" }}>
-      <div style={{ width: 70, height: 70, borderRadius: "20%", background: `linear-gradient(145deg,${C.green},#2d6e42)`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20, boxShadow: "0 4px 16px rgba(74,140,92,0.3)" }}>
+    <div className="life-grain" style={{ minHeight: "100vh", background: `linear-gradient(165deg, ${C.skin} 0%, #ebe4d6 50%, ${C.skin} 100%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Georgia,serif", padding: "40px 28px 48px" }}>
+      <div style={{ width: 70, height: 70, borderRadius: "20%", background: `linear-gradient(145deg,${C.green},#2d6e42)`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20, boxShadow: S.md }}>
         <span style={{ color: C.white, fontSize: 28, fontWeight: 800 }}>l.</span>
       </div>
 
@@ -505,8 +681,8 @@ export default function LifeApp() {
 
   // Register
   if (screen === "register") return (
-    <div style={{ minHeight: "100vh", background: C.skin, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Georgia,serif", padding: "48px 28px" }}>
-      <div style={{ width: 70, height: 70, borderRadius: "20%", background: `linear-gradient(145deg,${C.green},#2d6e42)`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20, boxShadow: "0 4px 16px rgba(74,140,92,0.3)" }}>
+    <div className="life-grain" style={{ minHeight: "100vh", background: `linear-gradient(165deg, ${C.skin} 0%, #ebe4d6 50%, ${C.skin} 100%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Georgia,serif", padding: "48px 28px 56px" }}>
+      <div style={{ width: 70, height: 70, borderRadius: "20%", background: `linear-gradient(145deg,${C.green},#2d6e42)`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20, boxShadow: S.md }}>
         <span style={{ color: "#fff", fontSize: 28, fontWeight: 800 }}>l.</span>
       </div>
       <h2 style={{ fontSize: 26, fontWeight: 700, margin: "0 0 4px", color: C.ink, fontFamily: "Georgia,serif" }}>Create Account</h2>
@@ -633,10 +809,10 @@ export default function LifeApp() {
   // ── MAIN APP ──────────────────────────────────────────────────
   return (
     <div style={{ minHeight: "100vh", background: C.skin, display: "flex", flexDirection: "column", fontFamily: "Georgia,serif", color: C.ink }}>
-      {shareToast && <div style={{ position: "fixed", top: 70, left: "50%", transform: "translateX(-50%)", background: C.ink, color: "#fff", padding: "10px 22px", borderRadius: 20, fontSize: 13, zIndex: 999, boxShadow: "0 4px 14px rgba(0,0,0,0.2)" }}>Shared to Post-It ✓</div>}
+      {shareToast && <div role="status" style={{ position: "fixed", top: 70, left: "50%", transform: "translateX(-50%)", background: C.ink, color: "#fff", padding: "10px 22px", borderRadius: 20, fontSize: 13, zIndex: 999, boxShadow: "0 4px 14px rgba(0,0,0,0.2)", maxWidth: "min(92vw, 340px)", textAlign: "center", lineHeight: 1.45 }}>Opening Post-It — review and publish your draft.</div>}
 
       {/* TOP BAR */}
-      <div style={{ height: 62, background: C.white, borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", padding: "0 16px", gap: 10, position: "sticky", top: 0, zIndex: 50, boxShadow: "0 1px 6px rgba(0,0,0,0.06)" }}>
+      <div className="life-topbar" style={{ height: 62, background: "rgba(255,255,255,0.88)", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", padding: "0 16px", gap: 10, position: "sticky", top: 0, zIndex: 50, boxShadow: "0 1px 0 rgba(0,0,0,0.04), 0 8px 24px rgba(74,140,92,0.06)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
           <button onClick={() => { play("tap"); setSidebarOpen(!sidebarOpen); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", gap: 5, padding: "6px 4px" }}>
             {[22, 14, 22].map((w, i) => <span key={i} style={{ display: "block", width: w, height: 2, background: C.mid, borderRadius: 2 }} />)}
@@ -651,7 +827,7 @@ export default function LifeApp() {
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
             <circle cx="6" cy="6" r="4.5" stroke={C.muted} strokeWidth="1.5" /><line x1="9.5" y1="9.5" x2="13" y2="13" stroke={C.muted} strokeWidth="1.5" strokeLinecap="round" />
           </svg>
-          <input value={search} onChange={e => { setSearch(e.target.value); setShowSearch(true); }} onFocus={() => setShowSearch(true)} placeholder="Search topics…"
+          <input ref={searchInputRef} value={search} onChange={e => { setSearch(e.target.value); setShowSearch(true); }} onFocus={() => setShowSearch(true)} placeholder="Search topics… (/)"
             style={{ width: "100%", background: C.light, border: `1px solid ${C.border}`, borderRadius: 20, padding: "9px 32px 9px 30px", color: C.ink, fontSize: 13, outline: "none", fontFamily: "Georgia,serif", boxSizing: "border-box" }} />
           {search && <button onClick={() => { setSearch(""); setShowSearch(false); }} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: C.muted, fontSize: 16 }}>×</button>}
         </div>
@@ -661,7 +837,7 @@ export default function LifeApp() {
       </div>
 
       {showSearch && search.length > 1 && (
-        <div style={{ position: "fixed", top: 62, left: 0, right: 0, zIndex: 200, background: C.white, borderBottom: `1px solid ${C.border}`, maxHeight: 320, overflowY: "auto", boxShadow: "0 8px 24px rgba(0,0,0,0.09)" }}>
+        <div style={{ position: "fixed", top: 62, left: 0, right: 0, zIndex: 200, background: "rgba(255,255,255,0.97)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderBottom: `1px solid ${C.border}`, maxHeight: 320, overflowY: "auto", boxShadow: "0 12px 40px rgba(0,0,0,0.08)" }}>
           {searchResults.length === 0
             ? <p style={{ color: C.muted, padding: "22px 28px", margin: 0, fontSize: 14, fontStyle: "italic" }}>No results.</p>
             : searchResults.map(item => (
@@ -677,7 +853,7 @@ export default function LifeApp() {
       )}
 
       <div style={{ display: "flex", flex: 1, position: "relative", overflow: "hidden" }}>
-        {sidebarOpen && <div onClick={() => { play("back"); setSidebarOpen(false); }} style={{ position: "fixed", inset: 0, top: 62, background: "rgba(0,0,0,0.18)", zIndex: 30 }} />}
+        {sidebarOpen && <div onClick={() => { play("back"); setSidebarOpen(false); }} style={{ position: "fixed", inset: 0, top: 62, background: "rgba(20,20,20,0.22)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 30 }} />}
 
         {/* SIDEBAR */}
         <div style={{ position: "fixed", top: 62, left: 0, bottom: 0, width: 288, background: C.white, borderRight: `1px solid ${C.border}`, overflowY: "auto", zIndex: 40, transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)", transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)", paddingTop: 16, paddingBottom: 60 }}>
@@ -708,6 +884,7 @@ export default function LifeApp() {
 
         {/* MAIN CONTENT */}
         <div style={{ flex: 1, overflowY: "auto" }}>
+          <div key={page} className="life-surface-enter" style={{ minHeight: "100%" }}>
 
           {page === "home" && (
             <div style={{ paddingBottom: 60 }}>
@@ -720,10 +897,60 @@ export default function LifeApp() {
                 <span style={{ fontSize: 11, color: C.green, fontWeight: 700, letterSpacing: 0.5, flexShrink: 0 }}>
                   {readKeys.length}<span style={{ color: C.muted, fontWeight: 400 }}>/{allContent.length}</span>
                 </span>
+                {readingStreak.count > 0 && (
+                  <span title="Consecutive days you’ve opened a topic" style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: C.green, background: C.greenLt, border: `1px solid rgba(74,140,92,0.35)`, borderRadius: 20, padding: "6px 12px", flexShrink: 0 }}>
+                    {readingStreak.count} day streak
+                  </span>
+                )}
               </div>
 
+              {resumeEntry && !resumeTipDismissed && (
+                <div style={{ padding: "14px 20px 0", maxWidth: 520, margin: "0 auto" }}>
+                  <div
+                    className="life-card-hover"
+                    style={{
+                      background: `linear-gradient(135deg, ${C.white} 0%, ${C.greenLt} 100%)`,
+                      border: `1px solid rgba(74,140,92,0.35)`,
+                      borderRadius: 16,
+                      padding: "16px 18px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 14,
+                      boxShadow: S.md,
+                    }}
+                  >
+                    <div style={{ width: 44, height: 44, borderRadius: 12, background: C.green, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px rgba(74,140,92,0.35)" }}>
+                      <span style={{ color: "#fff", fontSize: 18 }}>↻</span>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: "0 0 4px", fontSize: 9, fontWeight: 700, letterSpacing: 2.2, textTransform: "uppercase", color: C.green }}>Continue</p>
+                      <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.ink, lineHeight: 1.35 }}>{resumeEntry.node.label}</p>
+                      <p style={{ margin: "4px 0 0", fontSize: 12, color: C.muted, fontStyle: "italic" }}>
+                        {resumeEntry.node.content?.readTime ? `${resumeEntry.node.content.readTime} read · ` : ""}Pick up where you left off
+                      </p>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
+                      <button
+                        type="button"
+                        onClick={() => { play("tap"); handleSelect(resumeEntry.key, resumeEntry.node); }}
+                        style={{ background: C.green, border: "none", borderRadius: 10, padding: "10px 16px", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "Georgia,serif", whiteSpace: "nowrap", boxShadow: "0 4px 14px rgba(74,140,92,0.28)" }}
+                      >
+                        Open
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { play("tap"); setResumeTipDismissed(true); clearResumeTopic(); }}
+                        style={{ background: "transparent", border: "none", color: C.muted, fontSize: 11, cursor: "pointer", fontFamily: "Georgia,serif", textDecoration: "underline" }}
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* HERO */}
-              <div style={{ padding: "44px 24px 40px", textAlign: "center", borderBottom: `1px solid ${C.border}`, background: C.skin, position: "relative", overflow: "hidden" }}>
+              <div className="life-grain" style={{ padding: "44px 24px 40px", textAlign: "center", borderBottom: `1px solid ${C.border}`, background: `linear-gradient(180deg, ${C.skin} 0%, #ebe4d6 100%)`, position: "relative", overflow: "hidden", borderRadius: 0 }}>
                 <div style={{ position: "absolute", top: -60, right: -60, width: 200, height: 200, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.10)", pointerEvents: "none" }} />
                 <div style={{ position: "absolute", bottom: -80, left: -40, width: 160, height: 160, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.08)", pointerEvents: "none" }} />
                 <p style={{ margin: "0 0 18px", fontSize: 10, fontWeight: 700, letterSpacing: 5, textTransform: "uppercase", color: C.muted }}>Welcome to</p>
@@ -737,11 +964,11 @@ export default function LifeApp() {
                 </p>
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                   <button onClick={() => { play("open"); setSidebarOpen(true); }}
-                    style={{ background: C.green, border: "none", borderRadius: 14, padding: "15px 32px", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "Georgia,serif", boxShadow: "0 6px 20px rgba(74,140,92,0.30)", letterSpacing: 0.3 }}>
+                    style={{ background: C.green, border: "none", borderRadius: 14, padding: "15px 32px", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "Georgia,serif", boxShadow: S.glow, letterSpacing: 0.3 }}>
                     Start Reading →
                   </button>
                   <button onClick={() => { play("tap"); setPage("quiz"); }}
-                    style={{ background: C.white, border: `1.5px solid ${C.border}`, borderRadius: 14, padding: "15px 24px", color: C.ink, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "Georgia,serif", display: "flex", alignItems: "center", gap: 8 }}>
+                    style={{ background: C.white, border: `1.5px solid ${C.border}`, borderRadius: 14, padding: "15px 24px", color: C.ink, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "Georgia,serif", display: "flex", alignItems: "center", gap: 8, boxShadow: S.sm }}>
                     {Ic.brain("none", C.green, 17)} Quiz
                   </button>
                 </div>
@@ -757,10 +984,10 @@ export default function LifeApp() {
                     { icon: "brain", label: "Quiz", sub: "Timed knowledge challenges", onClick: () => { play("tap"); setPage("quiz"); } },
                     { icon: "pin", label: "Post-It", sub: "Community discussion", onClick: () => { play("tap"); setPage("postit"); } },
                   ].map(item => (
-                    <button key={item.label} onClick={item.onClick}
-                      style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: "20px 16px", cursor: "pointer", textAlign: "left", fontFamily: "Georgia,serif", display: "flex", flexDirection: "column", gap: 10, boxShadow: "0 1px 3px rgba(0,0,0,0.04)", transition: "box-shadow 0.2s" }}
-                      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(74,140,92,0.13)"; e.currentTarget.style.borderColor = "#c8ddc8"; }}
-                      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; e.currentTarget.style.borderColor = C.border; }}>
+                    <button key={item.label} onClick={item.onClick} className="life-card-hover"
+                      style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: "20px 16px", cursor: "pointer", textAlign: "left", fontFamily: "Georgia,serif", display: "flex", flexDirection: "column", gap: 10, boxShadow: S.sm }}
+                      onMouseEnter={e => { e.currentTarget.style.boxShadow = S.md; e.currentTarget.style.borderColor = "#c8ddc8"; }}
+                      onMouseLeave={e => { e.currentTarget.style.boxShadow = S.sm; e.currentTarget.style.borderColor = C.border; }}>
                       <div style={{ width: 40, height: 40, borderRadius: 12, background: C.greenLt, display: "flex", alignItems: "center", justifyContent: "center" }}>
                         {Ic[item.icon]?.("none", "#4a8c5c", 20)}
                       </div>
@@ -837,7 +1064,7 @@ export default function LifeApp() {
             </div>
           )}
 
-          {page === "quiz" && <QuizPage play={play} userId={user?.id} />}
+          {page === "quiz" && <QuizPage play={play} userId={isSupabaseConfigured ? user?.id : null} />}
 
           {page === "help" && (
             <div style={{ padding: "48px 28px", maxWidth: 560, margin: "0 auto" }}>
@@ -850,6 +1077,8 @@ export default function LifeApp() {
                 ["What is Post-It?", "The Life. community feed. Share insights, ask questions, and discuss topics with other readers."],
                 ["What is the Quiz?", "Test your knowledge on Finance, Psychology, and Money. Pick easy, medium, or hard. Three formats: Multiple Choice, True/False, and Blitz."],
                 ["What is Guided?", "A curated sequence designed to take you from zero understanding of money to a solid foundation."],
+                ["Keyboard shortcuts", "Press / to focus search (when not typing in a field). Press ? to open this Help page. Reading progress per topic is saved automatically when you turn pages."],
+                ["Share a topic", "While reading, use Copy link to get a URL with #read=topicKey. Anyone with the link can jump straight into that article after signing in."],
               ].map(([q, a]) => (
                 <div key={q} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, padding: "20px 22px", marginBottom: 12 }}>
                   <p style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 700, color: C.ink }}>{q}</p>
@@ -894,6 +1123,7 @@ export default function LifeApp() {
                   ["Topics Read", readKeys.length],
                   ["Bookmarks Saved", bookmarks.length],
                   ["Notes Written", Object.keys(notes).filter(k => notes[k]).length],
+                  ["Reading streak", readingStreak.count > 0 ? `${readingStreak.count} day${readingStreak.count === 1 ? "" : "s"}` : "Open a topic to start"],
                 ].map(([label, val]) => (
                   <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: `1px solid ${C.light}` }}>
                     <span style={{ fontSize: 15, color: C.mid, fontFamily: "Georgia,serif" }}>{label}</span>
@@ -925,8 +1155,11 @@ export default function LifeApp() {
               bookmarks={bookmarks}
               allContent={allContent}
               profile={profile}
+              savedReaderPage={readerPages[selKey] ?? 0}
+              onReaderPageSave={saveReaderPage}
             />
           )}
+          </div>
         </div>
       </div>
     </div>

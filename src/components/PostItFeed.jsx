@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { C } from "../systems/theme";
+import { useState, useEffect } from "react";
+import { C, S } from "../systems/theme";
 import { Ic } from "../icons/Ic";
 import { usePostIt } from "../systems/usePostIt";
 
+const DRAFT_KEY = "life_postit_draft";
+
 export function PostItFeed({ play, user }) {
-  const { posts, addPost, addComment, vote, loading } = usePostIt(user);
+  const { posts, addPost, addComment, vote, loading, error, reload } = usePostIt(user);
 
   const [sort,        setSort]        = useState("recent");
   const [viewing,     setViewing]     = useState(null);
@@ -15,7 +17,20 @@ export function PostItFeed({ play, user }) {
   const [commentText, setCommentText] = useState("");
 
   const flairs = ["Finance","Psychology","Philosophy","Money","General"];
-  const ini    = n => n ? n.split(" ").map(x => x[0]).join("").toUpperCase().slice(0,2) : "??";
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      sessionStorage.removeItem(DRAFT_KEY);
+      if (typeof d?.title === "string") setNewTitle(d.title);
+      if (typeof d?.body === "string") setNewBody(d.body);
+      setShowCompose(true);
+    } catch {
+      sessionStorage.removeItem(DRAFT_KEY);
+    }
+  }, []);
 
   const sorted = [...posts].sort((a,b) =>
     sort==="votes"    ? b.votes - a.votes
@@ -103,6 +118,15 @@ export function PostItFeed({ play, user }) {
   // ── FEED VIEW ────────────────────────────────────────────
   return (
     <div style={{ padding:"20px 24px", maxWidth:620, margin:"0 auto" }}>
+      {error && (
+        <div style={{ background:"#fdf2f2", border:`1px solid ${C.red}`, borderRadius:12, padding:"14px 16px", marginBottom:16, fontSize:13, color:C.ink, lineHeight:1.6 }}>
+          <strong style={{ display:"block", marginBottom:4 }}>Could not load the feed</strong>
+          <span style={{ color:C.mid }}>{error}</span>
+          <button type="button" onClick={() => reload()} style={{ display:"block", marginTop:10, background:C.white, border:`1px solid ${C.border}`, borderRadius:8, padding:"8px 14px", cursor:"pointer", fontFamily:"Georgia,serif", fontSize:13 }}>
+            Try again
+          </button>
+        </div>
+      )}
       <div style={{ display:"flex", alignItems:"center", marginBottom:20 }}>
         <h2 style={{ margin:0, fontSize:22, fontWeight:700, color:C.ink, flex:1 }}>Post-It</h2>
         {loading && <span style={{ fontSize:11, color:C.muted, fontStyle:"italic", marginRight:12 }}>Syncing…</span>}
@@ -155,7 +179,7 @@ export function PostItFeed({ play, user }) {
       </div>
 
       {sorted.map(post => (
-        <div key={post.id} style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:14, padding:20, marginBottom:12, boxShadow:"0 1px 4px rgba(0,0,0,0.05)" }}>
+        <div key={post.id} className="life-card-hover" style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:14, padding:20, marginBottom:12, boxShadow:S.sm, transition:"box-shadow 0.25s ease, border-color 0.2s ease" }}>
           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
             <div style={{ width:28, height:28, borderRadius:"50%", background:C.ink, display:"flex", alignItems:"center", justifyContent:"center" }}>
               <span style={{ color:C.white, fontSize:10, fontWeight:700 }}>{post.author}</span>

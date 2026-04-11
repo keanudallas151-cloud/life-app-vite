@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/static-components */
 import { useState, useRef, useEffect } from "react";
 import { C } from "../systems/theme";
 import { Ic } from "../icons/Ic";
@@ -113,21 +112,46 @@ export function NotesTab({noteInput,setNoteInput,noteSaved,setNoteSaved,saveNote
   );
 }
 
-export function EbookReader({selKey,selContent,tab,setTab,isBookmarked,toggleBk,play,noteInput,setNoteInput,noteSaved,setNoteSaved,saveNote,shareNote,related,handleSelect,bookmarks,allContent,profile}){
+export function EbookReader({selKey,selContent,tab,setTab,isBookmarked,toggleBk,play,noteInput,setNoteInput,noteSaved,setNoteSaved,saveNote,shareNote,related,handleSelect,bookmarks,allContent,profile,savedReaderPage=0,onReaderPageSave}){
   const PARAS=4;
   const paragraphs=(selContent?.text||"").split("\n\n").filter(p=>p.trim());
   const totalPages=Math.max(1,Math.ceil(paragraphs.length/PARAS));
   const[pageNum,setPageNum]=useState(0);
   const[anim,setAnim]=useState(null);
+  const[linkCopied,setLinkCopied]=useState(false);
   const pageRef=useRef(null);
   const sx=useRef(null);
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(()=>{setPageNum(0);setAnim(null);},[selKey]);
+
+  useEffect(()=>{
+    const t=Math.max(0,Math.min(savedReaderPage??0,totalPages-1));
+    setPageNum(t);
+    setAnim(null);
+  },[selKey,totalPages,savedReaderPage]);
+
+  const commitPage=(n)=>{
+    const clamped=Math.max(0,Math.min(n,totalPages-1));
+    setPageNum(clamped);
+    if(selKey&&onReaderPageSave)onReaderPageSave(selKey,clamped);
+  };
+
   const turn=(dir)=>{
     const next=pageNum+dir;
     if(next<0||next>=totalPages)return;
     play("pageturn");setAnim(dir>0?"l":"r");
-    setTimeout(()=>{setPageNum(next);setAnim(null);if(pageRef.current)pageRef.current.scrollTop=0;},160);
+    setTimeout(()=>{
+      commitPage(next);
+      setAnim(null);
+      if(pageRef.current)pageRef.current.scrollTop=0;
+    },160);
+  };
+
+  const copyTopicLink=()=>{
+    if(!selKey)return;
+    const url=`${window.location.origin}${window.location.pathname}${window.location.search}#read=${selKey}`;
+    const done=()=>{play("ok");setLinkCopied(true);setTimeout(()=>setLinkCopied(false),2200);};
+    navigator.clipboard?.writeText(url).then(done).catch(()=>{
+      try{const ta=document.createElement("textarea");ta.value=url;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();done();}catch{/* ignore */}
+    });
   };
   const onTS=e=>{sx.current=e.touches[0].clientX;};
   const onTE=e=>{if(sx.current===null)return;const dx=e.changedTouches[0].clientX-sx.current;if(Math.abs(dx)>50)turn(dx<0?1:-1);sx.current=null;};
@@ -135,21 +159,51 @@ export function EbookReader({selKey,selContent,tab,setTab,isBookmarked,toggleBk,
   const isFirst=pageNum===0;const isLast=pageNum===totalPages-1;
   const animStyle=anim?{opacity:0,transform:anim==="l"?"translateX(-18px)":"translateX(18px)",transition:"opacity 0.15s,transform 0.15s"}:{opacity:1,transform:"translateX(0)",transition:"opacity 0.18s,transform 0.18s"};
   if(!selContent)return null;
+  const throughPct=Math.round(((pageNum+1)/totalPages)*100);
   return(
-    <div style={{display:"flex",flexDirection:"column"}}>
-      <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,background:C.white,padding:"0 16px",overflowX:"auto",flexShrink:0}}>
+    <div style={{display:"flex",flexDirection:"column",position:"relative"}}>
+      {linkCopied&&(
+        <div role="status" style={{position:"fixed",bottom:24,left:"50%",transform:"translateX(-50%)",background:C.ink,color:"#fff",padding:"10px 20px",borderRadius:99,fontSize:13,zIndex:300,boxShadow:"0 8px 28px rgba(0,0,0,0.2)",fontFamily:"Georgia,serif"}}>Link copied</div>
+      )}
+      <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,background:C.white,padding:"0 16px",overflowX:"auto",flexShrink:0,alignItems:"center",gap:4}}>
         {[{id:"content",label:"Read"},{id:"notes",label:"Notes"},{id:"suggestions",label:"Related"},{id:"saved",label:"Saved"}].map(t=>(
           <button key={t.id} onClick={()=>{play("tap");setTab(t.id);}} style={{padding:"17px 14px",background:"none",border:"none",borderBottom:tab===t.id?`2px solid ${C.green}`:"2px solid transparent",color:tab===t.id?C.green:C.muted,fontSize:13,fontWeight:tab===t.id?700:400,cursor:"pointer",fontFamily:"Georgia,serif",whiteSpace:"nowrap"}}>{t.label}</button>
         ))}
-        <div style={{flex:1}}/>
-        <button onClick={toggleBk} style={{background:"none",border:"none",cursor:"pointer",color:isBookmarked?C.gold:C.border,fontSize:24,padding:"0 6px"}}>{isBookmarked?Ic.starFilled():Ic.star()}</button>
+        <div style={{flex:1,minWidth:8}}/>
+        <button type="button" title="Copy link to this topic" aria-label="Copy link to this topic" onClick={()=>{play("tap");copyTopicLink();}} style={{background:C.light,border:`1px solid ${C.border}`,borderRadius:10,cursor:"pointer",color:C.mid,fontSize:12,fontWeight:600,padding:"8px 12px",fontFamily:"Georgia,serif",flexShrink:0}}>Copy link</button>
+        <button type="button" onClick={toggleBk} aria-label={isBookmarked?"Remove bookmark":"Save bookmark"} style={{background:"none",border:"none",cursor:"pointer",color:isBookmarked?C.gold:C.border,fontSize:24,padding:"0 6px",flexShrink:0}}>{isBookmarked?Ic.starFilled():Ic.star()}</button>
       </div>
       {tab==="content"&&(
+        <>
+        <div style={{ maxWidth:640, margin:"0 auto", width:"100%", padding:"0 20px", boxSizing:"border-box" }}>
+          <div style={{ height:4, background:C.light, borderRadius:99, overflow:"hidden", marginTop:10, boxShadow:"inset 0 1px 2px rgba(0,0,0,0.06)" }}>
+            <div style={{
+              height:"100%",
+              width:`${((pageNum+1)/totalPages)*100}%`,
+              background:`linear-gradient(90deg,${C.green},#6FBE77)`,
+              borderRadius:99,
+              transition:"width 0.45s cubic-bezier(0.22,1,0.36,1)",
+              boxShadow:"0 0 12px rgba(74,140,92,0.35)",
+            }}/>
+          </div>
+        </div>
         <div style={{position:"relative",maxWidth:640,margin:"0 auto",width:"100%"}}>
-        <div style={{position:"absolute",top:16,right:20,fontSize:11,fontWeight:700,color:C.muted,fontFamily:"Georgia,serif",letterSpacing:0.5,pointerEvents:"none",zIndex:5}}>{pageNum+1}/{totalPages}</div>
+        <div style={{position:"absolute",top:16,right:20,fontSize:11,fontWeight:700,color:C.muted,fontFamily:"Georgia,serif",letterSpacing:0.5,pointerEvents:"none",zIndex:5,textAlign:"right",lineHeight:1.4}}>
+          <div>{pageNum+1}/{totalPages}</div>
+          <div style={{fontSize:10,fontWeight:600,color:C.green,marginTop:2}}>{throughPct}%</div>
+        </div>
         <div ref={pageRef} onTouchStart={onTS} onTouchEnd={onTE} style={{overflowY:"auto",padding:"44px 32px 24px",boxSizing:"border-box"}}>
           {isFirst&&(
             <div style={{marginBottom:40}}>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:18, alignItems:"center" }}>
+                {selContent?.emoji && <span style={{ fontSize:28, lineHeight:1 }} aria-hidden>{selContent.emoji}</span>}
+                {selContent?.readTime && (
+                  <span style={{ fontSize:11, fontWeight:700, letterSpacing:1.2, textTransform:"uppercase", color:C.muted, background:C.light, padding:"5px 10px", borderRadius:20, border:`1px solid ${C.border}` }}>{selContent.readTime}</span>
+                )}
+                {selContent?.level && (
+                  <span style={{ fontSize:11, fontWeight:700, letterSpacing:1.2, textTransform:"uppercase", color:C.green, background:C.greenLt, padding:"5px 10px", borderRadius:20, border:`1px solid rgba(74,140,92,0.35)` }}>{selContent.level}</span>
+                )}
+              </div>
               {profile&&(()=>{
                 const score=computeEssentialScore(selKey,profile);
                 if(score===null)return null;
@@ -162,7 +216,7 @@ export function EbookReader({selKey,selContent,tab,setTab,isBookmarked,toggleBk,
                   </div>
                 );
               })()}
-              <h1 style={{fontSize:28,fontWeight:800,margin:0,letterSpacing:-0.6,color:C.ink,lineHeight:1.25,fontFamily:"Georgia,serif",borderBottom:`2px solid ${C.border}`,paddingBottom:24}}>{selContent.title}</h1>
+              <h1 style={{fontSize:28,fontWeight:800,margin:0,letterSpacing:-0.6,color:C.ink,lineHeight:1.25,fontFamily:"Georgia,serif",borderBottom:`2px solid ${C.border}`,paddingBottom:24, textWrap:"balance" }}>{selContent.title}</h1>
             </div>
           )}
           {!isFirst&&<p style={{margin:"0 0 32px",fontSize:11,color:C.muted,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase",fontFamily:"Georgia,serif"}}>{selContent.title}</p>}
@@ -179,7 +233,7 @@ export function EbookReader({selKey,selContent,tab,setTab,isBookmarked,toggleBk,
             </button>
             <div style={{display:"flex",gap:6,alignItems:"center"}}>
               {Array.from({length:totalPages}).map((_,i)=>(
-                <button key={i} onClick={()=>{if(i!==pageNum){play("pageturn");setPageNum(i);if(pageRef.current)pageRef.current.scrollTop=0;}}} style={{width:i===pageNum?22:7,height:7,borderRadius:4,background:i===pageNum?C.green:C.border,border:"none",cursor:"pointer",padding:0,transition:"all 0.2s"}}/>
+                <button key={i} onClick={()=>{if(i!==pageNum){play("pageturn");commitPage(i);if(pageRef.current)pageRef.current.scrollTop=0;}}} style={{width:i===pageNum?22:7,height:7,borderRadius:4,background:i===pageNum?C.green:C.border,border:"none",cursor:"pointer",padding:0,transition:"all 0.2s"}}/>
               ))}
             </div>
             <button onClick={()=>turn(1)} disabled={isLast} style={{display:"flex",alignItems:"center",gap:8,background:isLast?"none":"#6FBE77",border:`1px solid ${isLast?C.light:"#6FBE77"}`,borderRadius:10,padding:"12px 20px",cursor:isLast?"default":"pointer",color:isLast?C.light:C.white,fontSize:13,fontFamily:"Georgia,serif",fontWeight:isLast?400:700}}>
@@ -189,6 +243,7 @@ export function EbookReader({selKey,selContent,tab,setTab,isBookmarked,toggleBk,
           <p style={{textAlign:"center",margin:"16px 0 0",fontSize:11,color:C.muted,fontStyle:"italic",fontFamily:"Georgia,serif"}}>Page {pageNum+1} of {totalPages}</p>
         </div>
         </div>
+        </>
       )}
       {tab==="notes"&&(
         <NotesTab noteInput={noteInput} setNoteInput={setNoteInput} noteSaved={noteSaved} setNoteSaved={setNoteSaved} saveNote={saveNote} shareNote={shareNote} play={play} selContent={selContent}/>

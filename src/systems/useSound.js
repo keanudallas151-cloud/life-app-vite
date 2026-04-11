@@ -40,8 +40,8 @@ export function useSound(){
         .then(r=>r.arrayBuffer())
         .then(buf=>ac.decodeAudioData(buf))
         .then(decoded=>{cache.current[src]=decoded;fire(decoded);})
-        .catch(()=>{});
-    }catch(_){}
+        .catch(()=>{/* decode/network */});
+    }catch{/* AudioContext */ }
   },[]);
 
   const play=useCallback((type)=>{
@@ -96,7 +96,7 @@ export function useSound(){
         g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.2);
         o.start();o.stop(ac.currentTime+0.2);return;
       }
-    }catch(_){}
+    }catch{/* oscillator */ }
   },[playMP3]);
 
   return play;
