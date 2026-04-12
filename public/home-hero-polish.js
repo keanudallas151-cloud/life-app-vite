@@ -45,8 +45,38 @@
     logoEl.classList.add("life-home-logo-upgraded");
   };
 
+  const isSidebarPanel = (el) => {
+    if (!(el instanceof Element)) return false;
+    const text = normalize(el.textContent).toLowerCase();
+    return (
+      text.includes("knowledge map") &&
+      text.includes("quiz") &&
+      (text.includes("where to start") || text.includes("help"))
+    );
+  };
+
+  const patchSidebarWordmark = () => {
+    const containers = Array.from(
+      document.querySelectorAll("aside, nav, section, div")
+    ).filter(isSidebarPanel);
+
+    containers.forEach((container) => {
+      const nodes = Array.from(container.querySelectorAll("h1, h2, h3, p, span, div"));
+      nodes.forEach((node) => {
+        if (node.children.length > 0) return;
+        const text = normalize(node.textContent);
+        if (!/^life\.?$/i.test(text)) return;
+        const fontSize = Number.parseFloat(getComputedStyle(node).fontSize || "0");
+        if (fontSize < 40) return;
+        node.style.display = "none";
+        node.setAttribute("data-life-sidebar-wordmark-removed", "true");
+      });
+    });
+  };
+
   const run = () => {
     patchHero();
+    patchSidebarWordmark();
   };
 
   const observer = new MutationObserver(() => {
