@@ -68,7 +68,6 @@ export function TreeNode({nodeKey,node,depth=0,onSelect,selectedKey,defaultOpen=
             play("open");
             onSelect(nodeKey,node);
           }else{
-            play("tap");
             setOpen(!open);
           }
         }}

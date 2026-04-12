@@ -7,7 +7,7 @@ const S = {
   home: "/sounds/home_sound.mp3",
 };
 
-const VOL = 0.32;
+const VOL = 0.28;
 
 const TYPE_COOLDOWN_MS = {
   tap: 70,
@@ -22,13 +22,25 @@ const TYPE_COOLDOWN_MS = {
   home: 180,
 };
 
+const SOUND_MODE_DENSITY = {
+  focused: 0.18,
+  balanced: 0.42,
+  full: 0.72,
+};
+
+const SOUND_MODE_GLOBAL_GAP_MS = {
+  focused: 165,
+  balanced: 110,
+  full: 80,
+};
+
 export function useSound(settings = {}) {
   const ctx = useRef(null);
   const cache = useRef({});
   const lastTypeAt = useRef({});
   const lastSrc = useRef("");
   const warming = useRef(false);
-  const { enabled = true, volume = 100 } = settings;
+  const { enabled = true, volume = 100, mode = "balanced" } = settings;
 
   const getAC = () => {
     if (!ctx.current) {
@@ -142,11 +154,22 @@ export function useSound(settings = {}) {
         const prevAt = lastTypeAt.current[type] || 0;
         const cooldown = TYPE_COOLDOWN_MS[type] || 90;
         if (now - prevAt < cooldown) return;
-        lastTypeAt.current[type] = now;
+        const prevAny = lastTypeAt.current.__any || 0;
+        const modeDensity = SOUND_MODE_DENSITY[mode] ?? SOUND_MODE_DENSITY.balanced;
+        const globalGap = SOUND_MODE_GLOBAL_GAP_MS[mode] ?? SOUND_MODE_GLOBAL_GAP_MS.balanced;
+        const globalQuietType = type === "tap" || type === "ok";
+        if (globalQuietType && now - prevAny < globalGap) return;
 
         if (!enabled) return;
         const master = Math.max(0, Math.min(1, Number(volume) / 100));
         if (master <= 0) return;
+        const idleWindow = now - prevAny > 1400;
+
+        if (type === "tap" && !idleWindow && Math.random() > modeDensity) return;
+        if (mode === "focused" && (type === "ok" || type === "open") && now - prevAny < 220) return;
+
+        lastTypeAt.current[type] = now;
+        lastTypeAt.current.__any = now;
 
         if (type === "home") {
           playMP3(S.home, 0.84 * master, { detuneSpread: 8, rateSpread: 0.01 });
@@ -173,13 +196,13 @@ export function useSound(settings = {}) {
 
         if (type === "tap") {
           const src = chooseSrc([S.high, S.mid]);
-          if (src) playMP3(src, 0.2 * master, { detuneSpread: 18, rateSpread: 0.02 });
+          if (src) playMP3(src, 0.14 * master, { detuneSpread: 16, rateSpread: 0.018 });
           return;
         }
 
         if (type === "ok") {
           const src = chooseSrc([S.mid, S.high]);
-          if (src) playMP3(src, 0.24 * master, { detuneSpread: 16, rateSpread: 0.02 });
+          if (src) playMP3(src, 0.2 * master, { detuneSpread: 14, rateSpread: 0.018 });
           return;
         }
 
@@ -234,7 +257,7 @@ export function useSound(settings = {}) {
         /* oscillator */
       }
     },
-    [chooseSrc, enabled, playMP3, volume, warmSounds]
+    [chooseSrc, enabled, mode, playMP3, volume, warmSounds]
   );
 
   return play;

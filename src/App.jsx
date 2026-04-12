@@ -38,9 +38,11 @@ function RouteFallback() {
 const PREF_DEFAULTS = {
   soundEnabled: true,
   soundVolume: 58,
+  soundMode: "focused",
   reduceMotion: false,
   pressIntensity: 58,
   instantButtons: true,
+  sidebarSpeed: 62,
 };
 
 export default function LifeApp() {
@@ -125,10 +127,14 @@ export default function LifeApp() {
   // ── USER-SCOPED STATE: Supabase user_data when configured, else localStorage ─
   const uid = user?.email || "_";
   const userIdForData = isSupabaseConfigured && user?.id ? user.id : null;
-  const [uiPrefs, setUiPrefs] = useState(() => LS.get(`prefs_${uid}`, PREF_DEFAULTS));
+  const [uiPrefs, setUiPrefs] = useState(() => ({
+    ...PREF_DEFAULTS,
+    ...LS.get(`prefs_${uid}`, PREF_DEFAULTS),
+  }));
   const play = useSound({
     enabled: uiPrefs.soundEnabled,
     volume: uiPrefs.soundVolume,
+    mode: uiPrefs.soundMode,
   });
   const cloud = useUserData(userIdForData);
 
@@ -239,7 +245,10 @@ export default function LifeApp() {
   }, []);
 
   useEffect(() => {
-    setUiPrefs(LS.get(`prefs_${uid}`, PREF_DEFAULTS));
+    setUiPrefs({
+      ...PREF_DEFAULTS,
+      ...LS.get(`prefs_${uid}`, PREF_DEFAULTS),
+    });
   }, [uid]);
 
   useEffect(() => {
@@ -250,13 +259,18 @@ export default function LifeApp() {
     const root = document.documentElement;
     const reduce = !!uiPrefs.reduceMotion;
     const intensity = Math.max(0, Math.min(100, Number(uiPrefs.pressIntensity) || 0));
+    const sidebarSpeed = Math.max(0, Math.min(100, Number(uiPrefs.sidebarSpeed) || 0));
     const pressScale = reduce ? 1 : 0.985 - intensity * 0.00035;
     const hoverLift = reduce ? 0 : 0.5 + intensity * 0.02;
+    const sidebarDur = reduce ? 0 : Math.round(340 + sidebarSpeed * 3);
+    const sidebarFade = reduce ? 0 : Math.max(220, sidebarDur - 90);
     root.classList.toggle("life-reduce-motion", reduce);
     root.classList.toggle("life-instant-buttons", !!uiPrefs.instantButtons);
     root.style.setProperty("--life-press-scale", String(pressScale));
     root.style.setProperty("--life-hover-lift", `${hoverLift.toFixed(2)}px`);
-  }, [uiPrefs.instantButtons, uiPrefs.pressIntensity, uiPrefs.reduceMotion]);
+    root.style.setProperty("--life-sidebar-duration", `${sidebarDur}ms`);
+    root.style.setProperty("--life-sidebar-fade-duration", `${sidebarFade}ms`);
+  }, [uiPrefs.instantButtons, uiPrefs.pressIntensity, uiPrefs.reduceMotion, uiPrefs.sidebarSpeed]);
 
   const setProfile = (v) => {
     const next = typeof v === "function" ? v(profile) : v;
@@ -1461,6 +1475,31 @@ export default function LifeApp() {
                     />
                   </label>
 
+                  <label style={{ display: "grid", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>Sound Style</span>
+                      <span style={{ fontSize: 12, color: C.muted, textTransform: "capitalize" }}>{uiPrefs.soundMode || "focused"}</span>
+                    </div>
+                    <select
+                      value={uiPrefs.soundMode || "focused"}
+                      disabled={!uiPrefs.soundEnabled}
+                      onChange={(e) => updateUiPrefs({ soundMode: e.target.value })}
+                      style={{
+                        background: C.white,
+                        border: `1px solid ${C.border}`,
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                        color: C.ink,
+                        fontSize: 13,
+                        fontFamily: "Georgia,serif",
+                      }}
+                    >
+                      <option value="focused">Focused (very minimal)</option>
+                      <option value="balanced">Balanced</option>
+                      <option value="full">Full feedback</option>
+                    </select>
+                  </label>
+
                   <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                     <div>
                       <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.ink }}>Reduce Motion</p>
@@ -1500,6 +1539,23 @@ export default function LifeApp() {
                       value={uiPrefs.pressIntensity}
                       disabled={!!uiPrefs.reduceMotion}
                       onChange={(e) => updateUiPrefs({ pressIntensity: Number(e.target.value) })}
+                      style={{ accentColor: C.green }}
+                    />
+                  </label>
+
+                  <label style={{ display: "grid", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>Sidebar Open Speed</span>
+                      <span style={{ fontSize: 12, color: C.muted }}>{uiPrefs.sidebarSpeed}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={uiPrefs.sidebarSpeed ?? 62}
+                      disabled={!!uiPrefs.reduceMotion}
+                      onChange={(e) => updateUiPrefs({ sidebarSpeed: Number(e.target.value) })}
                       style={{ accentColor: C.green }}
                     />
                   </label>

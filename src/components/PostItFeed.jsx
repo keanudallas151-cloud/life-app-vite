@@ -48,7 +48,7 @@ export function PostItFeed({ play, user }) {
       play("err");
       return;
     }
-    play("tap");
+    play("star");
     vote(id, dir);
   };
 
@@ -199,7 +199,7 @@ export function PostItFeed({ play, user }) {
 
       <div className="life-postit-sort" style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
         {["recent","trending","votes"].map(s => (
-          <button key={s} onClick={() => { play("tap"); setSort(s); }}
+          <button key={s} onClick={() => { setSort(s); }}
             style={{ background:sort===s?C.ink:C.white, border:`1px solid ${C.border}`, borderRadius:20,
               padding:"7px 16px", fontSize:12, fontWeight:sort===s?700:400,
               color:sort===s?C.white:C.muted, cursor:"pointer", textTransform:"capitalize" }}>
@@ -218,7 +218,7 @@ export function PostItFeed({ play, user }) {
             <span style={{ marginLeft:"auto", background:C.greenLt, color:C.green, fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:20, flexShrink:0 }}>{post.flair}</span>
           </div>
           <h3 style={{ margin:"0 0 8px", fontSize:15, fontWeight:700, color:C.ink, lineHeight:1.35, cursor:"pointer" }}
-            onClick={() => { play("tap"); setViewing(post.id); }}>
+            onClick={() => { play("open"); setViewing(post.id); }}>
             {post.title}
           </h3>
           <p style={{ margin:"0 0 14px", fontSize:13, color:C.mid, lineHeight:1.6, fontFamily:"Georgia,serif" }}>
@@ -239,7 +239,7 @@ export function PostItFeed({ play, user }) {
               style={{ ...voteBtn(myVotes[post.id] === -1, C.red, "#fdf2f2"), padding:"5px 10px", fontSize:12 }}>
               ▼
             </button>
-            <button onClick={() => { play("tap"); setViewing(post.id); }}
+            <button onClick={() => { play("open"); setViewing(post.id); }}
               style={{ background:"none", border:"none", cursor:"pointer", fontSize:12, color:C.muted, fontFamily:"Georgia,serif" }}>
               <span style={{ display:"inline-flex", alignItems:"center", gap:5 }}>
                 {Ic.chat("none",C.muted,14)} {post.comments.length}
