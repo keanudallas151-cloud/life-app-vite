@@ -5,7 +5,7 @@ import { CONTENT } from "../data/content";
 
 export function TailorIntro({userName,onExplore,onTailor}){
   return(
-    <div style={{minHeight:"100vh",background:C.skin,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif"}}>
+    <div style={{minHeight:"100svh",paddingBottom:"env(safe-area-inset-bottom, 0px)",background:C.skin,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif"}}>
       <div style={{padding:"52px 32px 0",textAlign:"center"}}>
         <p style={{margin:"0 0 8px",fontSize:10,fontWeight:700,letterSpacing:3.5,textTransform:"uppercase",color:C.muted}}>Welcome{userName?`, ${userName.split(" ")[0]}`:""}</p>
         <h1 style={{margin:"0 0 0",fontSize:26,fontWeight:800,color:C.ink,lineHeight:1.2,letterSpacing:-0.5}}>Tailored Self-Development</h1>
@@ -100,7 +100,7 @@ export function TailorQuestions({onComplete,onBack}){
   const pct=Math.round(((step+1)/total)*100);
 
   return(
-    <div style={{minHeight:"100vh",background:C.skin,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif"}}>
+    <div style={{minHeight:"100svh",paddingBottom:"env(safe-area-inset-bottom, 0px)",background:C.skin,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif"}}>
       <div style={{background:C.white,borderBottom:`1px solid ${C.border}`,padding:"18px 24px"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
           <button onClick={goPrev} style={{background:"none",border:"none",cursor:"pointer",color:C.muted,fontSize:13,padding:0,fontFamily:"Georgia,serif"}}>← Back</button>
@@ -187,8 +187,8 @@ export function TailorResult({profile,userName,onContinue}){
     .map(x=>x.key);
 
   return(
-    <div style={{minHeight:"100vh",background:C.skin,fontFamily:"Georgia,serif",overflowY:"auto"}}>
-      <div style={{background:`linear-gradient(160deg,#6FBE77 0%,#4a8c5c 100%)`,padding:"52px 28px 36px",textAlign:"center",position:"relative"}}>
+    <div style={{minHeight:"100svh",paddingBottom:"env(safe-area-inset-bottom, 0px)",background:C.skin,fontFamily:"Georgia,serif",overflowY:"auto"}}>
+      <div style={{background:`linear-gradient(160deg,#6FBE77 0%,#4a8c5c 100%)`,padding:"max(40px, env(safe-area-inset-top, 0px)) 28px 36px",textAlign:"center",position:"relative"}}>
         <div style={{width:56,height:56,borderRadius:"18px",background:"rgba(255,255,255,0.18)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
         </div>

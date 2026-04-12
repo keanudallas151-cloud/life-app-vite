@@ -11,6 +11,7 @@ function shapePosts(rows, commentsMap, votesMap) {
     title:    r.title,
     body:     r.body || "",
     flair:    r.flair || "General",
+    created_at: r.created_at,
     votes:    votesMap[r.id] ?? r.votes,
     comments: (commentsMap[r.id] || []).map(c => ({
       id:     c.id,
@@ -36,6 +37,9 @@ export function usePostIt(user) {
   const [posts,    setPosts]   = useState([]);
   const [loading,  setLoading] = useState(true);
   const [error,    setError]   = useState(null);
+  /** Current user's vote per post: 1 = up, -1 = down (omitted = none). Kept in ref for correct rapid-click handling. */
+  const [myVotes,  setMyVotes] = useState({});
+  const myVotesRef = useRef({});
 
   // Local cache of vote state so optimistic UI works
   const votesRef = useRef({});  // { postId: currentVoteTotal }
@@ -51,6 +55,8 @@ export function usePostIt(user) {
 
     if (!isSupabaseConfigured) {
       setPosts([]);
+      setMyVotes({});
+      myVotesRef.current = {};
       setError("Post-It needs Supabase (set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY).");
       setLoading(false);
       return;
@@ -99,9 +105,22 @@ export function usePostIt(user) {
     });
     votesRef.current = votesMap;
 
+    let myVoteMap = {};
+    if (user?.id) {
+      const { data: mine } = await supabase
+        .from("post_votes")
+        .select("post_id, dir")
+        .eq("user_id", user.id);
+      (mine || []).forEach((v) => {
+        myVoteMap[v.post_id] = v.dir;
+      });
+    }
+    myVotesRef.current = myVoteMap;
+    setMyVotes(myVoteMap);
+
     setPosts(shapePosts(postRows, commentsMap, votesMap));
     setLoading(false);
-  }, []);
+  }, [user]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -201,12 +220,21 @@ export function usePostIt(user) {
   const vote = useCallback(async (postId, dir) => {
     if (!isSupabaseConfigured || !user?.id) return;
 
+    const prev = myVotesRef.current[postId] ?? 0;
+    // One vote per direction per user (like Reddit): same click again does nothing
+    if (prev === dir) return;
+
+    const delta = dir - prev;
+
     // Mark as pending so realtime handler skips the echo
     pendingVoteIds.current[postId] = (pendingVoteIds.current[postId] || 0) + 1;
 
-    // Optimistic update
+    const nextMy = { ...myVotesRef.current, [postId]: dir };
+    myVotesRef.current = nextMy;
+    setMyVotes(nextMy);
+
     setPosts(prev => prev.map(p =>
-      p.id === postId ? { ...p, votes: p.votes + dir } : p
+      p.id === postId ? { ...p, votes: p.votes + delta } : p
     ));
 
     const { error } = await supabase.from("post_votes").upsert(
@@ -214,14 +242,18 @@ export function usePostIt(user) {
       { onConflict: "user_id,post_id" }
     );
     if (error) {
-      // Rollback on error and clear pending flag
       pendingVoteIds.current[postId] = Math.max(0, (pendingVoteIds.current[postId] || 0) - 1);
+      const rolled = { ...myVotesRef.current };
+      if (prev === 0) delete rolled[postId];
+      else rolled[postId] = prev;
+      myVotesRef.current = rolled;
+      setMyVotes(rolled);
       setPosts(prev => prev.map(p =>
-        p.id === postId ? { ...p, votes: p.votes - dir } : p
+        p.id === postId ? { ...p, votes: p.votes - delta } : p
       ));
       console.error("vote:", error.message);
     }
   }, [user]);
 
-  return { posts, setPosts, addPost, addComment, vote, loading, error, reload: load };
+  return { posts, setPosts, addPost, addComment, vote, myVotes, loading, error, reload: load };
 }

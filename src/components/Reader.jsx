@@ -52,9 +52,9 @@ export function NotesTab({noteInput,setNoteInput,noteSaved,setNoteSaved,saveNote
   );
 
   return(
-    <div style={{padding:"36px 28px",maxWidth:660,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
-      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:6}}>
-        <h2 style={{margin:1,fontSize:35,fontWeight:800,color:C.ink,fontFamily:"Georgia,serif",lineHeight:1}}>Your Notes:</h2>
+    <div style={{padding:"24px max(16px, env(safe-area-inset-left, 0px)) 32px max(16px, env(safe-area-inset-right, 0px))",maxWidth:660,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:6,flexWrap:"wrap",gap:12}}>
+        <h2 style={{margin:1,fontSize:"clamp(1.35rem, 5vw, 2rem)",fontWeight:800,color:C.ink,fontFamily:"Georgia,serif",lineHeight:1.15}}>Your Notes:</h2>
         <button onClick={copyNotes}
           style={{display:"flex",alignItems:"center",gap:8,background:copied?C.greenLt:C.white,border:`1.5px solid ${copied?C.green:C.border}`,borderRadius:15,padding:"10px 16px",color:copied?C.green:C.mid,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"Georgia,serif",flexShrink:0,marginTop:8,transition:"all 0.2s"}}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -63,16 +63,16 @@ export function NotesTab({noteInput,setNoteInput,noteSaved,setNoteSaved,saveNote
           {copied?"Copied!":"Copy Notes"}
         </button>
       </div>
-      <p style={{marginInline:"-50px 120px",marginBottom:15,fontSize:13,color:C.muted,fontStyle:"italic",fontFamily:"Georgia,serif",lineHeight:1.5,borderLeft:`0px solid ${C.border}`,paddingLeft:12}}>
+      <p style={{margin:"0 0 15px",fontSize:13,color:C.muted,fontStyle:"italic",fontFamily:"Georgia,serif",lineHeight:1.55,paddingLeft:12,borderLeft:`3px solid ${C.border}`}}>
         "You never fail, until you stop trying."
       </p>
       <textarea
         value={noteInput}
         onChange={e=>{setNoteInput(e.target.value);setNoteSaved(false);}}
         placeholder="Start writing..."
-        style={{width:"100%",minHeight:260,background:C.white,border:`1.5px solid ${C.border}`,borderRadius:12,padding:"18px 20px",color:C.ink,fontSize:16,lineHeight:1.9,outline:"none",resize:"vertical",fontFamily:"Georgia,serif",boxSizing:"border-box"}}/>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:14}}>
-        <div style={{display:"flex",alignItems:"center",gap:14}}>
+        style={{width:"100%",minHeight:200,maxHeight:"min(55vh, 480px)",background:C.white,border:`1.5px solid ${C.border}`,borderRadius:12,padding:"16px 18px",color:C.ink,fontSize:16,lineHeight:1.9,outline:"none",resize:"vertical",fontFamily:"Georgia,serif",boxSizing:"border-box"}}/>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:14,flexWrap:"wrap",gap:12}}>
+        <div style={{display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
           <button onClick={saveNote} style={{background:"#6FBE77",border:"none",borderRadius:10,padding:"12px 26px",color:C.white,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"Georgia,serif"}}>Save Note</button>
           {noteSaved&&<span style={{color:C.muted,fontSize:13,fontStyle:"italic"}}>Saved.</span>}
         </div>
@@ -87,7 +87,7 @@ export function NotesTab({noteInput,setNoteInput,noteSaved,setNoteSaved,saveNote
           <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:201,background:C.white,borderRadius:"20px 20px 0 0",padding:"8px 0 32px",boxShadow:"0 -8px 40px rgba(0,0,0,0.18)"}}>
             <div style={{width:36,height:4,borderRadius:2,background:C.border,margin:"10px auto 20px"}}/>
             <p style={{margin:"0 0 18px",textAlign:"center",fontSize:13,color:C.muted,fontFamily:"Georgia,serif",fontStyle:"italic",paddingBottom:14,borderBottom:`1px solid ${C.light}`}}>Share your notes</p>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,padding:"0 20px 20px"}}>
+            <div className="life-share-sheet-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,padding:"0 20px calc(20px + env(safe-area-inset-bottom, 0px))"}}>
               {[
                 {id:"native",label:"Share",icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={C.green} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>,bg:"#eaf3ec"},
                 {id:"postit",label:"Post-It",icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4a8c5c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>,bg:"#eaf3ec"},
@@ -163,9 +163,9 @@ export function EbookReader({selKey,selContent,tab,setTab,isBookmarked,toggleBk,
   return(
     <div style={{display:"flex",flexDirection:"column",position:"relative"}}>
       {linkCopied&&(
-        <div role="status" style={{position:"fixed",bottom:24,left:"50%",transform:"translateX(-50%)",background:C.ink,color:"#fff",padding:"10px 20px",borderRadius:99,fontSize:13,zIndex:300,boxShadow:"0 8px 28px rgba(0,0,0,0.2)",fontFamily:"Georgia,serif"}}>Link copied</div>
+        <div role="status" style={{position:"fixed",bottom:"max(24px, env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",background:C.ink,color:"#fff",padding:"10px 20px",borderRadius:99,fontSize:13,zIndex:300,boxShadow:"0 8px 28px rgba(0,0,0,0.2)",fontFamily:"Georgia,serif"}}>Link copied</div>
       )}
-      <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,background:C.white,padding:"0 16px",overflowX:"auto",flexShrink:0,alignItems:"center",gap:4}}>
+      <div className="life-reader-toolbar" style={{display:"flex",borderBottom:`1px solid ${C.border}`,background:C.white,padding:"0 12px",overflowX:"auto",flexShrink:0,alignItems:"center",gap:4}}>
         {[{id:"content",label:"Read"},{id:"notes",label:"Notes"},{id:"suggestions",label:"Related"},{id:"saved",label:"Saved"}].map(t=>(
           <button key={t.id} onClick={()=>{play("tap");setTab(t.id);}} style={{padding:"17px 14px",background:"none",border:"none",borderBottom:tab===t.id?`2px solid ${C.green}`:"2px solid transparent",color:tab===t.id?C.green:C.muted,fontSize:13,fontWeight:tab===t.id?700:400,cursor:"pointer",fontFamily:"Georgia,serif",whiteSpace:"nowrap"}}>{t.label}</button>
         ))}
@@ -192,7 +192,7 @@ export function EbookReader({selKey,selContent,tab,setTab,isBookmarked,toggleBk,
           <div>{pageNum+1}/{totalPages}</div>
           <div style={{fontSize:10,fontWeight:600,color:C.green,marginTop:2}}>{throughPct}%</div>
         </div>
-        <div ref={pageRef} onTouchStart={onTS} onTouchEnd={onTE} style={{overflowY:"auto",padding:"44px 32px 24px",boxSizing:"border-box"}}>
+        <div ref={pageRef} onTouchStart={onTS} onTouchEnd={onTE} style={{overflowY:"auto",padding:`40px max(16px, env(safe-area-inset-right, 0px)) max(28px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))`,boxSizing:"border-box"}}>
           {isFirst&&(
             <div style={{marginBottom:40}}>
               <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:18, alignItems:"center" }}>

@@ -34,6 +34,8 @@ body {
     "liga" 1,
     "onum" 1;
   color: var(--life-ink);
+  /* Reduce 300ms tap delay on older iOS */
+  touch-action: manipulation;
 }
 
 #root {
@@ -144,10 +146,26 @@ p {
   transform: translateY(0);
 }
 
-/* Top bar glass */
+/* Top bar glass + iOS safe area (notch / status bar) */
 .life-topbar {
   backdrop-filter: saturate(1.2) blur(12px);
   -webkit-backdrop-filter: saturate(1.2) blur(12px);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  min-height: calc(62px + env(safe-area-inset-top, 0px));
+  height: auto;
+  box-sizing: border-box;
+}
+
+/* Sticky layers sit below the top bar (height + safe area) */
+.life-search-dropdown {
+  top: calc(62px + env(safe-area-inset-top, 0px));
+}
+
+.life-sidebar,
+.life-sidebar-backdrop {
+  top: calc(62px + env(safe-area-inset-top, 0px));
 }
 
 .life-landing-shell,
@@ -359,8 +377,12 @@ select:focus-visible {
 
   /* Mobile search bar optimizations */
   .life-topbar {
-    padding: 0 12px !important;
-    height: 56px !important;
+    padding-left: max(12px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(12px, env(safe-area-inset-right, 0px)) !important;
+    padding-top: env(safe-area-inset-top, 0px) !important;
+    padding-bottom: 0 !important;
+    min-height: calc(56px + env(safe-area-inset-top, 0px)) !important;
+    height: auto !important;
   }
 
   .life-topbar input[type="text"] {
@@ -387,40 +409,39 @@ select:focus-visible {
 
   /* Mobile search dropdown */
   .life-search-dropdown {
-    top: 56px !important;
-    max-height: 70vh !important;
+    top: calc(56px + env(safe-area-inset-top, 0px)) !important;
+    max-height: min(70vh, calc(100dvh - 56px - env(safe-area-inset-top, 0px))) !important;
     border-radius: 0 0 16px 16px !important;
   }
 
   .life-sidebar {
-    top: 56px !important;
-    width: 85vw !important;
+    top: calc(56px + env(safe-area-inset-top, 0px)) !important;
+    width: min(85vw, 320px) !important;
     max-width: 320px !important;
     padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important;
   }
 
   .life-sidebar-backdrop {
-    top: 56px !important;
-  }
-  <<<<<<< HEAD
-
-  /* Hero section mobile adjustments */
-  .life-grain h1 {
-    font-size: 72px !important;
-    letter-spacing: -3px !important;
+    top: calc(56px + env(safe-area-inset-top, 0px)) !important;
   }
 
-  /* Landing page mobile padding */
-  .life-grain {
-    padding: 32px 20px 40px !important;
+  /* Home / landing hero — proportional on phone (avoid oversized display type) */
+  .life-home-hero h1 {
+    font-size: clamp(2.35rem, 11vw, 3.5rem) !important;
+    letter-spacing: -0.06em !important;
+    line-height: 0.92 !important;
+  }
+
+  .life-landing-shell > div h1 {
+    font-size: clamp(2.15rem, 8.5vw, 3.25rem) !important;
+  }
+
+  .life-home-hero {
+    padding: 28px 18px 28px !important;
   }
 
   .life-home-page {
     padding-bottom: calc(88px + env(safe-area-inset-bottom)) !important;
-  }
-
-  .life-home-hero {
-    padding: 36px 18px 32px !important;
   }
 
   .life-home-hero-actions {
@@ -446,6 +467,45 @@ select:focus-visible {
     grid-template-columns: 1fr !important;
   }
 
+  /* Progress row: allow streak badge to wrap */
+  .life-home-progress-row {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  .life-resume-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    text-align: center;
+  }
+
+  .life-resume-card > div:last-child {
+    flex-direction: row !important;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Reader: tabs + actions fit narrow screens */
+  .life-reader-toolbar {
+    flex-wrap: wrap !important;
+    row-gap: 8px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .life-share-sheet-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Post-It comment row */
+  .life-postit-comment-row {
+    flex-wrap: wrap !important;
+  }
+
+  .life-postit-comment-row input {
+    min-width: 0 !important;
+    flex: 1 1 200px !important;
+  }
+
   /* Mobile button sizing */
   button,
   [role="button"] {
@@ -455,8 +515,9 @@ select:focus-visible {
   /* Mobile footer visibility - ensure it's visible above iOS home indicator */
   .life-footer {
     margin-top: 24px !important;
-    padding-bottom: 34px !important;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
   }
+}
 
 /* Search bar enhancements */
 .life-topbar input[type="text"] {
@@ -516,4 +577,381 @@ button:active:not(:disabled) {
 .life-stat-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes life-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.92;
+  }
+}
+
+.life-skeleton-block {
+  background: var(--life-border);
+  animation: life-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .life-skeleton-block {
+    animation: none;
+    opacity: 0.65;
+  }
+}
+
+/* ── Lazy route loading ───────────────────────────────────── */
+.life-page-suspense-fallback {
+  min-height: min(50vh, 360px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px max(20px, env(safe-area-inset-right, 0px)) 48px
+    max(20px, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
+}
+
+.life-page-suspense-dots {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.life-page-suspense-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--life-green);
+  opacity: 0.35;
+  animation: life-suspense-bounce 1.2s ease-in-out infinite;
+}
+
+.life-page-suspense-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.life-page-suspense-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes life-suspense-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .life-page-suspense-dots span {
+    animation: none;
+    opacity: 0.65;
+  }
+}
+
+/* ── Quiz: narrow breakpoints ───────────────────────────── */
+@media (max-width: 420px) {
+  .life-quiz-stat-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .life-quiz-stat-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .life-quiz-topic-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .life-quiz-result-score {
+    font-size: clamp(2rem, 14vw, 2.75rem) !important;
+  }
+}
+
+/* ── Post-It: avoid iOS zoom on focus in compose ─────────── */
+@media (max-width: 640px) {
+  .life-postit-page input,
+  .life-postit-page textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ── Knowledge constellation (full-screen topic map) ─────── */
+.life-constellation-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: max(12px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px))
+    max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
+  animation: life-constellation-overlay-in 0.45s var(--life-ease-out) both;
+}
+
+@keyframes life-constellation-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.life-constellation-backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  background: radial-gradient(ellipse 120% 80% at 50% 20%, rgba(20, 28, 24, 0.72), rgba(10, 14, 12, 0.88));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.life-constellation-panel {
+  position: relative;
+  z-index: 1;
+  width: min(1100px, 100%);
+  max-height: min(92vh, 880px);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(165deg, rgba(255, 252, 247, 0.97) 0%, rgba(245, 240, 232, 0.98) 100%);
+  border: 1px solid rgba(74, 140, 92, 0.35);
+  border-radius: 20px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset,
+    0 24px 80px rgba(20, 20, 20, 0.35),
+    0 0 120px rgba(74, 140, 92, 0.12);
+  overflow: hidden;
+}
+
+.life-constellation-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid var(--life-border);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.life-constellation-title {
+  margin: 0 0 6px;
+  font-size: clamp(1.15rem, 3.5vw, 1.45rem);
+  font-weight: 800;
+  color: var(--life-ink);
+  font-family: var(--life-font);
+  letter-spacing: -0.02em;
+}
+
+.life-constellation-sub {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--life-muted);
+  font-style: italic;
+  max-width: 520px;
+}
+
+.life-constellation-glow-label {
+  color: var(--life-green);
+  font-weight: 700;
+  font-style: normal;
+}
+
+.life-constellation-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.life-constellation-pill {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--life-green);
+  background: var(--life-green-soft);
+  border: 1px solid rgba(74, 140, 92, 0.35);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-family: var(--life-font);
+}
+
+.life-constellation-close {
+  background: var(--life-ink);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--life-font);
+  transition:
+    transform 0.2s var(--life-ease-soft),
+    box-shadow 0.2s ease;
+}
+
+.life-constellation-close:hover {
+  box-shadow: 0 6px 20px rgba(74, 140, 92, 0.35);
+}
+
+.life-constellation-close:active {
+  transform: scale(0.98);
+}
+
+.life-constellation-canvas-wrap {
+  position: relative;
+  flex: 1;
+  min-height: min(58vh, 520px);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.life-constellation-stars-bg {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  background-image:
+    radial-gradient(1.5px 1.5px at 20% 30%, rgba(74, 140, 92, 0.35), transparent),
+    radial-gradient(1px 1px at 70% 60%, rgba(74, 140, 92, 0.25), transparent),
+    radial-gradient(1px 1px at 40% 80%, rgba(180, 160, 120, 0.2), transparent),
+    radial-gradient(1.5px 1.5px at 85% 20%, rgba(74, 140, 92, 0.3), transparent);
+  background-size: 280px 280px, 320px 320px, 260px 260px, 300px 300px;
+  animation: life-constellation-bg-drift 80s linear infinite;
+}
+
+@keyframes life-constellation-bg-drift {
+  to {
+    background-position:
+      280px 140px,
+      -320px 200px,
+      130px -260px,
+      -300px 80px;
+  }
+}
+
+.life-constellation-svg {
+  display: block;
+  width: min(1150px, 220%);
+  min-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.life-constellation-svg text {
+  font-family:
+    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", Georgia,
+    serif;
+}
+
+.life-constellation-node {
+  outline: none;
+  transition: transform 0.2s var(--life-ease-soft);
+}
+
+.life-constellation-node:focus-visible {
+  outline: 2px solid var(--life-green);
+  outline-offset: 4px;
+  border-radius: 50%;
+}
+
+.life-constellation-node:hover {
+  transform: scale(1.08);
+}
+
+.life-constellation-node--read .life-constellation-pulse-ring {
+  animation: life-constellation-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes life-constellation-pulse {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.15;
+  }
+}
+
+.life-constellation-line-lit {
+  animation: life-constellation-line-glow 3s ease-in-out infinite;
+}
+
+@keyframes life-constellation-line-glow {
+  0%,
+  100% {
+    stroke-opacity: 0.85;
+  }
+  50% {
+    stroke-opacity: 1;
+  }
+}
+
+.life-constellation-hint {
+  margin: 0;
+  padding: 10px 20px 16px;
+  font-size: 12px;
+  color: var(--life-muted);
+  text-align: center;
+  font-style: italic;
+  animation: life-surface-in 0.5s var(--life-ease-out) both;
+}
+
+.life-constellation-cta-spark {
+  display: inline-flex;
+  animation: life-constellation-spark 2.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(111, 190, 119, 0.75));
+}
+
+@keyframes life-constellation-spark {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15) rotate(12deg);
+    opacity: 0.85;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .life-constellation-overlay {
+    animation: none;
+  }
+
+  .life-constellation-stars-bg {
+    animation: none;
+  }
+
+  .life-constellation-node--read .life-constellation-pulse-ring {
+    animation: none;
+    opacity: 0.35;
+  }
+
+  .life-constellation-line-lit {
+    animation: none;
+  }
+
+  .life-constellation-cta-spark {
+    animation: none;
+  }
 }

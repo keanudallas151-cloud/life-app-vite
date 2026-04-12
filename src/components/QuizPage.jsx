@@ -39,6 +39,9 @@ const ACHIEVEMENTS = [
 
 const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
 
+/** Seconds per question (used by timer — module scope keeps hook deps stable). */
+const QUIZ_SECS = { easy: 20, medium: 15, hard: 10 };
+
 function getDailySeed() {
   const d = new Date();
   return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
@@ -115,8 +118,7 @@ export function QuizPage({ play, userId }) {
 
   const timerRef = useRef(null);
   const handleAnswerRef = useRef(null);
-  const SECS     = { easy:20, medium:15, hard:10 };
-  const maxTime  = fmt==="blitz" ? 8 : SECS[diff];
+  const maxTime  = fmt==="blitz" ? 8 : QUIZ_SECS[diff];
   const timerPct   = maxTime > 0 ? timeLeft / maxTime : 0;
   const timerColor = timerPct>0.5 ? C.green : timerPct>0.25 ? C.gold : C.red;
 
@@ -134,7 +136,7 @@ export function QuizPage({ play, userId }) {
     }
     setQs(selected); setIdx(0); setScore(0); setChosen(null);
     setStreak(0); setBest(0); setAnswers([]); setShowFact(false);
-    setTimeLeft(fmt==="blitz" ? 8 : SECS[diff]);
+    setTimeLeft(fmt==="blitz" ? 8 : QUIZ_SECS[diff]);
     setPhase("playing");
   }, [topic, diff, fmt, play]);
 
@@ -161,7 +163,7 @@ export function QuizPage({ play, userId }) {
       } else {
         setIdx(i => i+1);
         setChosen(null);
-        setTimeLeft(fmt==="blitz" ? 8 : SECS[diff]);
+        setTimeLeft(fmt==="blitz" ? 8 : QUIZ_SECS[diff]);
       }
     }, fmt==="blitz" ? 1400 : 2000);
   }, [chosen, qs, idx, fmt, diff, play]);
@@ -215,6 +217,7 @@ export function QuizPage({ play, userId }) {
 
     saveStats(next);
     if (newly.length) setNewAchs(newly);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional single persist when phase becomes result
   }, [phase]);
 
   const overallAcc = stats.totalAnswered > 0
@@ -225,12 +228,12 @@ export function QuizPage({ play, userId }) {
   if (phase === "setup") {
     const todayDone = stats.dailyDate === new Date().toLocaleDateString();
     return (
-      <div style={{ paddingBottom:40 }}>
+      <div className="life-quiz-page" style={{ paddingBottom:40 }}>
         {/* Header tabs */}
-        <div style={{ display:"flex", borderBottom:`1px solid ${C.border}`, background:C.white, padding:"0 20px", position:"sticky", top:0, zIndex:10 }}>
+        <div className="life-quiz-tabs" style={{ display:"flex", borderBottom:`1px solid ${C.border}`, background:C.white, padding:"0 max(12px, env(safe-area-inset-left, 0px)) 0 max(12px, env(safe-area-inset-right, 0px))", position:"sticky", top:0, zIndex:10, overflowX:"auto", WebkitOverflowScrolling:"touch", gap:4 }}>
           {[["play","Quiz"],["stats","My Stats"],["achievements","Badges"]].map(([id,label]) => (
             <button key={id} onClick={() => { play("tap"); setActiveTab(id); }}
-              style={{ padding:"16px 18px", background:"none", border:"none",
+              style={{ padding:"14px 14px", flexShrink:0, background:"none", border:"none",
                 borderBottom:activeTab===id?`2px solid ${C.green}`:"2px solid transparent",
                 color:activeTab===id?C.green:C.muted, fontSize:13,
                 fontWeight:activeTab===id?700:400, cursor:"pointer", fontFamily:"Georgia,serif" }}>
@@ -240,7 +243,7 @@ export function QuizPage({ play, userId }) {
         </div>
 
         {activeTab === "achievements" && (
-          <div style={{ padding:"28px 20px", maxWidth:520, margin:"0 auto" }}>
+          <div className="life-quiz-panel" style={{ padding:"28px max(16px, env(safe-area-inset-left, 0px)) 28px max(16px, env(safe-area-inset-right, 0px))", maxWidth:520, margin:"0 auto", boxSizing:"border-box" }}>
             <p style={{ margin:"0 0 20px", fontSize:11, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:C.muted }}>
               {stats.achievements?.length||0}/{ACHIEVEMENTS.length} Unlocked
             </p>
@@ -253,13 +256,13 @@ export function QuizPage({ play, userId }) {
         )}
 
         {activeTab === "stats" && (
-          <div style={{ padding:"28px 20px", maxWidth:520, margin:"0 auto" }}>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:24 }}>
+          <div className="life-quiz-panel" style={{ padding:"28px max(16px, env(safe-area-inset-left, 0px)) 28px max(16px, env(safe-area-inset-right, 0px))", maxWidth:520, margin:"0 auto", boxSizing:"border-box" }}>
+            <div className="life-quiz-stat-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:24 }}>
               <StatCard label="Quizzes Played" value={stats.totalPlayed||0}   col={C.green}/>
               <StatCard label="Accuracy"        value={`${overallAcc}%`}       col={C.gold}/>
               <StatCard label="Best Streak"     value={stats.bestStreak||0}    col={C.red}/>
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:24 }}>
+            <div className="life-quiz-stat-grid-2" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:24 }}>
               <StatCard label="Total Answered" value={stats.totalAnswered||0}/>
               <StatCard label="Total Correct"  value={stats.totalCorrect||0}  col={C.green}/>
             </div>
@@ -301,9 +304,9 @@ export function QuizPage({ play, userId }) {
         )}
 
         {activeTab === "play" && (
-          <div style={{ padding:"28px 20px 0", maxWidth:520, margin:"0 auto" }}>
+          <div className="life-quiz-panel" style={{ padding:"28px max(16px, env(safe-area-inset-left, 0px)) 0 max(16px, env(safe-area-inset-right, 0px))", maxWidth:520, margin:"0 auto", boxSizing:"border-box" }}>
             {/* Daily Challenge banner */}
-            <div style={{ background:`linear-gradient(135deg,#4a8c5c,#2d6e42)`, borderRadius:14, padding:"16px 20px", marginBottom:24, display:"flex", alignItems:"center", gap:14, cursor:"pointer" }}
+            <div className="life-quiz-daily-banner" style={{ background:`linear-gradient(135deg,#4a8c5c,#2d6e42)`, borderRadius:14, padding:"16px 18px", marginBottom:24, display:"flex", alignItems:"center", gap:12, cursor:"pointer", flexWrap:"wrap" }}
               onClick={() => { play("tap"); setFmt("daily"); }}>
               <span style={{ fontSize:28 }}>📅</span>
               <div style={{ flex:1 }}>
@@ -317,7 +320,7 @@ export function QuizPage({ play, userId }) {
 
             {/* Topic */}
             <p style={{ fontSize:10, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:C.muted, margin:"0 0 12px" }}>Topic</p>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:24 }}>
+            <div className="life-quiz-topic-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:24 }}>
               {Object.entries(TOPIC_META).map(([k, meta]) => {
                 const sel = topic===k && fmt!=="daily";
                 return (
@@ -337,13 +340,13 @@ export function QuizPage({ play, userId }) {
 
             {/* Difficulty */}
             <p style={{ fontSize:10, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:C.muted, margin:"0 0 12px" }}>Difficulty</p>
-            <div style={{ display:"flex", gap:8, marginBottom:24 }}>
+            <div className="life-quiz-diff-row" style={{ display:"flex", gap:8, marginBottom:24, flexWrap:"wrap" }}>
               {["easy","medium","hard"].map(d => {
                 const dm  = DIFF_META[d];
                 const sel = diff===d && fmt!=="daily";
                 return (
                   <button key={d} onClick={() => { play("tap"); setDiff(d); if(fmt==="daily") setFmt("multiple"); }}
-                    style={{ flex:1, background:sel?DIFF_COLORS[d]:C.white, border:`1.5px solid ${sel?DIFF_COLORS[d]:C.border}`,
+                    style={{ flex:"1 1 100px", minWidth:0, background:sel?DIFF_COLORS[d]:C.white, border:`1.5px solid ${sel?DIFF_COLORS[d]:C.border}`,
                       borderRadius:12, padding:"12px 8px", cursor:"pointer", fontFamily:"Georgia,serif", textAlign:"center" }}>
                     <div style={{ fontSize:16, marginBottom:4 }}>{dm.icon}</div>
                     <div style={{ fontSize:13, fontWeight:sel?700:400, color:sel?C.white:C.mid, textTransform:"capitalize" }}>{dm.label}</div>
@@ -393,7 +396,7 @@ export function QuizPage({ play, userId }) {
     const grade    = pct===100?"Perfect! 🎉":pct>=90?"Excellent":pct>=70?"Good work":pct>=50?"Decent":"Keep reading";
     const topicMeta = TOPIC_META[topic];
     return (
-      <div style={{ padding:"32px 20px 60px", maxWidth:500, margin:"0 auto" }}>
+      <div className="life-quiz-page life-quiz-result-wrap" style={{ padding:"32px max(16px, env(safe-area-inset-left, 0px)) max(60px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-right, 0px))", maxWidth:500, margin:"0 auto", boxSizing:"border-box" }}>
         {newAchs.length > 0 && (
           <div style={{ background:C.ink, borderRadius:14, padding:"16px 20px", marginBottom:20, display:"flex", alignItems:"center", gap:12 }}>
             <span style={{ fontSize:24 }}>{newAchs[0].icon}</span>
@@ -411,8 +414,8 @@ export function QuizPage({ play, userId }) {
           <p style={{ margin:"0 0 20px", color:C.muted, fontSize:13, fontStyle:"italic" }}>
             {topicMeta.label} · {DIFF_META[diff]?.label} · {FORMAT_META[fmt]?.label}
           </p>
-          <div style={{ fontSize:60, fontWeight:800, color:topicMeta.col, lineHeight:1, fontFamily:"Georgia,serif" }}>
-            {score}<span style={{ fontSize:24, color:C.muted, fontWeight:400 }}>/{qs.length}</span>
+          <div className="life-quiz-result-score" style={{ fontSize:"clamp(2.5rem, 12vw, 3.75rem)", fontWeight:800, color:topicMeta.col, lineHeight:1, fontFamily:"Georgia,serif" }}>
+            {score}<span style={{ fontSize:"clamp(1rem, 5vw, 1.5rem)", color:C.muted, fontWeight:400 }}>/{qs.length}</span>
           </div>
           <p style={{ margin:"6px 0 20px", color:C.muted, fontSize:14 }}>{pct}% correct</p>
           <div style={{ height:8, background:C.light, borderRadius:20, marginBottom:20, overflow:"hidden" }}>
@@ -448,13 +451,13 @@ export function QuizPage({ play, userId }) {
           </div>
         )}
 
-        <div style={{ display:"flex", gap:10 }}>
+        <div className="life-quiz-result-actions" style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
           <button onClick={() => { play("tap"); setPhase("setup"); setActiveTab("play"); setNewAchs([]); }}
-            style={{ flex:1, background:C.white, border:`1.5px solid ${C.border}`, borderRadius:12, padding:"15px", color:C.mid, fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"Georgia,serif" }}>
+            style={{ flex:"1 1 140px", minWidth:0, background:C.white, border:`1.5px solid ${C.border}`, borderRadius:12, padding:"15px", color:C.mid, fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"Georgia,serif" }}>
             Change Setup
           </button>
           <button onClick={() => { play("ok"); setNewAchs([]); startQuiz(); }}
-            style={{ flex:2, background:C.green, border:"none", borderRadius:12, padding:"15px", color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"Georgia,serif" }}>
+            style={{ flex:"2 1 180px", minWidth:0, background:C.green, border:"none", borderRadius:12, padding:"15px", color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"Georgia,serif" }}>
             Play Again →
           </button>
         </div>
@@ -470,8 +473,8 @@ export function QuizPage({ play, userId }) {
   const topicMeta  = TOPIC_META[topic];
 
   return (
-    <div style={{ padding:"20px 20px 40px", maxWidth:520, margin:"0 auto" }}>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+    <div className="life-quiz-page" style={{ padding:"20px max(16px, env(safe-area-inset-left, 0px)) max(40px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-right, 0px))", maxWidth:520, margin:"0 auto", boxSizing:"border-box" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:14, gap:12, flexWrap:"wrap" }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
           <div style={{ width:26, height:26, borderRadius:7, background:topicMeta.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
             {Ic[topicMeta.icon]?.("none",topicMeta.col,13)}
@@ -488,9 +491,9 @@ export function QuizPage({ play, userId }) {
         </div>
       </div>
 
-      <div style={{ display:"flex", gap:3, marginBottom:20 }}>
+      <div className="life-quiz-progress-bars" style={{ display:"flex", gap:3, marginBottom:20, minWidth:0, width:"100%", overflow:"hidden" }}>
         {qs.map((_,i) => (
-          <div key={i} style={{ flex:1, height:4, borderRadius:4,
+          <div key={i} style={{ flex:"1 1 4px", minWidth:3, height:4, borderRadius:4,
             background: answers[i]?.correct===true ? C.green
               : answers[i]?.correct===false ? C.red
               : i===idx ? C.gold : C.light }} />

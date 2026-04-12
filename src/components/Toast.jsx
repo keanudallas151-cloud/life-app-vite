@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- hook + provider pattern */
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react'
 
 const ToastContext = createContext(null)
@@ -39,9 +40,10 @@ export const ToastProvider = ({ children }) => {
 
   // Cleanup all timers on unmount
   React.useEffect(() => {
+    const timers = timerRefs.current
     return () => {
-      timerRefs.current.forEach(timer => clearTimeout(timer))
-      timerRefs.current.clear()
+      timers.forEach((timer) => clearTimeout(timer))
+      timers.clear()
     }
   }, [])
 

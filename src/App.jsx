@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { C, S } from "./systems/theme";
 import { getResumeTopic, setResumeTopic, clearResumeTopic } from "./systems/resumeReading";
 import { recordReadingDay, getReadingStreak } from "./systems/readingStreak";
@@ -7,12 +7,33 @@ import { useSound } from "./systems/useSound";
 import { Ic } from "./icons/Ic";
 import { CONTENT, LIBRARY, GUIDED_ORDER, allContent, MAP } from "./data/content";
 import { Field, TreeNode } from "./components/Field";
-import { EbookReader } from "./components/Reader";
-import { QuizPage } from "./components/QuizPage";
-import { PostItFeed } from "./components/PostItFeed";
-import { TailorIntro, TailorQuestions, TailorResult } from "./components/Tailor";
+import { KnowledgeConstellation } from "./components/KnowledgeConstellation";
 import { supabase, isSupabaseConfigured } from "./supabaseClient";
 import { useUserData } from "./systems/useUserData";
+
+const EbookReader = lazy(() => import("./components/Reader").then((m) => ({ default: m.EbookReader })));
+const QuizPage = lazy(() => import("./components/QuizPage").then((m) => ({ default: m.QuizPage })));
+const PostItFeed = lazy(() => import("./components/PostItFeed").then((m) => ({ default: m.PostItFeed })));
+const TailorIntro = lazy(() => import("./components/Tailor").then((m) => ({ default: m.TailorIntro })));
+const TailorQuestions = lazy(() => import("./components/Tailor").then((m) => ({ default: m.TailorQuestions })));
+const TailorResult = lazy(() => import("./components/Tailor").then((m) => ({ default: m.TailorResult })));
+
+function RouteFallback() {
+  return (
+    <div
+      className="life-page-suspense-fallback"
+      role="status"
+      aria-busy="true"
+      aria-label="Loading"
+    >
+      <div className="life-page-suspense-dots" aria-hidden>
+        <span />
+        <span />
+        <span />
+      </div>
+    </div>
+  );
+}
 
 export default function LifeApp() {
   const play = useSound();
@@ -183,6 +204,7 @@ export default function LifeApp() {
   const [shareToast, setShareToast] = useState(false);
   const [resumeTipDismissed, setResumeTipDismissed] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [constellationOpen, setConstellationOpen] = useState(false);
 
   const readerPagesKey = `rp_${uid}`;
   const [readerPages, setReaderPages] = useState(() => LS.get(readerPagesKey, {}));
@@ -584,24 +606,30 @@ export default function LifeApp() {
   };
 
   if (screen === "tailor_intro") return (
-    <TailorIntro
-      userName={user?.name}
-      onExplore={() => { play("tap"); completeOnboarding(); }}
-      onTailor={() => { play("ok"); setScreen("tailor_qs"); }}
-    />
+    <Suspense fallback={<RouteFallback />}>
+      <TailorIntro
+        userName={user?.name}
+        onExplore={() => { play("tap"); completeOnboarding(); }}
+        onTailor={() => { play("ok"); setScreen("tailor_qs"); }}
+      />
+    </Suspense>
   );
   if (screen === "tailor_qs") return (
-    <TailorQuestions
-      onComplete={(prof) => { setProfile(prof); play("ok"); setScreen("tailor_result"); }}
-      onBack={() => { play("back"); setScreen("tailor_intro"); }}
-    />
+    <Suspense fallback={<RouteFallback />}>
+      <TailorQuestions
+        onComplete={(prof) => { setProfile(prof); play("ok"); setScreen("tailor_result"); }}
+        onBack={() => { play("back"); setScreen("tailor_intro"); }}
+      />
+    </Suspense>
   );
   if (screen === "tailor_result") return (
-    <TailorResult
-      profile={profile}
-      userName={user?.name}
-      onContinue={() => { completeOnboarding(); }}
-    />
+    <Suspense fallback={<RouteFallback />}>
+      <TailorResult
+        profile={profile}
+        userName={user?.name}
+        onContinue={() => { completeOnboarding(); }}
+      />
+    </Suspense>
   );
 
   // Landing
@@ -941,10 +969,20 @@ export default function LifeApp() {
   // Keep the layout primitives straightforward because this will likely be ported into a native app shell later.
   return (
     <div style={{ minHeight: "100svh", background: C.skin, display: "flex", flexDirection: "column", fontFamily: "Georgia,serif", color: C.ink }}>
-      {shareToast && <div role="status" className="life-toast" style={{ position: "fixed", top: 70, left: "50%", transform: "translateX(-50%)", background: C.ink, color: "#fff", padding: "10px 22px", borderRadius: 20, fontSize: 13, zIndex: 999, boxShadow: "0 4px 14px rgba(0,0,0,0.2)", maxWidth: "min(92vw, 340px)", textAlign: "center", lineHeight: 1.45 }}>Opening Post-It — review and publish your draft.</div>}
+      {shareToast && <div role="status" className="life-toast" style={{ position: "fixed", top: "calc(70px + env(safe-area-inset-top, 0px))", left: "50%", transform: "translateX(-50%)", background: C.ink, color: "#fff", padding: "10px 22px", borderRadius: 20, fontSize: 13, zIndex: 999, boxShadow: "0 4px 14px rgba(0,0,0,0.2)", maxWidth: "min(92vw, 340px)", textAlign: "center", lineHeight: 1.45 }}>Opening Post-It — review and publish your draft.</div>}
+
+      {constellationOpen && (
+        <KnowledgeConstellation
+          allContent={allContent}
+          readKeys={readKeys}
+          onPick={handleSelect}
+          onClose={() => setConstellationOpen(false)}
+          play={play}
+        />
+      )}
 
       {/* TOP BAR */}
-      <div className="life-topbar" style={{ height: 62, background: "rgba(255,255,255,0.88)", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", padding: "0 16px", gap: 10, position: "sticky", top: 0, zIndex: 50, boxShadow: "0 1px 0 rgba(0,0,0,0.04), 0 8px 24px rgba(74,140,92,0.06)" }}>
+      <div className="life-topbar" style={{ background: "rgba(255,255,255,0.88)", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10, position: "sticky", top: 0, zIndex: 50, boxShadow: "0 1px 0 rgba(0,0,0,0.04), 0 8px 24px rgba(74,140,92,0.06)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
           <button onClick={() => { play("tap"); setSidebarOpen(!sidebarOpen); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", gap: 5, padding: "6px 4px", transition: "opacity 0.2s ease" }} onMouseEnter={e => e.currentTarget.style.opacity = "0.7"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
             {[22, 14, 22].map((w, i) => <span key={i} style={{ display: "block", width: w, height: 2, background: C.mid, borderRadius: 2, transition: "all 0.2s ease" }} />)}
@@ -973,7 +1011,7 @@ export default function LifeApp() {
       </div>
 
       {showSearch && search.length > 1 && (
-        <div className="life-search-dropdown" style={{ position: "fixed", top: 62, left: 0, right: 0, zIndex: 200, background: "rgba(255,255,255,0.98)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderBottom: `1px solid ${C.border}`, maxHeight: 320, overflowY: "auto", boxShadow: "0 12px 40px rgba(0,0,0,0.12)", animation: "life-fade-in 0.25s ease" }}>
+        <div className="life-search-dropdown" style={{ position: "fixed", left: 0, right: 0, zIndex: 200, background: "rgba(255,255,255,0.98)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderBottom: `1px solid ${C.border}`, maxHeight: 320, overflowY: "auto", boxShadow: "0 12px 40px rgba(0,0,0,0.12)", animation: "life-fade-in 0.25s ease" }}>
           {searchResults.length === 0
             ? <p style={{ color: C.muted, padding: "22px 28px", margin: 0, fontSize: 14, fontStyle: "italic" }}>No results.</p>
             : searchResults.map(item => (
@@ -988,11 +1026,11 @@ export default function LifeApp() {
         </div>
       )}
 
-      <div style={{ display: "flex", flex: 1, position: "relative", overflow: "hidden" }}>
-        {sidebarOpen && <div className="life-sidebar-backdrop" onClick={() => { play("back"); setSidebarOpen(false); }} style={{ position: "fixed", inset: 0, top: 62, background: "rgba(20,20,20,0.22)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 30 }} />}
+      <div className="life-app-body" style={{ display: "flex", flex: 1, position: "relative", overflow: "hidden", minHeight: 0 }}>
+        {sidebarOpen && <div className="life-sidebar-backdrop" onClick={() => { play("back"); setSidebarOpen(false); }} style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "rgba(20,20,20,0.22)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 30 }} />}
 
         {/* SIDEBAR */}
-        <div className="life-sidebar" style={{ position: "fixed", top: 62, left: 0, bottom: 0, width: 288, background: C.white, borderRight: `1px solid ${C.border}`, overflowY: "auto", zIndex: 40, transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)", transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)", paddingBottom: 60 }}>
+        <div className="life-sidebar" style={{ position: "fixed", left: 0, bottom: 0, width: 288, maxWidth: "min(288px, 100vw)", background: C.white, borderRight: `1px solid ${C.border}`, overflowY: "auto", zIndex: 40, transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)", transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)", paddingBottom: "calc(60px + env(safe-area-inset-bottom, 0px))" }}>
           {/* User card */}
           <div style={{ padding: "16px 18px 14px", borderBottom: `1px solid ${C.light}`, display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -1016,6 +1054,7 @@ export default function LifeApp() {
             </div>
           </div>
           <SS label="Life." open={lifeOpen} setOpen={setLifeOpen}>
+            <SL label="Knowledge map" icon="telescope" onClick={() => { play("ok"); setConstellationOpen(true); setSidebarOpen(false); }} active={false} />
             <SL label="Where To Start?" icon="compass" onClick={() => { play("tap"); setPage("where_to_start"); setSidebarOpen(false); }} active={page === "where_to_start"} />
             <SL label="Quiz" icon="brain" onClick={() => { play("tap"); setPage("quiz"); setSidebarOpen(false); }} active={page === "quiz"} />
             <SL label="Help" icon="question" onClick={() => { play("tap"); setPage("help"); setSidebarOpen(false); }} active={page === "help"} />
@@ -1044,11 +1083,11 @@ export default function LifeApp() {
         </div>
 
         {/* MAIN CONTENT */}
-        <div style={{ flex: 1, overflowY: "auto" }}>
+        <div className="life-main-scroll" style={{ flex: 1, overflowY: "auto", minWidth: 0, minHeight: 0, WebkitOverflowScrolling: "touch" }}>
           <div key={page} className="life-surface-enter" style={{ minHeight: "100%" }}>
 
           {page === "home" && (
-            <div style={{ paddingBottom: 60 }}>
+            <div style={{ paddingBottom: "calc(60px + env(safe-area-inset-bottom, 0px))" }}>
 
               {/* PROGRESS BAR */}
               <div style={{ padding: "14px 20px 12px", background: C.white, borderBottom: `1px solid ${C.border}` }}>
@@ -1058,8 +1097,8 @@ export default function LifeApp() {
                     {progressPercent}%
                   </span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <div style={{ flex: 1, height: 6, background: C.light, borderRadius: 10, overflow: "hidden" }}>
+                <div className="life-home-progress-row" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{ flex: 1, minWidth: 0, height: 6, background: C.light, borderRadius: 10, overflow: "hidden" }}>
                     <div style={{ height: "100%", width: `${progressPercent}%`, background: `linear-gradient(90deg,${C.green},#6FBE77)`, borderRadius: 10, transition: "width 0.6s cubic-bezier(0.4,0,0.2,1)" }} />
                   </div>
                   <span style={{ fontSize: 11, color: C.green, fontWeight: 700, letterSpacing: 0.5, flexShrink: 0 }}>
@@ -1076,7 +1115,7 @@ export default function LifeApp() {
               {resumeEntry && !resumeTipDismissed && (
                 <div style={{ padding: "14px 20px 0", maxWidth: 520, margin: "0 auto" }}>
                   <div
-                    className="life-card-hover"
+                    className="life-card-hover life-resume-card"
                     style={{
                       background: `linear-gradient(135deg, ${C.white} 0%, ${C.greenLt} 100%)`,
                       border: `1px solid rgba(74,140,92,0.35)`,
@@ -1125,7 +1164,7 @@ export default function LifeApp() {
                 <div style={{ position: "absolute", bottom: -80, left: -40, width: 160, height: 160, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.08)", pointerEvents: "none" }} />
                 <div style={{ position: "absolute", right: "12%", bottom: "18%", width: 126, height: 126, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.46) 0%, rgba(74,140,92,0.08) 68%, rgba(74,140,92,0) 100%)", pointerEvents: "none" }} />
                 <p style={{ margin: "0 0 18px", fontSize: 10, fontWeight: 700, letterSpacing: 5, textTransform: "uppercase", color: C.muted }}>Welcome to</p>
-                <h1 style={{ margin: "0 0 6px", fontSize: "clamp(3.8rem, 20vw, 6.875rem)", fontWeight: 800, color: C.ink, fontFamily: "Georgia,serif", letterSpacing: "-0.08em", lineHeight: 0.85 }}>Life.</h1>
+                <h1 style={{ margin: "0 0 6px", fontSize: "clamp(2.75rem, 14vw, 6.875rem)", fontWeight: 800, color: C.ink, fontFamily: "Georgia,serif", letterSpacing: "-0.08em", lineHeight: 0.88 }}>Life.</h1>
                 <div style={{ width: 40, height: 2.5, background: C.green, borderRadius: 2, margin: "18px auto 22px" }} />
                 <p style={{ color: C.mid, fontSize: 15, lineHeight: 1.9, margin: "0 auto 6px", maxWidth: 340, fontFamily: "Georgia,serif" }}>
                   One calm place for knowledge, daily growth, and genuine community.
@@ -1141,6 +1180,30 @@ export default function LifeApp() {
                   <button onClick={() => { play("tap"); setPage("where_to_start"); }}
                     style={{ background: C.white, border: `1.5px solid ${C.border}`, borderRadius: 14, padding: "15px 24px", color: C.ink, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "Georgia,serif", display: "flex", alignItems: "center", gap: 8, boxShadow: S.sm }}>
                     {Ic.leaf("none", C.green, 17)} Daily Growth
+                  </button>
+                  <button
+                    type="button"
+                    className="life-constellation-cta"
+                    onClick={() => { play("ok"); setConstellationOpen(true); }}
+                    style={{
+                      background: `linear-gradient(135deg, #1a1f1c 0%, #2a3430 50%, #1e2622 100%)`,
+                      border: "1px solid rgba(111,190,119,0.45)",
+                      borderRadius: 14,
+                      padding: "15px 22px",
+                      color: "#f0fdf4",
+                      fontSize: 15,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      fontFamily: "Georgia,serif",
+                      boxShadow: "0 4px 24px rgba(74,140,92,0.35), inset 0 1px 0 rgba(255,255,255,0.08)",
+                      letterSpacing: 0.2,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                    }}
+                  >
+                    <span className="life-constellation-cta-spark" aria-hidden>✦</span>
+                    Your constellation
                   </button>
                 </div>
               </div>
@@ -1246,7 +1309,11 @@ export default function LifeApp() {
             </div>
           )}
 
-          {page === "quiz" && <QuizPage play={play} userId={isSupabaseConfigured ? user?.id : null} />}
+          {page === "quiz" && (
+            <Suspense fallback={<RouteFallback />}>
+              <QuizPage play={play} userId={isSupabaseConfigured ? user?.id : null} />
+            </Suspense>
+          )}
 
           {page === "help" && (
             <div style={{ padding: "48px 28px", maxWidth: 560, margin: "0 auto" }}>
@@ -1270,7 +1337,11 @@ export default function LifeApp() {
             </div>
           )}
 
-          {page === "postit" && <PostItFeed play={play} user={user} />}
+          {page === "postit" && (
+            <Suspense fallback={<RouteFallback />}>
+              <PostItFeed play={play} user={user} />
+            </Suspense>
+          )}
 
           {page === "networking" && (
             <div style={{ padding: "40px 28px", maxWidth: 520, margin: "0 auto" }}>
@@ -1318,28 +1389,30 @@ export default function LifeApp() {
           )}
 
           {page === "reading" && selContent && (
-            <EbookReader
-              selKey={selKey}
-              selContent={selContent}
-              tab={tab}
-              setTab={setTab}
-              isBookmarked={isBookmarked}
-              toggleBk={toggleBk}
-              play={play}
-              noteInput={noteInput}
-              setNoteInput={setNoteInput}
-              noteSaved={noteSaved}
-              setNoteSaved={setNoteSaved}
-              saveNote={saveNote}
-              shareNote={shareNote}
-              related={related}
-              handleSelect={handleSelect}
-              bookmarks={bookmarks}
-              allContent={allContent}
-              profile={profile}
-              savedReaderPage={readerPages[selKey] ?? 0}
-              onReaderPageSave={saveReaderPage}
-            />
+            <Suspense fallback={<RouteFallback />}>
+              <EbookReader
+                selKey={selKey}
+                selContent={selContent}
+                tab={tab}
+                setTab={setTab}
+                isBookmarked={isBookmarked}
+                toggleBk={toggleBk}
+                play={play}
+                noteInput={noteInput}
+                setNoteInput={setNoteInput}
+                noteSaved={noteSaved}
+                setNoteSaved={setNoteSaved}
+                saveNote={saveNote}
+                shareNote={shareNote}
+                related={related}
+                handleSelect={handleSelect}
+                bookmarks={bookmarks}
+                allContent={allContent}
+                profile={profile}
+                savedReaderPage={readerPages[selKey] ?? 0}
+                onReaderPageSave={saveReaderPage}
+              />
+            </Suspense>
           )}
           </div>
         </div>
