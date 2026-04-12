@@ -143,16 +143,16 @@ export default function LifeApp() {
   // Dynamic document title per page
   useEffect(() => {
     const titles = {
-      home: "Life. — Knowledge. Finance. Life.",
+      home: "Life. — Knowledge, Growth, Community",
       quiz: "Quiz — Life.",
       postit: "Post-It — Life.",
       reading: "Reading — Life.",
       profile: "Profile — Life.",
       help: "Help — Life.",
       where_to_start: "Where To Start — Life.",
-      networking: "Networking — Life.",
+      networking: "Networking Group — Life.",
     };
-    document.title = titles[page] || "Life. — Knowledge. Finance. Life.";
+    document.title = titles[page] || "Life. — Knowledge, Growth, Community";
   }, [page]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selKey, setSelKey] = useState(null);
@@ -483,6 +483,22 @@ export default function LifeApp() {
   const resumePack = resumeSnap?.key ? MAP[resumeSnap.key] : null;
   const resumeEntry = resumePack ? { key: resumePack.key, node: resumePack.node } : null;
   const readingStreak = getReadingStreak();
+  const progressPercent = allContent.length > 0 ? Math.round((readKeys.length / allContent.length) * 100) : 0;
+  const completedNotes = Object.keys(notes).filter((key) => notes[key]).length;
+  const homeStats = [
+    { label: "Topics Read", value: readKeys.length, color: C.green },
+    { label: "Bookmarks", value: bookmarks.length, color: "#b8975a" },
+    { label: "Notes", value: completedNotes, color: "#7B6FA8" },
+  ];
+  const passwordHasMinLength = rPass.length >= 8;
+  const passwordHasUpper = /[A-Z]/.test(rPass);
+  const passwordHasNumber = /\d/.test(rPass);
+  const passwordHasSpecial = /[^A-Za-z0-9]/.test(rPass);
+  const passwordStrength = [passwordHasMinLength, passwordHasUpper, passwordHasNumber, passwordHasSpecial].filter(Boolean).length;
+  const passwordStrengthLabels = ["Very Weak", "Weak", "Fair", "Good", "Strong"];
+  const passwordStrengthColors = [C.red, C.red, "#e6a23c", C.gold, C.green];
+  const passwordHint = rPass.length > 0 && !passwordHasSpecial ? "Tip: add a special character for a stronger password." : "";
+  const confirmMismatch = rPass2.length > 0 && rPass !== rPass2;
 
   // ── SIDEBAR HELPERS ───────────────────────────────────────────
   const SS = ({ label, open, setOpen, children }) => (
@@ -590,28 +606,31 @@ export default function LifeApp() {
 
   // Landing
   if (screen === "landing") return (
-    <div className="life-grain" style={{ minHeight: "100vh", background: `linear-gradient(165deg, ${C.skin} 0%, #ebe4d6 45%, ${C.skin} 100%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Georgia,serif", padding: "40px 28px 48px", position: "relative", overflow: "hidden" }}>
+    <div className="life-grain life-landing-shell" style={{ minHeight: "100svh", background: `linear-gradient(165deg, ${C.skin} 0%, #ebe4d6 45%, ${C.skin} 100%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Georgia,serif", padding: "40px 24px calc(44px + env(safe-area-inset-bottom))", position: "relative", overflowX: "hidden" }}>
       <style>{`
         @keyframes life-logo-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
         @keyframes life-glow-pulse { 0%,100%{box-shadow:0 8px 32px rgba(74,140,92,0.3)} 50%{box-shadow:0 12px 48px rgba(74,140,92,0.5)} }
         @keyframes life-tag-fade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
       {/* Decorative circles */}
-      <div style={{ position: "absolute", top: -80, right: -80, width: 240, height: 240, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.08)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", bottom: -60, left: -60, width: 180, height: 180, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.06)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", top: "30%", left: -40, width: 100, height: 100, borderRadius: "50%", background: "rgba(74,140,92,0.04)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: -80, right: -80, width: 240, height: 240, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.1)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "14%", right: "9%", width: 72, height: 72, borderRadius: "50%", background: "rgba(74,140,92,0.1)", filter: "blur(1px)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: -60, left: -60, width: 180, height: 180, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.08)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "30%", left: -40, width: 100, height: 100, borderRadius: "50%", background: "rgba(74,140,92,0.05)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "18%", right: "12%", width: 132, height: 132, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.5) 0%, rgba(74,140,92,0.06) 70%, rgba(74,140,92,0) 100%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "56%", left: "8%", width: 44, height: 44, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.14)", pointerEvents: "none" }} />
 
       <div style={{ marginBottom: 24, textAlign: "center" }}>
         <div style={{ width: 120, height: 120, borderRadius: "22%", background: `linear-gradient(145deg,${C.green},#2d6e42)`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px", boxShadow: S.glow, animation: "life-logo-float 4s ease-in-out infinite, life-glow-pulse 3s ease-in-out infinite" }}>
           <span style={{ color: "#fff", fontSize: 52, fontWeight: 800, fontFamily: "Georgia,serif", letterSpacing: -2 }}>l.</span>
         </div>
-        <h1 style={{ margin: 0, fontSize: 42, fontWeight: 800, color: C.ink, fontFamily: "Georgia,serif", letterSpacing: -1 }}>Life.</h1>
-        <p style={{ margin: "8px 0 0", fontSize: 15, color: C.muted, fontStyle: "italic" }}>Knowledge. Finance. Life.</p>
+        <h1 style={{ margin: 0, fontSize: "clamp(2.8rem, 10vw, 4rem)", fontWeight: 800, color: C.ink, fontFamily: "Georgia,serif", letterSpacing: -1 }}>Life.</h1>
+        <p style={{ margin: "8px 0 0", fontSize: 15, color: C.muted, fontStyle: "italic" }}>Knowledge, Growth, Community</p>
       </div>
 
       {/* Feature tags */}
       <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 28, flexWrap: "wrap", animation: "life-tag-fade 0.6s ease-out 0.3s both" }}>
-        {["📚 100+ Topics", "🧠 Smart Quizzes", "📝 Notes & Save", "🎯 Tailored Plans"].map(tag => (
+        {["100+ Topics", "Daily Growth", "Networking Group", "Notes & Save"].map(tag => (
           <span key={tag} style={{ fontSize: 11, fontWeight: 600, color: C.green, background: C.greenLt, border: `1px solid rgba(74,140,92,0.2)`, borderRadius: 20, padding: "6px 14px", letterSpacing: 0.3 }}>{tag}</span>
         ))}
       </div>
@@ -676,25 +695,28 @@ export default function LifeApp() {
           </p>
         )}
       </div>
-      <p style={{ position: "absolute", bottom: 20, color: C.muted, fontSize: 10, fontStyle: "italic", textAlign: "center" }}>© 2026 Life. All rights reserved.</p>
+      <p className="life-footer" style={{ margin: "28px 0 0", color: C.muted, fontSize: 10, fontStyle: "italic", textAlign: "center" }}>© 2026 Life. All rights reserved.</p>
     </div>
   );
 
   // Sign In
   if (screen === "signin") return (
-    <div className="life-grain" style={{ minHeight: "100vh", background: `linear-gradient(165deg, ${C.skin} 0%, #ebe4d6 50%, ${C.skin} 100%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Georgia,serif", padding: "40px 28px 48px", position: "relative" }}>
+    <div className="life-grain life-auth-shell" style={{ minHeight: "100svh", background: `linear-gradient(165deg, ${C.skin} 0%, #ebe4d6 50%, ${C.skin} 100%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Georgia,serif", padding: "40px 24px calc(40px + env(safe-area-inset-bottom))", position: "relative", overflowX: "hidden" }}>
+      <div style={{ position: "absolute", top: -40, right: -50, width: 170, height: 170, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.09)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "18%", left: -18, width: 62, height: 62, borderRadius: "50%", background: "rgba(74,140,92,0.08)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "14%", right: "10%", width: 110, height: 110, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.55) 0%, rgba(74,140,92,0.07) 68%, rgba(74,140,92,0) 100%)", pointerEvents: "none" }} />
       <div style={{ width: 70, height: 70, borderRadius: "20%", background: `linear-gradient(145deg,${C.green},#2d6e42)`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20, boxShadow: S.md, animation: "life-logo-float 4s ease-in-out infinite" }}>
         <span style={{ color: C.white, fontSize: 28, fontWeight: 800 }}>l.</span>
       </div>
 
       <h2 style={{ fontSize: 26, fontWeight: 700, margin: "0 0 4px", color: C.ink, fontFamily: "Georgia,serif" }}>
-        Sign in to Life.
+        Sign In To Life.
       </h2>
       <p style={{ margin: "0 0 28px", fontSize: 14, color: C.muted, fontStyle: "italic" }}>
-        Welcome back.
+        Welcome Back
       </p>
 
-      <div style={{ width: "100%", maxWidth: 320, display: "flex", flexDirection: "column", gap: 14, background: C.white, borderRadius: 20, padding: "28px 22px", boxShadow: "0 8px 32px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)", border: `1px solid ${C.border}` }}>
+      <div className="life-auth-card" style={{ width: "100%", maxWidth: 320, display: "flex", flexDirection: "column", gap: 14, background: C.white, borderRadius: 20, padding: "28px 22px", boxShadow: "0 8px 32px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)", border: `1px solid ${C.border}` }}>
 
         {/* ── Email field ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -771,20 +793,23 @@ export default function LifeApp() {
           </button>
         </p>
       </div>
-      <p style={{ position: "absolute", bottom: 20, color: C.muted, fontSize: 10, fontStyle: "italic", textAlign: "center" }}>© 2026 Life. All rights reserved.</p>
+      <p className="life-footer" style={{ margin: "28px 0 0", color: C.muted, fontSize: 10, fontStyle: "italic", textAlign: "center" }}>© 2026 Life. All rights reserved.</p>
     </div>
   );
 
   // Register
   if (screen === "register") return (
-    <div className="life-grain" style={{ minHeight: "100vh", background: `linear-gradient(165deg, ${C.skin} 0%, #ebe4d6 50%, ${C.skin} 100%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Georgia,serif", padding: "48px 28px 56px", position: "relative" }}>
+    <div className="life-grain life-auth-shell" style={{ minHeight: "100svh", background: `linear-gradient(165deg, ${C.skin} 0%, #ebe4d6 50%, ${C.skin} 100%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "Georgia,serif", padding: "48px 24px calc(40px + env(safe-area-inset-bottom))", position: "relative", overflowX: "hidden" }}>
+      <div style={{ position: "absolute", top: -54, right: -44, width: 176, height: 176, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.09)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "17%", left: "7%", width: 46, height: 46, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.16)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "14%", left: -34, width: 112, height: 112, borderRadius: "50%", background: "rgba(74,140,92,0.07)", pointerEvents: "none" }} />
       <div style={{ width: 70, height: 70, borderRadius: "20%", background: `linear-gradient(145deg,${C.green},#2d6e42)`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20, boxShadow: S.md, animation: "life-logo-float 4s ease-in-out infinite" }}>
         <span style={{ color: "#fff", fontSize: 28, fontWeight: 800 }}>l.</span>
       </div>
       <h2 style={{ fontSize: 26, fontWeight: 700, margin: "0 0 4px", color: C.ink, fontFamily: "Georgia,serif" }}>Create Account</h2>
-      <p style={{ margin: "0 0 28px", fontSize: 14, color: C.muted, fontStyle: "italic" }}>Join Life. — it only takes a minute.</p>
+      <p style={{ margin: "0 0 28px", fontSize: 14, color: C.muted, fontStyle: "italic" }}>Welcome To Life</p>
 
-      <div style={{ width: "100%", maxWidth: 320, display: "flex", flexDirection: "column", gap: 16, background: C.white, borderRadius: 20, padding: "28px 22px", boxShadow: "0 8px 32px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)", border: `1px solid ${C.border}` }}>
+      <div className="life-auth-card" style={{ width: "100%", maxWidth: 320, display: "flex", flexDirection: "column", gap: 16, background: C.white, borderRadius: 20, padding: "28px 22px", boxShadow: "0 8px 32px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)", border: `1px solid ${C.border}` }}>
 
         {/* Full Name */}
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -845,8 +870,8 @@ export default function LifeApp() {
             <input
               type={rShowPass ? "text" : "password"}
               value={rPass}
-              onChange={e => { setRPass(e.target.value); setRErr(p => ({ ...p, pass: null })); }}
-              placeholder="Min 8 characters"
+              onChange={e => { setRPass(e.target.value); setRErr(p => ({ ...p, pass: null, pass2: null })); }}
+              placeholder="Use 8+ characters"
               autoComplete="new-password"
               style={{ background: C.skin, border: `1.5px solid ${rErr.pass ? C.red : C.border}`, borderRadius: 12, padding: "14px 48px 14px 16px", fontSize: 15, color: C.ink, outline: "none", fontFamily: "Georgia,serif", boxSizing: "border-box", width: "100%", transition: "border-color 0.2s ease" }}
               onFocus={e => { if (!rErr.pass) e.currentTarget.style.borderColor = C.green; }}
@@ -856,24 +881,17 @@ export default function LifeApp() {
               {rShowPass ? "Hide" : "Show"}
             </button>
           </div>
-          {rPass.length > 0 && (() => {
-            const has8 = rPass.length >= 8;
-            const hasUpper = /[A-Z]/.test(rPass);
-            const hasNum = /\d/.test(rPass);
-            const score = [has8, hasUpper, hasNum].filter(Boolean).length;
-            const labels = ["Weak", "Fair", "Good", "Strong"];
-            const colors = [C.red, "#e6a23c", C.gold, C.green];
-            return (
-              <div style={{ marginTop: 2 }}>
-                <div style={{ display: "flex", gap: 4, marginBottom: 4 }}>
-                  {[0, 1, 2].map(i => (
-                    <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i < score ? colors[score] : C.light, transition: "background 0.2s" }} />
-                  ))}
-                </div>
-                <p style={{ margin: 0, fontSize: 11, color: colors[score], fontStyle: "italic" }}>{labels[score]}</p>
+          {rPass.length > 0 && (
+            <div style={{ marginTop: 2 }}>
+              <div style={{ display: "flex", gap: 4, marginBottom: 4 }}>
+                {[0, 1, 2, 3].map(i => (
+                  <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i < passwordStrength ? passwordStrengthColors[passwordStrength] : C.light, transition: "background 0.2s" }} />
+                ))}
               </div>
-            );
-          })()}
+              <p style={{ margin: 0, fontSize: 11, color: passwordStrengthColors[passwordStrength], fontStyle: "italic" }}>{passwordStrengthLabels[passwordStrength]}</p>
+              {passwordHint && <p style={{ margin: "4px 0 0", fontSize: 11, color: C.muted, fontStyle: "italic" }}>{passwordHint}</p>}
+            </div>
+          )}
           {rErr.pass && <p style={{ margin: 0, fontSize: 12, color: C.red, fontStyle: "italic" }}>{rErr.pass}</p>}
         </div>
 
@@ -887,14 +905,15 @@ export default function LifeApp() {
               onChange={e => { setRPass2(e.target.value); setRErr(p => ({ ...p, pass2: null })); }}
               placeholder="Repeat password"
               autoComplete="new-password"
-              style={{ background: C.skin, border: `1.5px solid ${rErr.pass2 ? C.red : C.border}`, borderRadius: 12, padding: "14px 48px 14px 16px", fontSize: 15, color: C.ink, outline: "none", fontFamily: "Georgia,serif", boxSizing: "border-box", width: "100%", transition: "border-color 0.2s ease" }}
-              onFocus={e => { if (!rErr.pass2) e.currentTarget.style.borderColor = C.green; }}
-              onBlur={e => { e.currentTarget.style.borderColor = C.border; }}
+              style={{ background: C.skin, border: `1.5px solid ${(rErr.pass2 || confirmMismatch) ? C.red : C.border}`, borderRadius: 12, padding: "14px 48px 14px 16px", fontSize: 15, color: C.ink, outline: "none", fontFamily: "Georgia,serif", boxSizing: "border-box", width: "100%", transition: "border-color 0.2s ease" }}
+              onFocus={e => { if (!rErr.pass2 && !confirmMismatch) e.currentTarget.style.borderColor = C.green; }}
+              onBlur={e => { e.currentTarget.style.borderColor = (rErr.pass2 || confirmMismatch) ? C.red : C.border; }}
             />
             <button onClick={() => setRShowPass2(v => !v)} style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: C.muted, fontSize: 12, fontFamily: "Georgia,serif", transition: "color 0.2s ease" }} onMouseEnter={e => { e.currentTarget.style.color = C.ink; }} onMouseLeave={e => { e.currentTarget.style.color = C.muted; }}>
               {rShowPass2 ? "Hide" : "Show"}
             </button>
           </div>
+          {!rErr.pass2 && confirmMismatch && <p style={{ margin: 0, fontSize: 12, color: C.red, fontStyle: "italic" }}>Not Matching Yet</p>}
           {rErr.pass2 && <p style={{ margin: 0, fontSize: 12, color: C.red, fontStyle: "italic" }}>{rErr.pass2}</p>}
         </div>
 
@@ -914,13 +933,14 @@ export default function LifeApp() {
           By registering you agree to Life.'s terms of use. You must be 13+ to join.
         </p>
       </div>
-      <p style={{ position: "absolute", bottom: 20, color: C.muted, fontSize: 10, fontStyle: "italic", textAlign: "center" }}>© 2026 Life. All rights reserved.</p>
+      <p className="life-footer" style={{ margin: "28px 0 0", color: C.muted, fontSize: 10, fontStyle: "italic", textAlign: "center" }}>© 2026 Life. All rights reserved.</p>
     </div>
   );
 
   // ── MAIN APP ──────────────────────────────────────────────────
+  // Keep the layout primitives straightforward because this will likely be ported into a native app shell later.
   return (
-    <div style={{ minHeight: "100vh", background: C.skin, display: "flex", flexDirection: "column", fontFamily: "Georgia,serif", color: C.ink }}>
+    <div style={{ minHeight: "100svh", background: C.skin, display: "flex", flexDirection: "column", fontFamily: "Georgia,serif", color: C.ink }}>
       {shareToast && <div role="status" className="life-toast" style={{ position: "fixed", top: 70, left: "50%", transform: "translateX(-50%)", background: C.ink, color: "#fff", padding: "10px 22px", borderRadius: 20, fontSize: 13, zIndex: 999, boxShadow: "0 4px 14px rgba(0,0,0,0.2)", maxWidth: "min(92vw, 340px)", textAlign: "center", lineHeight: 1.45 }}>Opening Post-It — review and publish your draft.</div>}
 
       {/* TOP BAR */}
@@ -969,18 +989,30 @@ export default function LifeApp() {
       )}
 
       <div style={{ display: "flex", flex: 1, position: "relative", overflow: "hidden" }}>
-        {sidebarOpen && <div onClick={() => { play("back"); setSidebarOpen(false); }} style={{ position: "fixed", inset: 0, top: 62, background: "rgba(20,20,20,0.22)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 30 }} />}
+        {sidebarOpen && <div className="life-sidebar-backdrop" onClick={() => { play("back"); setSidebarOpen(false); }} style={{ position: "fixed", inset: 0, top: 62, background: "rgba(20,20,20,0.22)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 30 }} />}
 
         {/* SIDEBAR */}
         <div className="life-sidebar" style={{ position: "fixed", top: 62, left: 0, bottom: 0, width: 288, background: C.white, borderRight: `1px solid ${C.border}`, overflowY: "auto", zIndex: 40, transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)", transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)", paddingBottom: 60 }}>
           {/* User card */}
-          <div style={{ padding: "16px 18px 12px", borderBottom: `1px solid ${C.light}`, display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: "50%", background: `linear-gradient(135deg, ${C.green}, #3a7d4a)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px rgba(74,140,92,0.2)" }}>
-              <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>{initials.slice(0,2)}</span>
+          <div style={{ padding: "16px 18px 14px", borderBottom: `1px solid ${C.light}`, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: "50%", background: `linear-gradient(135deg, ${C.green}, #3a7d4a)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px rgba(74,140,92,0.2)" }}>
+                <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>{initials.slice(0,2)}</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.name || "User"}</p>
+                <p style={{ margin: 0, fontSize: 11, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.email || ""}</p>
+              </div>
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.name || "User"}</p>
-              <p style={{ margin: 0, fontSize: 11, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.email || ""}</p>
+            <div style={{ background: C.light, border: `1px solid ${C.border}`, borderRadius: 12, padding: "10px 12px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: C.muted }}>Your Progress</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: C.green }}>{progressPercent}%</span>
+              </div>
+              <div style={{ height: 6, borderRadius: 999, background: C.white, overflow: "hidden" }}>
+                <div style={{ width: `${progressPercent}%`, height: "100%", borderRadius: 999, background: `linear-gradient(90deg, ${C.green}, #6FBE77)` }} />
+              </div>
+              <p style={{ margin: "8px 0 0", fontSize: 11, color: C.muted, lineHeight: 1.4 }}>{readKeys.length}/{allContent.length} topics explored</p>
             </div>
           </div>
           <SS label="Life." open={lifeOpen} setOpen={setLifeOpen}>
@@ -993,7 +1025,7 @@ export default function LifeApp() {
           </SS>
           <SS label="Socials" open={socialsOpen} setOpen={setSocialsOpen}>
             <SL label="Post-It" icon="pin" onClick={() => { play("tap"); setPage("postit"); setSidebarOpen(false); }} active={page === "postit"} />
-            <SL label="Networking" icon="users" onClick={() => { play("tap"); setPage("networking"); setSidebarOpen(false); }} active={page === "networking"} />
+            <SL label="Networking Group" icon="users" onClick={() => { play("tap"); setPage("networking"); setSidebarOpen(false); }} active={page === "networking"} />
           </SS>
           <SS label="Guided" open={guidedOpen} setOpen={setGuidedOpen}>
             {GUIDED_ORDER.map(k => { const node = CONTENT[k]; if (!node) return null; return <SL key={k} label={node.label} icon={node.icon} onClick={() => handleSelect(k, node)} active={selKey === k} />; })}
@@ -1023,12 +1055,12 @@ export default function LifeApp() {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                   <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: C.muted }}>Your Progress</span>
                   <span style={{ fontSize: 11, color: C.green, fontWeight: 700, letterSpacing: 0.5 }}>
-                    {allContent.length > 0 ? Math.round((readKeys.length / allContent.length) * 100) : 0}%
+                    {progressPercent}%
                   </span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                   <div style={{ flex: 1, height: 6, background: C.light, borderRadius: 10, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${allContent.length > 0 ? Math.round((readKeys.length / allContent.length) * 100) : 0}%`, background: `linear-gradient(90deg,${C.green},#6FBE77)`, borderRadius: 10, transition: "width 0.6s cubic-bezier(0.4,0,0.2,1)" }} />
+                    <div style={{ height: "100%", width: `${progressPercent}%`, background: `linear-gradient(90deg,${C.green},#6FBE77)`, borderRadius: 10, transition: "width 0.6s cubic-bezier(0.4,0,0.2,1)" }} />
                   </div>
                   <span style={{ fontSize: 11, color: C.green, fontWeight: 700, letterSpacing: 0.5, flexShrink: 0 }}>
                     {readKeys.length}<span style={{ color: C.muted, fontWeight: 400 }}>/{allContent.length}</span>
@@ -1039,21 +1071,6 @@ export default function LifeApp() {
                     </span>
                   )}
                 </div>
-              </div>
-
-              {/* STATS CARDS */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, padding: "14px 20px 0" }}>
-                {[
-                  { label: "Topics Read", value: readKeys.length, icon: "📖", color: C.green },
-                  { label: "Bookmarks", value: bookmarks.length, icon: "🔖", color: "#b8975a" },
-                  { label: "Notes", value: Object.keys(notes).length, icon: "✏️", color: "#7B6FA8" },
-                ].map(stat => (
-                  <div key={stat.label} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, padding: "12px 10px", textAlign: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
-                    <span style={{ fontSize: 20, display: "block", marginBottom: 4 }}>{stat.icon}</span>
-                    <span style={{ fontSize: 18, fontWeight: 800, color: stat.color, display: "block", lineHeight: 1 }}>{stat.value}</span>
-                    <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: C.muted, display: "block", marginTop: 4 }}>{stat.label}</span>
-                  </div>
-                ))}
               </div>
 
               {resumeEntry && !resumeTipDismissed && (
@@ -1102,39 +1119,52 @@ export default function LifeApp() {
               )}
 
               {/* HERO */}
-              <div className="life-grain" style={{ padding: "44px 24px 40px", textAlign: "center", borderBottom: `1px solid ${C.border}`, background: `linear-gradient(180deg, ${C.skin} 0%, #ebe4d6 100%)`, position: "relative", overflow: "hidden", borderRadius: 0 }}>
-                <div style={{ position: "absolute", top: -60, right: -60, width: 200, height: 200, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.10)", pointerEvents: "none" }} />
+              <div className="life-grain life-home-hero" style={{ padding: "44px 24px 40px", textAlign: "center", borderBottom: `1px solid ${C.border}`, background: `linear-gradient(180deg, ${C.skin} 0%, #ebe4d6 100%)`, position: "relative", overflow: "hidden", borderRadius: 0 }}>
+                <div style={{ position: "absolute", top: -60, right: -60, width: 200, height: 200, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.1)", pointerEvents: "none" }} />
+                <div style={{ position: "absolute", top: "18%", left: "10%", width: 54, height: 54, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.16)", pointerEvents: "none" }} />
                 <div style={{ position: "absolute", bottom: -80, left: -40, width: 160, height: 160, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.08)", pointerEvents: "none" }} />
+                <div style={{ position: "absolute", right: "12%", bottom: "18%", width: 126, height: 126, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.46) 0%, rgba(74,140,92,0.08) 68%, rgba(74,140,92,0) 100%)", pointerEvents: "none" }} />
                 <p style={{ margin: "0 0 18px", fontSize: 10, fontWeight: 700, letterSpacing: 5, textTransform: "uppercase", color: C.muted }}>Welcome to</p>
-                <h1 style={{ margin: "0 0 6px", fontSize: 110, fontWeight: 800, color: C.ink, fontFamily: "Georgia,serif", letterSpacing: -5, lineHeight: 0.85 }}>Life.</h1>
+                <h1 style={{ margin: "0 0 6px", fontSize: "clamp(3.8rem, 20vw, 6.875rem)", fontWeight: 800, color: C.ink, fontFamily: "Georgia,serif", letterSpacing: "-0.08em", lineHeight: 0.85 }}>Life.</h1>
                 <div style={{ width: 40, height: 2.5, background: C.green, borderRadius: 2, margin: "18px auto 22px" }} />
                 <p style={{ color: C.mid, fontSize: 15, lineHeight: 1.9, margin: "0 auto 6px", maxWidth: 340, fontFamily: "Georgia,serif" }}>
-                  Years of research compiled into one app — finance, psychology, philosophy, and income.
+                  One calm place for knowledge, daily growth, and genuine community.
                 </p>
                 <p style={{ color: C.muted, fontSize: 13, lineHeight: 1.7, margin: "0 auto 32px", maxWidth: 300, fontStyle: "italic" }}>
-                  No course. No guru. Pure knowledge.
+                  Read, reflect, and keep moving forward at your own pace.
                 </p>
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                   <button onClick={() => { play("open"); setSidebarOpen(true); }}
                     style={{ background: C.green, border: "none", borderRadius: 14, padding: "15px 32px", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "Georgia,serif", boxShadow: S.glow, letterSpacing: 0.3 }}>
                     Start Reading →
                   </button>
-                  <button onClick={() => { play("tap"); setPage("quiz"); }}
+                  <button onClick={() => { play("tap"); setPage("where_to_start"); }}
                     style={{ background: C.white, border: `1.5px solid ${C.border}`, borderRadius: 14, padding: "15px 24px", color: C.ink, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "Georgia,serif", display: "flex", alignItems: "center", gap: 8, boxShadow: S.sm }}>
-                    {Ic.brain("none", C.green, 17)} Quiz
+                    {Ic.leaf("none", C.green, 17)} Daily Growth
                   </button>
+                </div>
+              </div>
+
+              <div style={{ padding: "18px 20px 0" }}>
+                <div className="life-home-stats" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10, maxWidth: 560, margin: "0 auto" }}>
+                  {homeStats.map((stat) => (
+                    <div key={stat.label} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: "14px 12px", textAlign: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                      <span style={{ fontSize: 20, fontWeight: 800, color: stat.color, display: "block", lineHeight: 1 }}>{stat.value}</span>
+                      <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: C.muted, display: "block", marginTop: 6 }}>{stat.label}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
               {/* WHAT'S INSIDE — 2×2 grid */}
               <div style={{ padding: "32px 20px 0" }}>
                 <p style={{ margin: "0 0 18px", fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", color: C.muted, textAlign: "center" }}>What's inside</p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, maxWidth: 500, margin: "0 auto" }}>
+                <div className="life-whats-inside-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, maxWidth: 500, margin: "0 auto" }}>
                   {[
                     { icon: "leaf", label: "Life", sub: "Finance, psychology & philosophy", onClick: () => { play("open"); setSidebarOpen(true); } },
                     { icon: "lightbulb", label: "100 Ways", sub: "Online & AI income strategies", onClick: () => { play("open"); setSidebarOpen(true); } },
-                    { icon: "brain", label: "Quiz", sub: "Timed knowledge challenges", onClick: () => { play("tap"); setPage("quiz"); } },
-                    { icon: "pin", label: "Post-It", sub: "Community discussion", onClick: () => { play("tap"); setPage("postit"); } },
+                    { icon: "leaf", label: "Daily Growth", sub: "Simple guided steps for steady progress", onClick: () => { play("tap"); setPage("where_to_start"); } },
+                    { icon: "users", label: "Networking Group", sub: "Meet the community and grow together", onClick: () => { play("tap"); setPage("networking"); } },
                   ].map(item => (
                     <button key={item.label} onClick={item.onClick} className="life-card-hover"
                       style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: "20px 16px", cursor: "pointer", textAlign: "left", fontFamily: "Georgia,serif", display: "flex", flexDirection: "column", gap: 10, boxShadow: S.sm }}
@@ -1244,7 +1274,7 @@ export default function LifeApp() {
 
           {page === "networking" && (
             <div style={{ padding: "40px 28px", maxWidth: 520, margin: "0 auto" }}>
-              <h2 style={{ fontSize: 24, fontWeight: 700, color: C.ink, margin: "0 0 10px" }}>Networking</h2>
+              <h2 style={{ fontSize: 24, fontWeight: 700, color: C.ink, margin: "0 0 10px" }}>Networking Group</h2>
               <p style={{ color: C.muted, fontSize: 15, lineHeight: 1.8, margin: "0 0 32px", fontStyle: "italic" }}>Connect with others building real knowledge and financial independence.</p>
               <div style={{ background: C.greenLt, border: `1px solid ${C.green}`, borderRadius: 16, padding: 28, textAlign: "center" }}>
                 <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase", color: C.green }}>Life. Community</p>
@@ -1274,7 +1304,7 @@ export default function LifeApp() {
                 {[
                   ["Topics Read", readKeys.length],
                   ["Bookmarks Saved", bookmarks.length],
-                  ["Notes Written", Object.keys(notes).filter(k => notes[k]).length],
+                  ["Notes Written", completedNotes],
                   ["Reading streak", readingStreak.count > 0 ? `${readingStreak.count} day${readingStreak.count === 1 ? "" : "s"}` : "Open a topic to start"],
                 ].map(([label, val]) => (
                   <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: `1px solid ${C.light}` }}>

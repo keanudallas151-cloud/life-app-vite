@@ -142,6 +142,27 @@ h1, h2, h3, p {
   -webkit-backdrop-filter: saturate(1.2) blur(12px);
 }
 
+.life-landing-shell,
+.life-auth-shell,
+.life-home-page {
+  width: 100%;
+}
+
+.life-auth-card {
+  width: min(100%, 420px);
+}
+
+.life-home-hero-actions {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.life-footer {
+  width: 100%;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+}
+
 /* ── Social Login Buttons ───────────────────────────────────── */
 .social-btn {
   position: relative;
@@ -164,7 +185,7 @@ h1, h2, h3, p {
 /* ── Scroll to Top Button ──────────────────────────────────── */
 .scroll-to-top {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
   right: 24px;
   width: 48px;
   height: 48px;
@@ -285,10 +306,20 @@ select:focus-visible {
 /* ── Mobile Search & Top Bar ──────────────────────────────── */
 @media (max-width: 640px) {
   .scroll-to-top {
-    bottom: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
     right: 16px;
     width: 44px;
     height: 44px;
+  }
+
+  .life-auth-shell,
+  .life-landing-shell {
+    justify-content: flex-start !important;
+  }
+
+  .life-auth-card {
+    max-width: 100% !important;
+    padding: 24px 18px !important;
   }
 
   /* Mobile search bar optimizations */
@@ -327,8 +358,14 @@ select:focus-visible {
   }
 
   .life-sidebar {
+    top: 56px !important;
     width: 85vw !important;
-    max-width: 300px !important;
+    max-width: 320px !important;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .life-sidebar-backdrop {
+    top: 56px !important;
   }
 
   /* Hero section mobile adjustments */
@@ -342,6 +379,37 @@ select:focus-visible {
     padding: 32px 20px 40px !important;
   }
 
+  .life-home-page {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .life-home-hero {
+    padding: 36px 18px 32px !important;
+  }
+
+  .life-home-hero-actions {
+    max-width: 100% !important;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .life-home-hero-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .life-home-stats {
+    gap: 8px !important;
+  }
+
+  .life-home-stats > div {
+    padding: 12px 8px !important;
+  }
+
+  .life-whats-inside-grid {
+    grid-template-columns: 1fr !important;
+  }
+
   /* Mobile button sizing */
   button, [role="button"] {
     min-height: 44px; /* iOS touch target */
@@ -349,6 +417,7 @@ select:focus-visible {
 
   /* Mobile footer visibility - ensure it's visible above iOS home indicator */
   .life-footer {
+    margin-top: 24px !important;
     padding-bottom: 34px !important;
   }
 }
