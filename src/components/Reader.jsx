@@ -169,9 +169,27 @@ export function EbookReader({selKey,selContent,tab,setTab,isBookmarked,toggleBk,
         {[{id:"content",label:"Read"},{id:"notes",label:"Notes"},{id:"suggestions",label:"Related"},{id:"saved",label:"Saved"}].map(t=>(
           <button key={t.id} onClick={()=>{play("tap");setTab(t.id);}} style={{padding:"17px 14px",background:"none",border:"none",borderBottom:tab===t.id?`2px solid ${C.green}`:"2px solid transparent",color:tab===t.id?C.green:C.muted,fontSize:13,fontWeight:tab===t.id?700:400,cursor:"pointer",fontFamily:"Georgia,serif",whiteSpace:"nowrap"}}>{t.label}</button>
         ))}
-        <div style={{flex:1,minWidth:8}}/>
-        <button type="button" title="Copy link to this topic" aria-label="Copy link to this topic" onClick={()=>{play("tap");copyTopicLink();}} style={{background:C.light,border:`1px solid ${C.border}`,borderRadius:10,cursor:"pointer",color:C.mid,fontSize:12,fontWeight:600,padding:"8px 12px",fontFamily:"Georgia,serif",flexShrink:0}}>Copy link</button>
-        <button type="button" onClick={toggleBk} aria-label={isBookmarked?"Remove bookmark":"Save bookmark"} style={{background:"none",border:"none",cursor:"pointer",color:isBookmarked?C.gold:C.border,fontSize:24,padding:"0 6px",flexShrink:0}}>{isBookmarked?Ic.starFilled():Ic.star()}</button>
+        <div className="life-reader-toolbar-actions" style={{display:"inline-flex",alignItems:"center",gap:6,marginLeft:"auto",flexShrink:0}}>
+          <button
+            className="life-reader-copy-btn"
+            type="button"
+            title="Copy link to this topic"
+            aria-label="Copy link to this topic"
+            onClick={()=>{play("tap");copyTopicLink();}}
+            style={{background:C.light,border:`1px solid ${C.border}`,borderRadius:10,cursor:"pointer",color:C.mid,fontSize:12,fontWeight:600,padding:"8px 12px",fontFamily:"Georgia,serif",flexShrink:0,whiteSpace:"nowrap"}}
+          >
+            Copy link
+          </button>
+          <button
+            className="life-reader-star-btn"
+            type="button"
+            onClick={toggleBk}
+            aria-label={isBookmarked?"Remove bookmark":"Save bookmark"}
+            style={{background:"none",border:"none",cursor:"pointer",color:isBookmarked?C.gold:C.border,fontSize:24,padding:0,width:38,height:38,display:"inline-flex",alignItems:"center",justifyContent:"center",lineHeight:1,flexShrink:0}}
+          >
+            {isBookmarked?Ic.starFilled():Ic.star()}
+          </button>
+        </div>
       </div>
       {tab==="content"&&(
         <>

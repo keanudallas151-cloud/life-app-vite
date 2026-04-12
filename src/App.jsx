@@ -35,8 +35,15 @@ function RouteFallback() {
   );
 }
 
+const PREF_DEFAULTS = {
+  soundEnabled: true,
+  soundVolume: 58,
+  reduceMotion: false,
+  pressIntensity: 58,
+  instantButtons: true,
+};
+
 export default function LifeApp() {
-  const play = useSound();
 
   // ── AUTH STATE ──────────────────────────────────────────────
   const [screen, setScreen] = useState("loading"); // start loading until session resolved
@@ -118,6 +125,11 @@ export default function LifeApp() {
   // ── USER-SCOPED STATE: Supabase user_data when configured, else localStorage ─
   const uid = user?.email || "_";
   const userIdForData = isSupabaseConfigured && user?.id ? user.id : null;
+  const [uiPrefs, setUiPrefs] = useState(() => LS.get(`prefs_${uid}`, PREF_DEFAULTS));
+  const play = useSound({
+    enabled: uiPrefs.soundEnabled,
+    volume: uiPrefs.soundVolume,
+  });
   const cloud = useUserData(userIdForData);
 
   const prevUidRef = useRef(uid);
@@ -221,6 +233,30 @@ export default function LifeApp() {
   }, [uid]);
 
   const searchInputRef = useRef(null);
+
+  const updateUiPrefs = useCallback((patch) => {
+    setUiPrefs((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  useEffect(() => {
+    setUiPrefs(LS.get(`prefs_${uid}`, PREF_DEFAULTS));
+  }, [uid]);
+
+  useEffect(() => {
+    LS.set(`prefs_${uid}`, uiPrefs);
+  }, [uid, uiPrefs]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const reduce = !!uiPrefs.reduceMotion;
+    const intensity = Math.max(0, Math.min(100, Number(uiPrefs.pressIntensity) || 0));
+    const pressScale = reduce ? 1 : 0.985 - intensity * 0.00035;
+    const hoverLift = reduce ? 0 : 0.5 + intensity * 0.02;
+    root.classList.toggle("life-reduce-motion", reduce);
+    root.classList.toggle("life-instant-buttons", !!uiPrefs.instantButtons);
+    root.style.setProperty("--life-press-scale", String(pressScale));
+    root.style.setProperty("--life-hover-lift", `${hoverLift.toFixed(2)}px`);
+  }, [uiPrefs.instantButtons, uiPrefs.pressIntensity, uiPrefs.reduceMotion]);
 
   const setProfile = (v) => {
     const next = typeof v === "function" ? v(profile) : v;
@@ -1383,6 +1419,129 @@ export default function LifeApp() {
                     <span style={{ fontSize: 15, fontWeight: 700, color: C.green }}>{val}</span>
                   </div>
                 ))}
+              </div>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: 22, marginBottom: 20 }}>
+                <p style={{ margin: "0 0 16px", fontSize: 10, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase", color: C.muted }}>
+                  Setting
+                </p>
+
+                <div style={{ display: "grid", gap: 14 }}>
+                  <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                    <div>
+                      <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.ink }}>Sound Effects</p>
+                      <p style={{ margin: "3px 0 0", fontSize: 12, color: C.muted, fontStyle: "italic" }}>Button and feedback sounds</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={!!uiPrefs.soundEnabled}
+                      onChange={(e) => {
+                        const next = e.target.checked;
+                        if (next) play("ok");
+                        updateUiPrefs({ soundEnabled: next });
+                        if (!next) play("tap");
+                      }}
+                      style={{ width: 20, height: 20, accentColor: C.green }}
+                    />
+                  </label>
+
+                  <label style={{ display: "grid", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>Sound Volume</span>
+                      <span style={{ fontSize: 12, color: C.muted }}>{uiPrefs.soundVolume}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={uiPrefs.soundVolume}
+                      disabled={!uiPrefs.soundEnabled}
+                      onChange={(e) => updateUiPrefs({ soundVolume: Number(e.target.value) })}
+                      style={{ accentColor: C.green }}
+                    />
+                  </label>
+
+                  <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                    <div>
+                      <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.ink }}>Reduce Motion</p>
+                      <p style={{ margin: "3px 0 0", fontSize: 12, color: C.muted, fontStyle: "italic" }}>Calmer animations for iPhone comfort</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={!!uiPrefs.reduceMotion}
+                      onChange={(e) => updateUiPrefs({ reduceMotion: e.target.checked })}
+                      style={{ width: 20, height: 20, accentColor: C.green }}
+                    />
+                  </label>
+
+                  <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                    <div>
+                      <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.ink }}>Instant Button Response</p>
+                      <p style={{ margin: "3px 0 0", fontSize: 12, color: C.muted, fontStyle: "italic" }}>Cuts animation lag on quick taps</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={!!uiPrefs.instantButtons}
+                      onChange={(e) => updateUiPrefs({ instantButtons: e.target.checked })}
+                      style={{ width: 20, height: 20, accentColor: C.green }}
+                    />
+                  </label>
+
+                  <label style={{ display: "grid", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>Button Press Strength</span>
+                      <span style={{ fontSize: 12, color: C.muted }}>{uiPrefs.pressIntensity}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={uiPrefs.pressIntensity}
+                      disabled={!!uiPrefs.reduceMotion}
+                      onChange={(e) => updateUiPrefs({ pressIntensity: Number(e.target.value) })}
+                      style={{ accentColor: C.green }}
+                    />
+                  </label>
+
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingTop: 2 }}>
+                    <button
+                      type="button"
+                      onClick={() => play("tap")}
+                      disabled={!uiPrefs.soundEnabled}
+                      style={{
+                        background: C.white,
+                        border: `1px solid ${C.border}`,
+                        borderRadius: 10,
+                        padding: "10px 14px",
+                        color: uiPrefs.soundEnabled ? C.mid : C.border,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: uiPrefs.soundEnabled ? "pointer" : "default",
+                        fontFamily: "Georgia,serif",
+                      }}
+                    >
+                      Test Sound
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateUiPrefs(PREF_DEFAULTS)}
+                      style={{
+                        background: C.light,
+                        border: `1px solid ${C.border}`,
+                        borderRadius: 10,
+                        padding: "10px 14px",
+                        color: C.mid,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        fontFamily: "Georgia,serif",
+                      }}
+                    >
+                      Reset Setting
+                    </button>
+                  </div>
+                </div>
               </div>
               <button onClick={doSignOut} style={{ width: "100%", background: "none", border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "15px", color: C.red, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "Georgia,serif" }}>Sign Out</button>
             </div>

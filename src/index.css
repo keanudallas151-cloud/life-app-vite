@@ -11,6 +11,8 @@
   --life-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --life-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
   --life-font: Georgia, "Times New Roman", "Iowan Old Style", serif;
+  --life-hover-lift: 1px;
+  --life-press-scale: 0.965;
 }
 
 *,
@@ -35,6 +37,11 @@ body {
     "onum" 1;
   color: var(--life-ink);
   /* Reduce 300ms tap delay on older iOS */
+  touch-action: manipulation;
+}
+
+button,
+[role="button"] {
   touch-action: manipulation;
 }
 
@@ -953,5 +960,110 @@ button:active:not(:disabled) {
 
   .life-constellation-cta-spark {
     animation: none;
+  }
+}
+
+/* ── Global button interaction override ──────────────────── */
+button,
+[role="button"] {
+  transition:
+    transform 0.16s var(--life-ease-soft),
+    box-shadow 0.22s var(--life-ease-soft),
+    filter 0.16s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  button:not(:disabled):hover,
+  [role="button"]:not([aria-disabled="true"]):hover {
+    transform: translateY(calc(var(--life-hover-lift) * -1));
+  }
+
+  button:active:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]):active {
+    transform: translateY(1px) scale(var(--life-press-scale)) !important;
+    filter: saturate(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  [role="button"] {
+    transition: none;
+  }
+
+  button:active:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]):active {
+    transform: none !important;
+    filter: none;
+  }
+}
+
+.life-reduce-motion button,
+.life-reduce-motion [role="button"] {
+  transition: none !important;
+}
+
+.life-reduce-motion button:active:not(:disabled),
+.life-reduce-motion [role="button"]:not([aria-disabled="true"]):active,
+.life-reduce-motion button:not(:disabled):hover,
+.life-reduce-motion [role="button"]:not([aria-disabled="true"]):hover {
+  transform: none !important;
+  filter: none !important;
+}
+
+.life-instant-buttons button,
+.life-instant-buttons [role="button"] {
+  transition-duration: 70ms !important;
+}
+
+.life-instant-buttons button:active:not(:disabled),
+.life-instant-buttons [role="button"]:not([aria-disabled="true"]):active {
+  transform: scale(0.985) !important;
+}
+
+/* ── Reader toolbar fixes (iPhone alignment) ─────────────── */
+.life-reader-toolbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.life-reader-star-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+}
+
+.life-reader-copy-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .life-reader-toolbar {
+    flex-wrap: nowrap !important;
+    row-gap: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .life-reader-toolbar-actions {
+    gap: 4px;
+  }
+
+  .life-reader-copy-btn {
+    font-size: 11px !important;
+    padding: 8px 10px !important;
+  }
+
+  .life-reader-star-btn {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 20px !important;
   }
 }
