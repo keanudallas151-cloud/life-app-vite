@@ -523,6 +523,64 @@ canvas {
   height: 100%;
 }
 
+.life-app-body {
+  min-height: 0;
+}
+
+.life-main-scroll {
+  height: 100%;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.life-settings-page,
+.life-profile-page {
+  width: min(100%, 760px);
+}
+
+.life-settings-page {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+.life-settings-card,
+.life-profile-card {
+  box-shadow: 0 10px 26px rgba(20, 20, 20, 0.06);
+}
+
+.life-settings-row:last-child {
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+}
+
+.life-settings-action-grid {
+  align-items: stretch;
+}
+
+.life-settings-action-grid > button {
+  min-height: 44px;
+}
+
+body.life-dark .life-search-dropdown,
+body.life-dark .life-notif-dropdown,
+body.life-dark .life-sidebar,
+body.life-dark .life-profile-card,
+body.life-dark .life-settings-card,
+body.life-dark .life-auth-card {
+  background: #1e1e1e !important;
+  border-color: #333 !important;
+  color: #e8e8e8 !important;
+}
+
+body.life-dark .life-settings-subtitle,
+body.life-dark .life-profile-page p,
+body.life-dark .life-settings-page p {
+  color: #b8b8b8;
+}
+
+body.life-dark .life-main-scroll {
+  background: #121212;
+}
+
 @media (max-width: 640px) {
   .life-auth-card {
     max-height: calc(
@@ -561,6 +619,21 @@ canvas {
     left: max(8px, var(--safe-left)) !important;
     right: max(8px, var(--safe-right)) !important;
     width: auto !important;
+  }
+
+  .life-settings-page,
+  .life-profile-page {
+    width: 100%;
+  }
+
+  .life-settings-card,
+  .life-profile-card {
+    padding: 18px !important;
+    border-radius: 16px !important;
+  }
+
+  .life-settings-action-grid > button {
+    flex: 1 1 180px;
   }
 }
 

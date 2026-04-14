@@ -663,6 +663,20 @@ export default function LifeApp() {
   );
 
   const searchInputRef = useRef(null);
+  const mainScrollRef = useRef(null);
+
+  useEffect(() => {
+    setShowSearch(false);
+    setShowNotif(false);
+
+    const scroller = mainScrollRef.current;
+    if (scroller && typeof scroller.scrollTo === "function") {
+      scroller.scrollTo({ top: 0, behavior: "auto" });
+      return;
+    }
+
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [page, screen]);
 
   const updateUiPrefs = useCallback((patch) => {
     setUiPrefs((prev) => ({ ...prev, ...patch }));
@@ -1195,12 +1209,22 @@ export default function LifeApp() {
 
   // ── SCROLL TO TOP ─────────────────────────────────────────────
   useEffect(() => {
+    if (screen !== "app") {
+      setShowScrollTop(false);
+      return;
+    }
+
+    const scroller = mainScrollRef.current;
+    if (!scroller) return;
+
     const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300);
+      setShowScrollTop(scroller.scrollTop > 300);
     };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+
+    handleScroll();
+    scroller.addEventListener("scroll", handleScroll, { passive: true });
+    return () => scroller.removeEventListener("scroll", handleScroll);
+  }, [screen]);
 
   useEffect(() => {
     const toOnline = () => setIsOffline(false);
@@ -1214,7 +1238,12 @@ export default function LifeApp() {
   }, []);
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const scroller = mainScrollRef.current;
+    if (scroller && typeof scroller.scrollTo === "function") {
+      scroller.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
     play("tap");
   };
 
@@ -3715,10 +3744,10 @@ export default function LifeApp() {
             left: 0,
             right: 0,
             zIndex: 200,
-            background: "rgba(255,255,255,0.98)",
+            background: dark ? "rgba(30,30,30,0.98)" : "rgba(255,255,255,0.98)",
             backdropFilter: "blur(14px)",
             WebkitBackdropFilter: "blur(14px)",
-            borderBottom: `1px solid ${C.border}`,
+            borderBottom: `1px solid ${t.border}`,
             maxHeight: 320,
             overflowY: "auto",
             boxShadow: "0 12px 40px rgba(0,0,0,0.12)",
@@ -3728,7 +3757,7 @@ export default function LifeApp() {
           {searchResults.length === 0 ? (
             <p
               style={{
-                color: C.muted,
+                color: t.muted,
                 padding: "22px 28px",
                 margin: 0,
                 fontSize: 14,
@@ -3752,19 +3781,19 @@ export default function LifeApp() {
                   textAlign: "left",
                   background: "transparent",
                   border: "none",
-                  borderBottom: `1px solid ${C.light}`,
+                  borderBottom: `1px solid ${t.light}`,
                   padding: "14px 24px",
                   cursor: "pointer",
                   fontFamily: "Georgia,serif",
                 }}
                 onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = C.light)
+                  (e.currentTarget.style.background = t.light)
                 }
                 onMouseLeave={(e) =>
                   (e.currentTarget.style.background = "transparent")
                 }
               >
-                <div style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: t.ink }}>
                   {item.node.icon && (
                     <span style={{ marginRight: 8 }}>{item.node.icon}</span>
                   )}
@@ -3773,7 +3802,7 @@ export default function LifeApp() {
                 <div
                   style={{
                     fontSize: 12,
-                    color: C.muted,
+                    color: t.muted,
                     marginTop: 2,
                     fontStyle: "italic",
                   }}
@@ -3827,8 +3856,8 @@ export default function LifeApp() {
             bottom: 0,
             width: 288,
             maxWidth: "min(288px, 100vw)",
-            background: C.white,
-            borderRight: `1px solid ${C.border}`,
+            background: t.white,
+            borderRight: `1px solid ${t.border}`,
             overflowY: "auto",
             WebkitOverflowScrolling: "touch",
             zIndex: 40,
@@ -3872,7 +3901,7 @@ export default function LifeApp() {
                     margin: 0,
                     fontSize: 14,
                     fontWeight: 700,
-                    color: C.ink,
+                    color: t.ink,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -3884,7 +3913,7 @@ export default function LifeApp() {
                   style={{
                     margin: 0,
                     fontSize: 11,
-                    color: C.muted,
+                    color: t.muted,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -3896,8 +3925,8 @@ export default function LifeApp() {
             </div>
             <div
               style={{
-                background: C.light,
-                border: `1px solid ${C.border}`,
+                background: t.light,
+                border: `1px solid ${t.border}`,
                 borderRadius: 12,
                 padding: "10px 12px",
                 cursor: "pointer",
@@ -3935,7 +3964,7 @@ export default function LifeApp() {
                 style={{
                   height: 6,
                   borderRadius: 999,
-                  background: C.white,
+                  background: t.white,
                   overflow: "hidden",
                 }}
               >
@@ -4160,7 +4189,7 @@ export default function LifeApp() {
               onClick={doSignOut}
               style={{
                 width: "100%",
-                background: C.white,
+                background: t.white,
                 border: `1.5px solid ${C.red}`,
                 borderRadius: 10,
                 padding: "12px",
@@ -4206,6 +4235,7 @@ export default function LifeApp() {
         {/* MAIN CONTENT */}
         <div
           className="life-main-scroll"
+          ref={mainScrollRef}
           style={{
             flex: 1,
             overflowY: "auto",
@@ -6294,10 +6324,11 @@ export default function LifeApp() {
             {/* P10: Setting Preferences */}
             {page === "setting_preferences" && (
               <div
+                className="life-settings-page"
                 data-page-tag="#setting_preferences"
                 style={{
                   padding: "48px 28px",
-                  maxWidth: 560,
+                  maxWidth: 720,
                   margin: "0 auto",
                 }}
               >
@@ -6337,16 +6368,74 @@ export default function LifeApp() {
                   style={{
                     fontSize: 26,
                     fontWeight: 700,
-                    color: C.ink,
-                    margin: "0 0 28px",
+                    color: t.ink,
+                    margin: "0 0 8px",
                   }}
                 >
                   Settings
                 </h2>
+                <p
+                  className="life-settings-subtitle"
+                  style={{
+                    margin: "0 0 24px",
+                    color: t.muted,
+                    fontSize: 14,
+                    lineHeight: 1.7,
+                    fontStyle: "italic",
+                  }}
+                >
+                  Cleanly organised controls for appearance, accessibility,
+                  motion, sound, privacy, and account tools.
+                </p>
                 {[
                   {
-                    tag: "#setting_volume",
+                    tag: "#setting_appearance",
+                    title: "Appearance",
+                    desc: "Theme, contrast, and reading comfort",
+                    items: [
+                      {
+                        label: "Dark Mode",
+                        desc: "Switch between light and dark themes",
+                        value: dark,
+                        onChange: toggleDark,
+                      },
+                      {
+                        label: "High Contrast",
+                        desc: "Sharpen separation and text readability",
+                        value: uiPrefs.highContrast,
+                        onChange: (v) => updateUiPrefs({ highContrast: v }),
+                      },
+                    ],
+                  },
+                  {
+                    tag: "#setting_motion",
+                    title: "Motion & Performance",
+                    desc: "Make the app feel smoother, lighter, and easier to scan",
+                    items: [
+                      {
+                        label: "Reduce Motion",
+                        desc: "Calmer animations and less movement",
+                        value: uiPrefs.reduceMotion,
+                        onChange: (v) => updateUiPrefs({ reduceMotion: v }),
+                      },
+                      {
+                        label: "Data Saver",
+                        desc: "Lower visual effect cost and heavy rendering",
+                        value: uiPrefs.dataSaver,
+                        onChange: (v) => updateUiPrefs({ dataSaver: v }),
+                      },
+                      {
+                        label: "Instant Button Response",
+                        desc: "Reduce perceived tap delay on fast interactions",
+                        value: uiPrefs.instantButtons,
+                        onChange: (v) => updateUiPrefs({ instantButtons: v }),
+                      },
+                    ],
+                  },
+                  {
+                    tag: "#setting_sound",
                     title: "Sound",
+                    desc: "Feedback sounds and listening comfort",
                     items: [
                       {
                         label: "Sound Effects",
@@ -6357,42 +6446,25 @@ export default function LifeApp() {
                     ],
                   },
                   {
-                    tag: "#setting_system",
-                    title: "System",
-                    items: [
-                      {
-                        label: "Dark Mode",
-                        desc: "Switch between light and dark themes",
-                        value: dark,
-                        onChange: toggleDark,
-                      },
-                      {
-                        label: "Reduce Motion",
-                        desc: "Fewer animations",
-                        value: uiPrefs.reduceMotion,
-                        onChange: (v) => updateUiPrefs({ reduceMotion: v }),
-                      },
-                      {
-                        label: "Data Saver",
-                        desc: "Reduce visual effects",
-                        value: uiPrefs.dataSaver,
-                        onChange: (v) => updateUiPrefs({ dataSaver: v }),
-                      },
-                    ],
+                    tag: "#setting_account",
+                    title: "Account & Progress",
+                    desc: "Reset tools and account actions live below",
+                    items: [],
                   },
-                  { tag: "#setting_account", title: "Account", items: [] },
                   {
-                    tag: "#setting_notification",
-                    title: "Notification",
+                    tag: "#setting_privacy",
+                    title: "Privacy & Legal",
+                    desc: "Policy links and export tools live below",
                     items: [],
                   },
                 ].map((section) => (
                   <div
+                    className="life-settings-card"
                     key={section.title}
                     data-page-tag={section.tag}
                     style={{
-                      background: C.white,
-                      border: `1px solid ${C.border}`,
+                      background: t.white,
+                      border: `1px solid ${t.border}`,
                       borderRadius: 16,
                       padding: 22,
                       marginBottom: 16,
@@ -6405,25 +6477,39 @@ export default function LifeApp() {
                         fontWeight: 700,
                         letterSpacing: 2.5,
                         textTransform: "uppercase",
-                        color: C.muted,
+                        color: t.muted,
                       }}
                     >
                       {section.title}
                     </p>
+                    {section.desc && (
+                      <p
+                        style={{
+                          margin: "-6px 0 14px",
+                          fontSize: 13,
+                          color: t.muted,
+                          lineHeight: 1.55,
+                          fontStyle: "italic",
+                        }}
+                      >
+                        {section.desc}
+                      </p>
+                    )}
                     {section.items.length === 0 && (
                       <p
                         style={{
                           margin: 0,
                           fontSize: 13,
-                          color: C.muted,
+                          color: t.muted,
                           fontStyle: "italic",
                         }}
                       >
-                        Coming soon.
+                        Organised tools for this section are available below.
                       </p>
                     )}
                     {section.items.map((item) => (
                       <label
+                        className="life-settings-row"
                         key={item.label}
                         style={{
                           display: "flex",
@@ -6431,7 +6517,7 @@ export default function LifeApp() {
                           justifyContent: "space-between",
                           gap: 12,
                           padding: "10px 0",
-                          borderBottom: `1px solid ${C.light}`,
+                          borderBottom: `1px solid ${t.light}`,
                         }}
                       >
                         <div>
@@ -6440,7 +6526,7 @@ export default function LifeApp() {
                               margin: 0,
                               fontSize: 14,
                               fontWeight: 700,
-                              color: C.ink,
+                              color: t.ink,
                             }}
                           >
                             {item.label}
@@ -6449,7 +6535,7 @@ export default function LifeApp() {
                             style={{
                               margin: "2px 0 0",
                               fontSize: 12,
-                              color: C.muted,
+                              color: t.muted,
                             }}
                           >
                             {item.desc}
@@ -6468,32 +6554,35 @@ export default function LifeApp() {
                           style={{
                             width: 20,
                             height: 20,
-                            accentColor: C.green,
+                            accentColor: t.green,
                           }}
                         />
                       </label>
                     ))}
                   </div>
                 ))}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                <div
+                  className="life-settings-action-grid"
+                  style={{ display: "flex", flexWrap: "wrap", gap: 8 }}
+                >
                   <button
                     onClick={() => {
                       updateUiPrefs(PREF_DEFAULTS);
                       play("ok");
                     }}
                     style={{
-                      background: C.light,
-                      border: `1px solid ${C.border}`,
+                      background: t.light,
+                      border: `1px solid ${t.border}`,
                       borderRadius: 10,
                       padding: "10px 16px",
-                      color: C.mid,
+                      color: t.mid,
                       fontSize: 12,
                       fontWeight: 700,
                       cursor: "pointer",
                       fontFamily: "Georgia,serif",
                     }}
                   >
-                    Reset Settings
+                    Restore Defaults
                   </button>
                   <button
                     onClick={() => {
@@ -6501,11 +6590,11 @@ export default function LifeApp() {
                       play("ok");
                     }}
                     style={{
-                      background: C.light,
-                      border: `1px solid ${C.border}`,
+                      background: t.light,
+                      border: `1px solid ${t.border}`,
                       borderRadius: 10,
                       padding: "10px 16px",
-                      color: C.mid,
+                      color: t.mid,
                       fontSize: 12,
                       fontWeight: 700,
                       cursor: "pointer",
@@ -6521,11 +6610,11 @@ export default function LifeApp() {
                       play("ok");
                     }}
                     style={{
-                      background: C.light,
-                      border: `1px solid ${C.border}`,
+                      background: t.light,
+                      border: `1px solid ${t.border}`,
                       borderRadius: 10,
                       padding: "10px 16px",
-                      color: C.mid,
+                      color: t.mid,
                       fontSize: 12,
                       fontWeight: 700,
                       cursor: "pointer",
@@ -6683,6 +6772,7 @@ export default function LifeApp() {
 
             {page === "profile" && (
               <div
+                className="life-profile-page"
                 data-page-tag="#profile"
                 style={{
                   padding: "48px 28px",
@@ -6703,15 +6793,15 @@ export default function LifeApp() {
                       width: 70,
                       height: 70,
                       borderRadius: "50%",
-                      background: C.white,
-                      border: `2px solid ${C.border}`,
+                      background: t.white,
+                      border: `2px solid ${t.border}`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
                     <span
-                      style={{ fontSize: 24, fontWeight: 700, color: C.ink }}
+                      style={{ fontSize: 24, fontWeight: 700, color: t.ink }}
                     >
                       {initials}
                     </span>
@@ -6722,7 +6812,7 @@ export default function LifeApp() {
                         margin: "0 0 4px",
                         fontSize: 22,
                         fontWeight: 700,
-                        color: C.ink,
+                        color: t.ink,
                       }}
                     >
                       {user?.name}
@@ -6731,7 +6821,7 @@ export default function LifeApp() {
                       style={{
                         margin: 0,
                         fontSize: 14,
-                        color: C.muted,
+                        color: t.muted,
                         fontStyle: "italic",
                       }}
                     >
@@ -6749,8 +6839,8 @@ export default function LifeApp() {
                       width: 40,
                       height: 40,
                       borderRadius: "50%",
-                      background: C.light,
-                      border: `1px solid ${C.border}`,
+                      background: t.light,
+                      border: `1px solid ${t.border}`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -6763,7 +6853,7 @@ export default function LifeApp() {
                       height="18"
                       viewBox="0 0 24 24"
                       fill="none"
-                      stroke={C.mid}
+                      stroke={t.mid}
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -6774,9 +6864,10 @@ export default function LifeApp() {
                   </button>
                 </div>
                 <div
+                  className="life-profile-card"
                   style={{
-                    background: C.white,
-                    border: `1px solid ${C.border}`,
+                    background: t.white,
+                    border: `1px solid ${t.border}`,
                     borderRadius: 14,
                     padding: 24,
                     marginBottom: 20,
@@ -6789,7 +6880,7 @@ export default function LifeApp() {
                       fontWeight: 700,
                       letterSpacing: 2.5,
                       textTransform: "uppercase",
-                      color: C.muted,
+                      color: t.muted,
                     }}
                   >
                     Your Stats
@@ -6817,7 +6908,7 @@ export default function LifeApp() {
                       <span
                         style={{
                           fontSize: 15,
-                          color: C.mid,
+                          color: t.mid,
                           fontFamily: "Georgia,serif",
                         }}
                       >
@@ -6827,7 +6918,7 @@ export default function LifeApp() {
                         style={{
                           fontSize: 15,
                           fontWeight: 700,
-                          color: C.green,
+                          color: t.green,
                         }}
                       >
                         {val}
@@ -6836,9 +6927,10 @@ export default function LifeApp() {
                   ))}
                 </div>
                 <div
+                  className="life-profile-card"
                   style={{
-                    background: C.white,
-                    border: `1px solid ${C.border}`,
+                    background: t.white,
+                    border: `1px solid ${t.border}`,
                     borderRadius: 14,
                     padding: 22,
                     marginBottom: 20,
@@ -6851,10 +6943,10 @@ export default function LifeApp() {
                       fontWeight: 700,
                       letterSpacing: 2.5,
                       textTransform: "uppercase",
-                      color: C.muted,
+                      color: t.muted,
                     }}
                   >
-                    Setting
+                    Settings Hub
                   </p>
                   <div
                     style={{
@@ -6876,11 +6968,11 @@ export default function LifeApp() {
                         key={item}
                         style={{
                           fontSize: 10,
-                          color: C.muted,
-                          border: `1px solid ${C.border}`,
+                          color: t.muted,
+                          border: `1px solid ${t.border}`,
                           borderRadius: 999,
                           padding: "4px 8px",
-                          background: C.white,
+                          background: t.white,
                           letterSpacing: 0.6,
                           textTransform: "uppercase",
                         }}
@@ -6902,7 +6994,7 @@ export default function LifeApp() {
                           color: C.muted,
                         }}
                       >
-                        Experience
+                        Quick Presets
                       </p>
                     </div>
                     <div style={{ display: "grid", gap: 8 }}>
@@ -7605,7 +7697,7 @@ export default function LifeApp() {
                           fontFamily: "Georgia,serif",
                         }}
                       >
-                        Reset Setting
+                        Reset Settings
                       </button>
                       <button
                         type="button"
@@ -7635,7 +7727,7 @@ export default function LifeApp() {
                           fontFamily: "Georgia,serif",
                         }}
                       >
-                        Optimize iPhone
+                        Optimize Mobile
                       </button>
                       <button
                         type="button"
@@ -7692,7 +7784,7 @@ export default function LifeApp() {
                           fontFamily: "Georgia,serif",
                         }}
                       >
-                        Privacy Policy
+                        Privacy & Policy
                       </button>
                       <button
                         type="button"
