@@ -53,8 +53,16 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(1200px 460px at 8% -10%, rgba(74, 140, 92, 0.09), transparent 62%),
-    radial-gradient(900px 420px at 92% 0%, rgba(180, 151, 90, 0.08), transparent 58%),
+    radial-gradient(
+      1200px 460px at 8% -10%,
+      rgba(74, 140, 92, 0.09),
+      transparent 62%
+    ),
+    radial-gradient(
+      900px 420px at 92% 0%,
+      rgba(180, 151, 90, 0.08),
+      transparent 58%
+    ),
     linear-gradient(180deg, #f7f3ec 0%, #f5f0e8 52%, #f2ebe1 100%);
 }
 
@@ -168,7 +176,11 @@ p {
   inset: 0;
   pointer-events: none;
   opacity: 0;
-  background: linear-gradient(130deg, rgba(255, 255, 255, 0.36), transparent 44%);
+  background: linear-gradient(
+    130deg,
+    rgba(255, 255, 255, 0.36),
+    transparent 44%
+  );
   transition: opacity 0.24s ease;
 }
 
@@ -578,7 +590,10 @@ select:focus-visible {
   /* Mobile search dropdown */
   .life-search-dropdown {
     top: calc(56px + env(safe-area-inset-top, 0px)) !important;
-    max-height: min(70vh, calc(100dvh - 56px - env(safe-area-inset-top, 0px))) !important;
+    max-height: min(
+      70vh,
+      calc(100dvh - 56px - env(safe-area-inset-top, 0px))
+    ) !important;
     border-radius: 0 0 16px 16px !important;
   }
 
@@ -684,10 +699,11 @@ select:focus-visible {
     flex: 1 1 200px !important;
   }
 
-  /* Mobile button sizing */
-  button,
+  /* Mobile button sizing — iOS touch target (44px minimum)
+     Exclude password-toggle buttons which sit inside an input row */
+  button:not(.life-password-toggle):not([data-password-toggle]),
   [role="button"] {
-    min-height: 44px; /* iOS touch target */
+    min-height: 44px;
   }
 
   /* Mobile footer visibility - ensure it's visible above iOS home indicator */
@@ -744,7 +760,9 @@ select {
   background-position:
     calc(100% - 16px) calc(50% - 2px),
     calc(100% - 11px) calc(50% - 2px);
-  background-size: 5px 5px, 5px 5px;
+  background-size:
+    5px 5px,
+    5px 5px;
   background-repeat: no-repeat;
   padding-right: 28px !important;
 }
@@ -893,8 +911,10 @@ button:active:not(:disabled) {
   display: flex;
   align-items: stretch;
   justify-content: center;
-  padding: max(12px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px))
-    max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+  padding: max(12px, env(safe-area-inset-top, 0px))
+    max(12px, env(safe-area-inset-right, 0px))
+    max(12px, env(safe-area-inset-bottom, 0px))
+    max(12px, env(safe-area-inset-left, 0px));
   box-sizing: border-box;
   animation: life-constellation-overlay-in 0.45s var(--life-ease-out) both;
 }
@@ -915,7 +935,11 @@ button:active:not(:disabled) {
   padding: 0;
   margin: 0;
   cursor: pointer;
-  background: radial-gradient(ellipse 120% 80% at 50% 20%, rgba(20, 28, 24, 0.72), rgba(10, 14, 12, 0.88));
+  background: radial-gradient(
+    ellipse 120% 80% at 50% 20%,
+    rgba(20, 28, 24, 0.72),
+    rgba(10, 14, 12, 0.88)
+  );
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -927,7 +951,11 @@ button:active:not(:disabled) {
   max-height: min(92vh, 880px);
   display: flex;
   flex-direction: column;
-  background: linear-gradient(165deg, rgba(255, 252, 247, 0.97) 0%, rgba(245, 240, 232, 0.98) 100%);
+  background: linear-gradient(
+    165deg,
+    rgba(255, 252, 247, 0.97) 0%,
+    rgba(245, 240, 232, 0.98) 100%
+  );
   border: 1px solid rgba(74, 140, 92, 0.35);
   border-radius: 20px;
   box-shadow:
@@ -1030,11 +1058,19 @@ button:active:not(:disabled) {
   inset: 0;
   opacity: 0.5;
   background-image:
-    radial-gradient(1.5px 1.5px at 20% 30%, rgba(74, 140, 92, 0.35), transparent),
+    radial-gradient(
+      1.5px 1.5px at 20% 30%,
+      rgba(74, 140, 92, 0.35),
+      transparent
+    ),
     radial-gradient(1px 1px at 70% 60%, rgba(74, 140, 92, 0.25), transparent),
     radial-gradient(1px 1px at 40% 80%, rgba(180, 160, 120, 0.2), transparent),
     radial-gradient(1.5px 1.5px at 85% 20%, rgba(74, 140, 92, 0.3), transparent);
-  background-size: 280px 280px, 320px 320px, 260px 260px, 300px 300px;
+  background-size:
+    280px 280px,
+    320px 320px,
+    260px 260px,
+    300px 300px;
   animation: life-constellation-bg-drift 80s linear infinite;
 }
 
@@ -1058,8 +1094,8 @@ button:active:not(:disabled) {
 
 .life-constellation-svg text {
   font-family:
-    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", Georgia,
-    serif;
+    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji",
+    "Twemoji Mozilla", Georgia, serif;
 }
 
 .life-constellation-node {
@@ -1298,7 +1334,12 @@ button,
   will-change: transform, opacity;
   backface-visibility: hidden;
   transform-origin: left center;
-  transition: transform var(--life-sidebar-duration, 520ms) cubic-bezier(0.19, 1, 0.22, 1), opacity var(--life-sidebar-fade-duration, 420ms) cubic-bezier(0.19, 1, 0.22, 1), box-shadow var(--life-sidebar-duration, 520ms) cubic-bezier(0.19, 1, 0.22, 1);
+  transition:
+    transform var(--life-sidebar-duration, 520ms) cubic-bezier(0.19, 1, 0.22, 1),
+    opacity var(--life-sidebar-fade-duration, 420ms)
+      cubic-bezier(0.19, 1, 0.22, 1),
+    box-shadow var(--life-sidebar-duration, 520ms)
+      cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .life-sidebar::before {
@@ -1307,13 +1348,23 @@ button,
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(120% 90% at 0% 50%, rgba(255, 255, 255, 0.35), transparent 55%),
+    radial-gradient(
+      120% 90% at 0% 50%,
+      rgba(255, 255, 255, 0.35),
+      transparent 55%
+    ),
     linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0));
   mix-blend-mode: soft-light;
 }
 
 .life-sidebar-backdrop {
-transition: opacity var(--life-sidebar-fade-duration, 420ms) cubic-bezier(0.19, 1, 0.22, 1), backdrop-filter var(--life-sidebar-fade-duration, 420ms) cubic-bezier(0.19, 1, 0.22, 1), -webkit-backdrop-filter var(--life-sidebar-fade-duration, 420ms) cubic-bezier(0.19, 1, 0.22, 1);
+  transition:
+    opacity var(--life-sidebar-fade-duration, 420ms)
+      cubic-bezier(0.19, 1, 0.22, 1),
+    backdrop-filter var(--life-sidebar-fade-duration, 420ms)
+      cubic-bezier(0.19, 1, 0.22, 1),
+    -webkit-backdrop-filter var(--life-sidebar-fade-duration, 420ms)
+      cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 /* Reduce perceived tap delay */
@@ -1370,7 +1421,12 @@ button:active:not(:disabled),
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.22) 50%, transparent 80%);
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.22) 50%,
+    transparent 80%
+  );
   transform: translateX(-120%);
   transition: transform 420ms cubic-bezier(0.19, 1, 0.22, 1);
   pointer-events: none;
@@ -1431,14 +1487,30 @@ button:active:not(:disabled),
   animation: life-sidebar-item-in 420ms cubic-bezier(0.19, 1, 0.22, 1) both;
 }
 
-.life-sidebar[style*="translateX(0)"] button:nth-of-type(1) { animation-delay: 20ms; }
-.life-sidebar[style*="translateX(0)"] button:nth-of-type(2) { animation-delay: 45ms; }
-.life-sidebar[style*="translateX(0)"] button:nth-of-type(3) { animation-delay: 70ms; }
-.life-sidebar[style*="translateX(0)"] button:nth-of-type(4) { animation-delay: 95ms; }
-.life-sidebar[style*="translateX(0)"] button:nth-of-type(5) { animation-delay: 120ms; }
-.life-sidebar[style*="translateX(0)"] button:nth-of-type(6) { animation-delay: 145ms; }
-.life-sidebar[style*="translateX(0)"] button:nth-of-type(7) { animation-delay: 170ms; }
-.life-sidebar[style*="translateX(0)"] button:nth-of-type(8) { animation-delay: 195ms; }
+.life-sidebar[style*="translateX(0)"] button:nth-of-type(1) {
+  animation-delay: 20ms;
+}
+.life-sidebar[style*="translateX(0)"] button:nth-of-type(2) {
+  animation-delay: 45ms;
+}
+.life-sidebar[style*="translateX(0)"] button:nth-of-type(3) {
+  animation-delay: 70ms;
+}
+.life-sidebar[style*="translateX(0)"] button:nth-of-type(4) {
+  animation-delay: 95ms;
+}
+.life-sidebar[style*="translateX(0)"] button:nth-of-type(5) {
+  animation-delay: 120ms;
+}
+.life-sidebar[style*="translateX(0)"] button:nth-of-type(6) {
+  animation-delay: 145ms;
+}
+.life-sidebar[style*="translateX(0)"] button:nth-of-type(7) {
+  animation-delay: 170ms;
+}
+.life-sidebar[style*="translateX(0)"] button:nth-of-type(8) {
+  animation-delay: 195ms;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .life-sidebar[style*="translateX(0)"] button {
@@ -1568,7 +1640,12 @@ button:active:not(:disabled),
   width: 150%;
   height: 180%;
   border-radius: 999px;
-  background: radial-gradient(ellipse at center, rgba(111, 190, 119, 0.42) 0%, rgba(111, 190, 119, 0.18) 38%, rgba(111, 190, 119, 0) 72%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(111, 190, 119, 0.42) 0%,
+    rgba(111, 190, 119, 0.18) 38%,
+    rgba(111, 190, 119, 0) 72%
+  );
   pointer-events: none;
   z-index: -1;
   filter: blur(6px);
@@ -1587,7 +1664,12 @@ button:active:not(:disabled),
   position: absolute;
   inset: -8px -10px;
   border-radius: 18px;
-  background: radial-gradient(ellipse at center, rgba(111, 190, 119, 0.35) 0%, rgba(111, 190, 119, 0.13) 40%, rgba(111, 190, 119, 0) 76%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(111, 190, 119, 0.35) 0%,
+    rgba(111, 190, 119, 0.13) 40%,
+    rgba(111, 190, 119, 0) 76%
+  );
   pointer-events: none;
   z-index: -1;
   filter: blur(4px);
@@ -1651,7 +1733,9 @@ button:active:not(:disabled),
 .life-high-contrast .life-card-hover,
 .life-high-contrast .life-home-hero {
   border-color: var(--life-border) !important;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06), 0 8px 26px rgba(0, 0, 0, 0.09) !important;
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.06),
+    0 8px 26px rgba(0, 0, 0, 0.09) !important;
 }
 
 .life-high-contrast button,
