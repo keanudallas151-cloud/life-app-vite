@@ -1,9 +1,9 @@
-<<<<<<< HEAD
 import {
   lazy,
   Suspense,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -15,14 +15,6 @@ import {
   LIBRARY,
   MAP,
 } from "./data/content";
-=======
-import { useState, useEffect, useRef, useCallback, lazy, Suspense, useMemo } from "react";
-import { C, S } from "./systems/theme";
-import { getResumeTopic, setResumeTopic, clearResumeTopic } from "./systems/resumeReading";
-import { recordReadingDay, getReadingStreak } from "./systems/readingStreak";
-import { LS } from "./systems/storage";
-import { useSound } from "./systems/useSound";
->>>>>>> 5218eed306e523d5b7c9fb31496e5f5b3af47b4c
 import { Ic } from "./icons/Ic";
 import { getReadingStreak, recordReadingDay } from "./systems/readingStreak";
 import {
@@ -549,14 +541,18 @@ export default function LifeApp() {
   // ── Add-To-Home-Screen (A2HS) — iOS Safari install prompt ────
   const [a2hsPrompt, setA2hsPrompt] = useState(null); // Android/Chrome BeforeInstallPromptEvent
   const [showA2hs, setShowA2hs] = useState(false);
-  const [a2hsDismissed, setA2hsDismissed] = useState(() => LS.get("life_a2hs_dismissed", false));
+  const [a2hsDismissed, setA2hsDismissed] = useState(() =>
+    LS.get("life_a2hs_dismissed", false),
+  );
 
   // Detect if already running as installed PWA
-  const isStandalone = useMemo(() =>
-    typeof window !== "undefined" &&
-    (window.navigator.standalone === true ||
-      window.matchMedia("(display-mode: standalone)").matches),
-  []);
+  const isStandalone = useMemo(
+    () =>
+      typeof window !== "undefined" &&
+      (window.navigator.standalone === true ||
+        window.matchMedia("(display-mode: standalone)").matches),
+    [],
+  );
 
   // Android/Chrome BeforeInstallPrompt — capture it so we can trigger later
   useEffect(() => {
@@ -569,7 +565,7 @@ export default function LifeApp() {
     };
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // iOS Safari — show our custom "tap Share → Add to Home Screen" banner
@@ -581,7 +577,7 @@ export default function LifeApp() {
       const timer = setTimeout(() => setShowA2hs(true), 4000);
       return () => clearTimeout(timer);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen]);
 
   const dismissA2hs = () => {
@@ -2370,7 +2366,7 @@ export default function LifeApp() {
             >
               Password
             </label>
-            <div style={{ position: "relative" }}>
+            <div className="life-password-field">
               <input
                 type={siShowPass ? "text" : "password"}
                 value={siPass}
@@ -2385,7 +2381,7 @@ export default function LifeApp() {
                   background: C.skin,
                   border: `1.5px solid ${C.border}`,
                   borderRadius: 12,
-                  padding: "14px 48px 14px 16px",
+                  padding: "14px 64px 14px 16px",
                   fontSize: 15,
                   color: C.ink,
                   outline: "none",
@@ -2407,22 +2403,6 @@ export default function LifeApp() {
                 data-password-toggle="true"
                 aria-label={siShowPass ? "Hide password" : "Show password"}
                 onClick={() => setSiShowPass((v) => !v)}
-                style={{
-                  position: "absolute",
-                  right: 10,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: C.muted,
-                  fontSize: 12,
-                  fontFamily: "Georgia,serif",
-                  padding: "4px 8px",
-                  borderRadius: 8,
-                  lineHeight: 1,
-                  zIndex: 4,
-                }}
               >
                 <span className="life-password-toggle-label">
                   {siShowPass ? "Hide" : "Show"}
@@ -3008,7 +2988,7 @@ export default function LifeApp() {
             >
               Password
             </label>
-            <div style={{ position: "relative" }}>
+            <div className="life-password-field">
               <input
                 type={rShowPass ? "text" : "password"}
                 value={rPass}
@@ -3022,7 +3002,7 @@ export default function LifeApp() {
                   background: C.skin,
                   border: `1.5px solid ${rErr.pass ? C.red : C.border}`,
                   borderRadius: 12,
-                  padding: "14px 48px 14px 16px",
+                  padding: "14px 64px 14px 16px",
                   fontSize: 15,
                   color: C.ink,
                   outline: "none",
@@ -3039,26 +3019,11 @@ export default function LifeApp() {
                 }}
               />
               <button
+                className="life-password-toggle"
+                type="button"
+                data-password-toggle="true"
+                aria-label={rShowPass ? "Hide password" : "Show password"}
                 onClick={() => setRShowPass((v) => !v)}
-                style={{
-                  position: "absolute",
-                  right: 14,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: C.muted,
-                  fontSize: 12,
-                  fontFamily: "Georgia,serif",
-                  transition: "color 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = C.ink;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = C.muted;
-                }}
               >
                 <span className="life-password-toggle-label">
                   {rShowPass ? "Hide" : "Show"}
@@ -3135,7 +3100,7 @@ export default function LifeApp() {
             >
               Confirm Password
             </label>
-            <div style={{ position: "relative" }}>
+            <div className="life-password-field">
               <input
                 type={rShowPass2 ? "text" : "password"}
                 value={rPass2}
@@ -3149,7 +3114,7 @@ export default function LifeApp() {
                   background: C.skin,
                   border: `1.5px solid ${rErr.pass2 || confirmMismatch ? C.red : C.border}`,
                   borderRadius: 12,
-                  padding: "14px 48px 14px 16px",
+                  padding: "14px 64px 14px 16px",
                   fontSize: 15,
                   color: C.ink,
                   outline: "none",
@@ -3168,26 +3133,11 @@ export default function LifeApp() {
                 }}
               />
               <button
+                className="life-password-toggle"
+                type="button"
+                data-password-toggle="true"
+                aria-label={rShowPass2 ? "Hide password" : "Show password"}
                 onClick={() => setRShowPass2((v) => !v)}
-                style={{
-                  position: "absolute",
-                  right: 14,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: C.muted,
-                  fontSize: 12,
-                  fontFamily: "Georgia,serif",
-                  transition: "color 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = C.ink;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = C.muted;
-                }}
               >
                 <span className="life-password-toggle-label">
                   {rShowPass2 ? "Hide" : "Show"}
@@ -3366,8 +3316,8 @@ export default function LifeApp() {
 
       {/* P9c: Notification dropdown */}
       {showNotif && (
-<<<<<<< HEAD
         <div
+          className="life-notif-dropdown"
           style={{
             position: "fixed",
             top: 56,
@@ -3409,12 +3359,6 @@ export default function LifeApp() {
                 Mark all read
               </button>
             )}
-=======
-        <div className="life-notif-dropdown" style={{ position: "fixed", top: 56, right: 60, zIndex: 200, background: t.white, border: `1px solid ${t.border}`, borderRadius: 14, boxShadow: S.lg, width: 300, maxHeight: 360, overflowY: "auto" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: `1px solid ${t.light}` }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: t.ink }}>Notifications</span>
-            {unreadCount > 0 && <button onClick={markAllRead} style={{ background: "none", border: "none", color: t.green, fontSize: 11, cursor: "pointer", fontFamily: "Georgia,serif" }}>Mark all read</button>}
->>>>>>> 5218eed306e523d5b7c9fb31496e5f5b3af47b4c
           </div>
           {notifications.length === 0 ? (
             <p
@@ -3649,9 +3593,9 @@ export default function LifeApp() {
             </button>
           )}
         </div>
-<<<<<<< HEAD
-        {/* P11: Dark Mode Toggle */}
+        {/* P11: Dark Mode Toggle — hidden on mobile (in bottom nav More tab) */}
         <button
+          className="life-topbar-dark"
           onClick={() => {
             play("tap");
             toggleDark();
@@ -3672,8 +3616,9 @@ export default function LifeApp() {
         >
           <span style={{ fontSize: 16 }}>{dark ? "☀️" : "🌙"}</span>
         </button>
-        {/* P9c: Notification Bell */}
+        {/* P9c: Notification Bell — hidden on mobile (shown in bottom nav) */}
         <button
+          className="life-topbar-bell"
           onClick={() => {
             play("tap");
             setShowNotif(!showNotif);
@@ -3726,16 +3671,6 @@ export default function LifeApp() {
               {unreadCount}
             </span>
           )}
-=======
-        {/* P11: Dark Mode Toggle — hidden on mobile (in bottom nav More tab) */}
-        <button className="life-topbar-dark" onClick={() => { play("tap"); toggleDark(); }} title={dark ? "Light mode" : "Dark mode"} style={{ width: 32, height: 32, borderRadius: "50%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <span style={{ fontSize: 16 }}>{dark ? "☀️" : "🌙"}</span>
-        </button>
-        {/* P9c: Notification Bell — hidden on mobile (shown in bottom nav) */}
-        <button className="life-topbar-bell" onClick={() => { play("tap"); setShowNotif(!showNotif); }} style={{ width: 32, height: 32, borderRadius: "50%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={t.mid} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-          {unreadCount > 0 && <span style={{ position: "absolute", top: 2, right: 2, width: 14, height: 14, borderRadius: "50%", background: C.red, color: "#fff", fontSize: 8, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{unreadCount}</span>}
->>>>>>> 5218eed306e523d5b7c9fb31496e5f5b3af47b4c
         </button>
         <button
           className="profile-btn"
@@ -7946,97 +7881,243 @@ export default function LifeApp() {
       </button>
 
       {/* ── BOTTOM NAVIGATION BAR (mobile only) ─────────────── */}
-      <nav className={`life-bottom-nav${dark ? " life-bottom-nav-dark" : ""}`} role="navigation" aria-label="Main navigation">
+      <nav
+        className={`life-bottom-nav${dark ? " life-bottom-nav-dark" : ""}`}
+        role="navigation"
+        aria-label="Main navigation"
+      >
         {/* Home */}
         <button
           className={`life-bottom-nav-item${page === "home" ? " life-bottom-nav-item--active" : ""}`}
-          onClick={() => { play("tap"); setPage("home"); setSidebarOpen(false); }}
+          onClick={() => {
+            play("tap");
+            setPage("home");
+            setSidebarOpen(false);
+          }}
           aria-label="Home"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={page === "home" ? t.green : t.muted} strokeWidth={page === "home" ? 2.5 : 1.8} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={page === "home" ? t.green : t.muted}
+            strokeWidth={page === "home" ? 2.5 : 1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
-          <span className="life-bottom-nav-label" style={{ color: page === "home" ? t.green : t.muted }}>Home</span>
+          <span
+            className="life-bottom-nav-label"
+            style={{ color: page === "home" ? t.green : t.muted }}
+          >
+            Home
+          </span>
         </button>
 
         {/* Library / Reading */}
         <button
-          className={`life-bottom-nav-item${(page === "reading" || page === "where_to_start") ? " life-bottom-nav-item--active" : ""}`}
-          onClick={() => { play("tap"); setSidebarOpen(true); }}
+          className={`life-bottom-nav-item${page === "reading" || page === "where_to_start" ? " life-bottom-nav-item--active" : ""}`}
+          onClick={() => {
+            play("tap");
+            setSidebarOpen(true);
+          }}
           aria-label="Library"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={(page === "reading" || page === "where_to_start") ? t.green : t.muted} strokeWidth={(page === "reading" || page === "where_to_start") ? 2.5 : 1.8} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={
+              page === "reading" || page === "where_to_start"
+                ? t.green
+                : t.muted
+            }
+            strokeWidth={
+              page === "reading" || page === "where_to_start" ? 2.5 : 1.8
+            }
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
           </svg>
-          <span className="life-bottom-nav-label" style={{ color: (page === "reading" || page === "where_to_start") ? t.green : t.muted }}>Library</span>
+          <span
+            className="life-bottom-nav-label"
+            style={{
+              color:
+                page === "reading" || page === "where_to_start"
+                  ? t.green
+                  : t.muted,
+            }}
+          >
+            Library
+          </span>
         </button>
 
         {/* Quiz */}
         <button
           className={`life-bottom-nav-item${page === "quiz" ? " life-bottom-nav-item--active" : ""}`}
-          onClick={() => { play("tap"); setPage("quiz"); setSidebarOpen(false); }}
+          onClick={() => {
+            play("tap");
+            setPage("quiz");
+            setSidebarOpen(false);
+          }}
           aria-label="Quiz"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={page === "quiz" ? t.green : t.muted} strokeWidth={page === "quiz" ? 2.5 : 1.8} strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={page === "quiz" ? t.green : t.muted}
+            strokeWidth={page === "quiz" ? 2.5 : 1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
-          <span className="life-bottom-nav-label" style={{ color: page === "quiz" ? t.green : t.muted }}>Quiz</span>
+          <span
+            className="life-bottom-nav-label"
+            style={{ color: page === "quiz" ? t.green : t.muted }}
+          >
+            Quiz
+          </span>
         </button>
 
         {/* Notifications */}
         <button
           className="life-bottom-nav-item"
-          onClick={() => { play("tap"); setShowNotif(!showNotif); }}
+          onClick={() => {
+            play("tap");
+            setShowNotif(!showNotif);
+          }}
           aria-label="Notifications"
           style={{ position: "relative" }}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={showNotif ? t.green : t.muted} strokeWidth={showNotif ? 2.5 : 1.8} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={showNotif ? t.green : t.muted}
+            strokeWidth={showNotif ? 2.5 : 1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 01-3.46 0" />
           </svg>
           {unreadCount > 0 && (
-            <span className="life-bottom-nav-badge">{unreadCount > 9 ? "9+" : unreadCount}</span>
+            <span className="life-bottom-nav-badge">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
           )}
-          <span className="life-bottom-nav-label" style={{ color: showNotif ? t.green : t.muted }}>Alerts</span>
+          <span
+            className="life-bottom-nav-label"
+            style={{ color: showNotif ? t.green : t.muted }}
+          >
+            Alerts
+          </span>
         </button>
 
         {/* Profile / More */}
         <button
           className={`life-bottom-nav-item${page === "profile" || page === "setting_preferences" ? " life-bottom-nav-item--active" : ""}`}
-          onClick={() => { play("tap"); setPage("profile"); setSidebarOpen(false); }}
+          onClick={() => {
+            play("tap");
+            setPage("profile");
+            setSidebarOpen(false);
+          }}
           aria-label="Profile"
         >
-          <div style={{
-            width: 24, height: 24, borderRadius: "50%",
-            background: (page === "profile" || page === "setting_preferences") ? t.green : "transparent",
-            border: `2px solid ${(page === "profile" || page === "setting_preferences") ? t.green : t.muted}`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <span style={{ fontSize: 9, fontWeight: 700, color: (page === "profile" || page === "setting_preferences") ? "#fff" : t.muted, lineHeight: 1 }}>
+          <div
+            style={{
+              width: 24,
+              height: 24,
+              borderRadius: "50%",
+              background:
+                page === "profile" || page === "setting_preferences"
+                  ? t.green
+                  : "transparent",
+              border: `2px solid ${page === "profile" || page === "setting_preferences" ? t.green : t.muted}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <span
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                color:
+                  page === "profile" || page === "setting_preferences"
+                    ? "#fff"
+                    : t.muted,
+                lineHeight: 1,
+              }}
+            >
               {initials.slice(0, 2)}
             </span>
           </div>
-          <span className="life-bottom-nav-label" style={{ color: (page === "profile" || page === "setting_preferences") ? t.green : t.muted }}>Profile</span>
+          <span
+            className="life-bottom-nav-label"
+            style={{
+              color:
+                page === "profile" || page === "setting_preferences"
+                  ? t.green
+                  : t.muted,
+            }}
+          >
+            Profile
+          </span>
         </button>
       </nav>
 
       {/* ── ADD TO HOME SCREEN BANNER ────────────────────────── */}
       {showA2hs && !isStandalone && (
-        <div className="life-a2hs-banner" role="complementary" aria-label="Install app">
+        <div
+          className="life-a2hs-banner"
+          role="complementary"
+          aria-label="Install app"
+        >
           <div className="life-a2hs-icon">
-            <span style={{ color: "#fff", fontSize: 18, fontWeight: 800, fontFamily: "Georgia,serif" }}>l.</span>
+            <span
+              style={{
+                color: "#fff",
+                fontSize: 18,
+                fontWeight: 800,
+                fontFamily: "Georgia,serif",
+              }}
+            >
+              l.
+            </span>
           </div>
           <div className="life-a2hs-text">
             <strong>Add Life. to your Home Screen</strong>
             <span>
               {a2hsPrompt
                 ? "Tap below to install the app."
-                : "Tap Share → \"Add to Home Screen\" in Safari."}
+                : 'Tap Share → "Add to Home Screen" in Safari.'}
             </span>
           </div>
           {a2hsPrompt && (
-            <button className="life-a2hs-add" onClick={triggerA2hs}>Add</button>
+            <button className="life-a2hs-add" onClick={triggerA2hs}>
+              Add
+            </button>
           )}
-          <button className="life-a2hs-dismiss" onClick={dismissA2hs} aria-label="Dismiss">×</button>
+          <button
+            className="life-a2hs-dismiss"
+            onClick={dismissA2hs}
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
         </div>
       )}
     </div>

@@ -391,6 +391,9 @@ p {
 /* Unified password show/hide toggle */
 .life-password-toggle,
 button:has(> .life-password-toggle-label) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   min-height: 32px !important;
   min-width: 54px !important;
   border-radius: 8px !important;
@@ -402,8 +405,16 @@ button:has(> .life-password-toggle-label) {
   font-weight: 700 !important;
   line-height: 1 !important;
   letter-spacing: 0.01em;
+  cursor: pointer !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
+.life-password-field {
+  position: relative;
+}
+
+.life-password-field > .life-password-toggle,
 .life-auth-card div[style*="position:relative"] > input + button,
 .life-auth-card div[style*="position: relative"] > input + button {
   position: absolute !important;
@@ -435,6 +446,12 @@ button:has(> .life-password-toggle-label):hover {
   background: rgba(74, 140, 92, 0.08) !important;
   border-color: rgba(74, 140, 92, 0.22) !important;
   color: var(--life-green) !important;
+}
+
+.life-password-field > .life-password-toggle:active,
+.life-auth-card div[style*="position:relative"] > input + button:active,
+.life-auth-card div[style*="position: relative"] > input + button:active {
+  transform: translateY(-50%) scale(0.97) !important;
 }
 
 .life-password-toggle:active,
@@ -567,7 +584,8 @@ select:focus-visible {
     padding: 24px 18px !important;
   }
 
-  .life-auth-card button {
+  .life-auth-card
+    button:not(.life-password-toggle):not([data-password-toggle]) {
     width: 100%;
   }
 
@@ -1815,7 +1833,9 @@ button:active:not(:disabled),
     padding-bottom: var(--safe-bottom);
     padding-left: var(--safe-left);
     padding-right: var(--safe-right);
-    box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.04), 0 -8px 20px rgba(20, 20, 20, 0.05);
+    box-shadow:
+      0 -1px 0 rgba(0, 0, 0, 0.04),
+      0 -8px 20px rgba(20, 20, 20, 0.05);
     height: var(--life-bottom-nav-height);
     align-items: stretch;
   }

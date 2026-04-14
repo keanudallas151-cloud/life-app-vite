@@ -3,12 +3,12 @@
 
   const hasHomeHeaderSearch = () =>
     !!document.querySelector(
-      'input[placeholder*="Search topics"], input[placeholder*="Search"]'
+      'input[placeholder*="Search topics"], input[placeholder*="Search"]',
     );
 
   const findTextNode = (matcher, root = document) => {
     const elements = Array.from(
-      root.querySelectorAll("h1, h2, h3, p, span, strong, div")
+      root.querySelectorAll("h1, h2, h3, p, span, strong, div"),
     );
     return elements.find((el) => {
       if (el.children.length > 0) return false;
@@ -18,7 +18,7 @@
 
   const findHeroContainer = () => {
     const containers = Array.from(
-      document.querySelectorAll("section, article, main, div")
+      document.querySelectorAll("section, article, main, div"),
     );
 
     return (
@@ -44,17 +44,17 @@
   };
 
   const findSidebarContainers = () => {
-    return Array.from(document.querySelectorAll("aside, nav, section, div")).filter(
-      (container) => {
-        const text = normalize(container.textContent).toLowerCase();
-        return (
-          text.includes("knowledge map") &&
-          text.includes("quiz") &&
-          text.includes("library") &&
-          text.includes("saved")
-        );
-      }
-    );
+    return Array.from(
+      document.querySelectorAll("aside, nav, section, div"),
+    ).filter((container) => {
+      const text = normalize(container.textContent).toLowerCase();
+      return (
+        text.includes("knowledge map") &&
+        text.includes("quiz") &&
+        text.includes("library") &&
+        text.includes("saved")
+      );
+    });
   };
 
   const patchHero = () => {
@@ -64,7 +64,10 @@
     restoreHeroClasses(container);
     if (!container) return;
 
-    const welcomeEl = findTextNode((text) => /^welcome to$/i.test(text), container);
+    const welcomeEl = findTextNode(
+      (text) => /^welcome to$/i.test(text),
+      container,
+    );
     const logoEl = findTextNode((text) => /^life\.?$/i.test(text), container);
 
     if (!welcomeEl || !logoEl) return;
@@ -90,20 +93,6 @@
     if (!/^life\.?$/i.test(text)) return false;
     const fontSize = Number.parseFloat(getComputedStyle(node).fontSize || "0");
     return fontSize >= 40;
-  };
-
-  const looksLikeSidebarLabelWordmark = (node) => {
-    if (!(node instanceof HTMLElement)) return false;
-    const text = normalize(node.textContent);
-    if (!/^life\.?$/i.test(text)) return false;
-    if (node.tagName !== "P") return false;
-
-    const computed = getComputedStyle(node);
-    const fontSize = Number.parseFloat(computed.fontSize || "0");
-    const textTransform = (node.style.textTransform || computed.textTransform || "").toLowerCase();
-    const textAlign = (node.style.textAlign || computed.textAlign || "").toLowerCase();
-
-    return fontSize <= 18 && textTransform === "uppercase" && textAlign === "left";
   };
 
   const isHomepageWordmark = (node) => {
@@ -135,7 +124,7 @@
 
     sidebarContainers.forEach((container) => {
       const nodes = Array.from(
-        container.querySelectorAll("h1, h2, h3, p, span, div, strong")
+        container.querySelectorAll("h1, h2, h3, p, span, div, strong"),
       );
 
       nodes.forEach((node) => {
@@ -152,11 +141,11 @@
     });
 
     const nonSidebarNodes = Array.from(
-      document.querySelectorAll("h1, h2, h3, p, span, div, strong")
+      document.querySelectorAll("h1, h2, h3, p, span, div, strong"),
     ).filter(
       (node) =>
         node instanceof HTMLElement &&
-        !sidebarContainers.some((container) => container.contains(node))
+        !sidebarContainers.some((container) => container.contains(node)),
     );
 
     nonSidebarNodes.forEach((node) => {
