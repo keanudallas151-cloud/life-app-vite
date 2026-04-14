@@ -1010,11 +1010,22 @@ export default function LifeApp() {
         <p style={{ margin: "8px 0 0", fontSize: 15, color: C.muted, fontStyle: "italic" }}>Knowledge, Growth, Community</p>
       </div>
 
-      {/* Feature tags */}
-      <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 28, flexWrap: "wrap", animation: "life-tag-fade 0.6s ease-out 0.3s both" }}>
-        {["100+ Topics", "Daily Growth", "Networking Group", "Notes & Save"].map(tag => (
-          <span key={tag} style={{ fontSize: 11, fontWeight: 600, color: C.green, background: C.greenLt, border: `1px solid rgba(74,140,92,0.2)`, borderRadius: 20, padding: "6px 14px", letterSpacing: 0.3 }}>{tag}</span>
-        ))}
+      {/* Value Proposition */}
+      <div style={{ width: "100%", maxWidth: 360, marginBottom: 28 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {[
+            { icon: "users", label: "Networking", sub: "Connect with driven people" },
+            { icon: "lock", label: "Secret Knowledge", sub: "What they don't teach you" },
+            { icon: "star", label: "Tailored Growth", sub: "Personalised to your goals" },
+            { icon: "compass", label: "Structured Path", sub: "Your friend to success" },
+          ].map((v, i) => (
+            <div key={v.label} style={{ background: "rgba(255,255,255,0.7)", border: `1px solid ${C.border}`, borderRadius: 12, padding: "12px 10px", textAlign: "center", animation: `life-tag-fade 0.5s ease-out ${0.2 + i * 0.1}s both` }}>
+              <div style={{ marginBottom: 6 }}>{Ic[v.icon]?.("none", C.green, 20)}</div>
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: C.ink }}>{v.label}</p>
+              <p style={{ margin: "2px 0 0", fontSize: 10, color: C.muted, fontStyle: "italic" }}>{v.sub}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div style={{ width: "100%", maxWidth: 340, display: "flex", flexDirection: "column", gap: 14 }}>
@@ -1076,24 +1087,6 @@ export default function LifeApp() {
             {siSocialErr}
           </p>
         )}
-      </div>
-
-      {/* P8: Value Proposition */}
-      <div style={{ width: "100%", maxWidth: 360, marginTop: 24 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-          {[
-            { icon: "users", label: "Networking", sub: "Connect with driven people" },
-            { icon: "lock", label: "Secret Knowledge", sub: "What they don't teach you" },
-            { icon: "star", label: "Tailored Growth", sub: "Personalised to your goals" },
-            { icon: "compass", label: "Structured Path", sub: "Your friend to success" },
-          ].map(v => (
-            <div key={v.label} style={{ background: "rgba(255,255,255,0.7)", border: `1px solid ${C.border}`, borderRadius: 12, padding: "12px 10px", textAlign: "center" }}>
-              <div style={{ marginBottom: 6 }}>{Ic[v.icon]?.("none", C.green, 20)}</div>
-              <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: C.ink }}>{v.label}</p>
-              <p style={{ margin: "2px 0 0", fontSize: 10, color: C.muted, fontStyle: "italic" }}>{v.sub}</p>
-            </div>
-          ))}
-        </div>
       </div>
 
       <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
@@ -1450,10 +1443,10 @@ export default function LifeApp() {
       )}
 
       <div className="life-app-body" style={{ display: "flex", flex: 1, position: "relative", overflow: "hidden", minHeight: 0 }}>
-        {sidebarOpen && <div className="life-sidebar-backdrop" onClick={() => { play("back"); setSidebarOpen(false); }} style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "rgba(20,20,20,0.22)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 30 }} />}
+        {sidebarOpen && <div className="life-sidebar-backdrop" onClick={() => { play("back"); setSidebarOpen(false); }} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(20,20,20,0.22)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 30 }} />}
 
         {/* SIDEBAR */}
-        <div className="life-sidebar" style={{ position: "fixed", left: 0, bottom: 0, width: 288, maxWidth: "min(288px, 100vw)", background: C.white, borderRight: `1px solid ${C.border}`, overflowY: "auto", zIndex: 40, transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)", transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)", paddingBottom: "calc(60px + env(safe-area-inset-bottom, 0px))" }}>
+        <div className="life-sidebar" style={{ position: "fixed", top: 0, left: 0, bottom: 0, width: 288, maxWidth: "min(288px, 100vw)", background: C.white, borderRight: `1px solid ${C.border}`, overflowY: "auto", WebkitOverflowScrolling: "touch", zIndex: 40, transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)", transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)", paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "calc(60px + env(safe-area-inset-bottom, 0px))" }}>
           {/* User card */}
           <div style={{ padding: "16px 18px 14px", borderBottom: `1px solid ${C.light}`, display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -1590,8 +1583,8 @@ export default function LifeApp() {
                 <div style={{ position: "absolute", top: "18%", left: "10%", width: 54, height: 54, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.16)", pointerEvents: "none" }} />
                 <div style={{ position: "absolute", bottom: -80, left: -40, width: 160, height: 160, borderRadius: "50%", border: "1.5px solid rgba(74,140,92,0.08)", pointerEvents: "none" }} />
                 <div style={{ position: "absolute", right: "12%", bottom: "18%", width: 126, height: 126, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.46) 0%, rgba(74,140,92,0.08) 68%, rgba(74,140,92,0) 100%)", pointerEvents: "none" }} />
-                <p style={{ margin: "0 0 18px", fontSize: 10, fontWeight: 700, letterSpacing: 5, textTransform: "uppercase", color: C.muted }}>Welcome to</p>
-                <h1 style={{ margin: "0 0 6px", fontSize: "clamp(2.75rem, 14vw, 6.875rem)", fontWeight: 800, color: C.ink, fontFamily: "Georgia,serif", letterSpacing: "-0.08em", lineHeight: 0.88 }}>Life.</h1>
+                <p style={{ margin: "0 0 10px", fontSize: "clamp(0.72rem, 2.8vw, 0.92rem)", fontWeight: 700, letterSpacing: "0.38em", textTransform: "uppercase", color: C.muted, textAlign: "center", lineHeight: 1.2 }}>Welcome to</p>
+                <h1 style={{ margin: "0 0 6px", fontSize: "clamp(3.2rem, 15vw, 6.2rem)", fontWeight: 800, color: C.ink, fontFamily: "Georgia,serif", letterSpacing: "-0.04em", lineHeight: 0.92, textAlign: "center", WebkitTextSizeAdjust: "100%" }}>Life.</h1>
                 <div style={{ width: 40, height: 2.5, background: C.green, borderRadius: 2, margin: "18px auto 22px" }} />
                 <p style={{ color: C.mid, fontSize: 13, lineHeight: 1.7, margin: "0 auto 6px", maxWidth: 340, fontFamily: "Georgia,serif" }}>
                   All-In-One Access To Tailored Networking, Insights, And Comprehensive Guides

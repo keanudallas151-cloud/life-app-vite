@@ -147,8 +147,7 @@
         }
 
         node.classList.remove("life-home-logo-upgraded");
-        node.style.display = "none";
-        node.setAttribute("data-life-sidebar-wordmark-removed", "true");
+        restoreWordmark(node);
       });
     });
 
@@ -167,7 +166,7 @@
         return;
       }
 
-      if (looksLikeLargeLifeWordmark(node) || looksLikeSidebarLabelWordmark(node)) {
+      if (looksLikeLargeLifeWordmark(node)) {
         node.style.display = "none";
         node.setAttribute("data-life-sidebar-wordmark-removed", "true");
         return;
