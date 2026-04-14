@@ -465,6 +465,105 @@ button:has(> .life-password-toggle-label):focus-visible {
   outline-offset: 2px !important;
 }
 
+/* ── Visual bug-fix + polish pass (batch) ───────────────────── */
+body,
+#root {
+  overflow-x: clip;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+.life-password-field > input {
+  width: 100%;
+}
+
+.life-password-toggle-label {
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.life-auth-card input,
+.life-auth-card select,
+.life-auth-card textarea {
+  width: 100%;
+  max-width: 100%;
+}
+
+.life-topbar .logo-btn,
+.life-topbar .profile-btn {
+  flex-shrink: 0;
+}
+
+.life-topbar input[type="text"] {
+  width: 100%;
+  max-width: 100%;
+}
+
+.life-notif-dropdown {
+  max-height: min(72vh, 560px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.life-home-stats > div {
+  min-height: 74px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.life-whats-inside-grid .life-card-hover {
+  height: 100%;
+}
+
+@media (max-width: 640px) {
+  .life-auth-card {
+    max-height: calc(
+      100dvh - max(var(--safe-top), 20px) - max(var(--safe-bottom), 20px) - 18px
+    );
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .life-auth-card
+    button:not(.life-password-toggle):not([data-password-toggle]):not(
+      [style*="background: none"]
+    ) {
+    min-height: 46px;
+  }
+
+  .life-password-field > .life-password-toggle {
+    min-height: 34px !important;
+    min-width: 56px !important;
+  }
+
+  .life-bottom-nav-item {
+    min-width: 0;
+  }
+
+  .life-bottom-nav-label {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .life-search-dropdown,
+  .life-notif-dropdown {
+    left: max(8px, var(--safe-left)) !important;
+    right: max(8px, var(--safe-right)) !important;
+    width: auto !important;
+  }
+}
+
 /* ── Enhanced Animations ───────────────────────────────────── */
 @keyframes life-float {
   0%,

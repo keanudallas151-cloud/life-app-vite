@@ -1,5 +1,6 @@
 (() => {
   const normalize = (value) => (value || "").replace(/\s+/g, " ").trim();
+  let rafToken = null;
 
   const hasHomeHeaderSearch = () =>
     !!document.querySelector(
@@ -87,14 +88,6 @@
     return ancestors;
   };
 
-  const looksLikeLargeLifeWordmark = (node) => {
-    if (!(node instanceof HTMLElement)) return false;
-    const text = normalize(node.textContent);
-    if (!/^life\.?$/i.test(text)) return false;
-    const fontSize = Number.parseFloat(getComputedStyle(node).fontSize || "0");
-    return fontSize >= 40;
-  };
-
   const isHomepageWordmark = (node) => {
     return getAncestors(node).some((ancestor) => {
       const text = normalize(ancestor.textContent).toLowerCase();
@@ -139,30 +132,6 @@
         restoreWordmark(node);
       });
     });
-
-    const nonSidebarNodes = Array.from(
-      document.querySelectorAll("h1, h2, h3, p, span, div, strong"),
-    ).filter(
-      (node) =>
-        node instanceof HTMLElement &&
-        !sidebarContainers.some((container) => container.contains(node)),
-    );
-
-    nonSidebarNodes.forEach((node) => {
-      if (!(node instanceof HTMLElement)) return;
-      if (isHomepageWordmark(node)) {
-        restoreWordmark(node);
-        return;
-      }
-
-      if (looksLikeLargeLifeWordmark(node)) {
-        node.style.display = "none";
-        node.setAttribute("data-life-sidebar-wordmark-removed", "true");
-        return;
-      }
-
-      restoreWordmark(node);
-    });
   };
 
   const run = () => {
@@ -170,8 +139,16 @@
     patchSidebarWordmark();
   };
 
+  const scheduleRun = () => {
+    if (rafToken != null) return;
+    rafToken = window.requestAnimationFrame(() => {
+      rafToken = null;
+      run();
+    });
+  };
+
   const observer = new MutationObserver(() => {
-    run();
+    scheduleRun();
   });
 
   if (document.readyState === "loading") {
