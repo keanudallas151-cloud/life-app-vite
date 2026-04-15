@@ -11,7 +11,7 @@ Implement the finalization pass for the Life. app by following the phases and co
 ## Mandatory References
  
 - Primary plan: `implementation_plan.md`
-- Highest-risk implementation file: `src/App.jsx`
+- Main app shell: `src/App.jsx`
 - Main shared styling file: `src/index.css`
  
 ## Plan Document Navigation Commands
@@ -85,7 +85,9 @@ task_progress Items:
 ## Definition of Done
  
 - `implementation_plan.md` has been followed closely.
-- The most visible live-site issues called out by the user are materially improved.
+- The Momentum System is implemented and visibly integrated into the app.
+- The visual overhaul is obvious across the main user-facing surfaces.
+- The bug-fix and stability pass resolves the most visible layout, interaction, and theme problems.
 - Lint passes.
 - Production build passes.
-- Final summary clearly explains the fixes, upgrades, cleanup, and any deferred follow-up items.
+- Final handoff explains what shipped, what was cleaned up, and any intentionally deferred items.
