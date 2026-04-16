@@ -1,7 +1,15 @@
 {
-    "github.codespaces.defaultExtensions": [
-        "GitHub.codespaces",
-        "GitHub.vscode-pull-request-github",
-        "Github.copilot"
-    ]
+  "github.codespaces.defaultExtensions": [
+    "GitHub.codespaces",
+    "GitHub.vscode-pull-request-github",
+    "Github.copilot"
+  ],
+  "github.copilot.chat.agent.autoFix": true,
+  "github.copilot.chat.copilotMemory.enabled": true,
+  "terminal.integrated.initialHint.copilotCli": true,
+  "github.copilot.chat.gpt54ConcisePrompt.enabled": true,
+  "github.copilot.chat.agent.omitFileAttachmentContents": true,
+  "mediaPreview.video.loop": true,
+  "editor.cursorSmoothCaretAnimation": "on",
+  "workbench.externalBrowser": "chrome"
 }
