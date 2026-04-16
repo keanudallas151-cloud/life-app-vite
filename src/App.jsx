@@ -1581,6 +1581,7 @@ export default function LifeApp() {
   if (screen === "loading")
     return (
       <div
+      data-page-tag="#loading_screen"
         style={{
           minHeight: "100vh",
           background: `linear-gradient(135deg, ${C.skin} 0%, #ebe4d6 50%, ${C.skin} 100%)`,
@@ -3849,6 +3850,7 @@ export default function LifeApp() {
         />
         <div
           className="life-notif-dropdown"
+          data-page-tag="#notification_dropdown"
           style={{
             position: "fixed",
             top: 56,
@@ -3935,6 +3937,7 @@ export default function LifeApp() {
       {/* TOP BAR */}
       <div
         className="life-topbar"
+        data-page-tag="#topbar"
         style={{
           background: dark ? "rgba(30,30,30,0.96)" : "rgba(255,255,255,0.92)",
           borderBottom: `1px solid ${t.border}`,
@@ -4245,6 +4248,7 @@ export default function LifeApp() {
       {showSearch && search.length > 1 && (
         <div
           className="life-search-dropdown"
+            data-page-tag="#search_dropdown"
           style={{
             position: "fixed",
             left: 0,
@@ -4355,6 +4359,7 @@ export default function LifeApp() {
         {/* SIDEBAR */}
         <div
           className="life-sidebar"
+          data-page-tag="#sidebar"
           style={{
             position: "fixed",
             top: 0,
@@ -4375,6 +4380,7 @@ export default function LifeApp() {
         >
           {/* User card */}
           <div
+            data-page-tag="#sidebar_user_card"
             style={{
               padding: "12px 16px 10px",
               borderBottom: `1px solid ${t.border}22`,
@@ -4771,6 +4777,7 @@ export default function LifeApp() {
               >
                 {/* PROGRESS BAR — P6: clickable → progress_dashboard */}
                 <button
+                  data-page-tag="#home_progress_bar"
                   type="button"
                   onClick={() => {
                     play("tap");
@@ -4888,6 +4895,7 @@ export default function LifeApp() {
                   }}
                 >
                   <button
+                    data-page-tag="#home_momentum_pill"
                     onClick={openMomentumHub}
                     style={{
                       width: "100%",
@@ -5040,6 +5048,7 @@ export default function LifeApp() {
                 {/* HERO */}
                 <div
                   className="life-home-hero"
+                  data-page-tag="#home_hero"
                   style={{
                     padding: "36px 24px 32px",
                     textAlign: "center",
@@ -5051,17 +5060,18 @@ export default function LifeApp() {
                 >
                   <p
                     style={{
-                      margin: "0 0 10px",
-                      fontSize: "clamp(0.72rem, 2.8vw, 0.92rem)",
+                      margin: "0 0 4px",
+                      fontSize: 12,
                       fontWeight: 700,
-                      letterSpacing: "0.38em",
+                      letterSpacing: "0.34em",
                       textTransform: "uppercase",
                       color: t.muted,
                       textAlign: "center",
                       lineHeight: 1.2,
+                      fontStyle: "italic",
                     }}
                   >
-                    {(() => { const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"; })()}{user?.name ? `, ${user.name.split(" ")[0]}` : ""}
+                    Welcome To
                   </p>
                   <h1
                     style={{
@@ -5078,6 +5088,17 @@ export default function LifeApp() {
                   >
                     Life.
                   </h1>
+                  <p
+                    style={{
+                      margin: "6px 0 0",
+                      fontSize: 11,
+                      color: t.muted,
+                      textAlign: "center",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    {(() => { const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"; })()}{user?.name ? `, ${user.name.split(" ")[0]}` : ""}
+                  </p>
                   <div
                     style={{
                       width: 40,
@@ -5194,6 +5215,7 @@ export default function LifeApp() {
                 <div style={{ padding: "18px 20px 0" }}>
                   <div
                     className="life-home-stats"
+                    data-page-tag="#home_stats_grid"
                     style={{
                       display: "grid",
                       gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
@@ -5244,8 +5266,10 @@ export default function LifeApp() {
                 </div>
 
                 {/* P3: Author Message (replaces "What's Inside") */}
+                {/* data-page-tag="#home_author_card" is on the inner div below */}
                 <div style={{ padding: "32px 20px 0" }}>
                   <div
+                    data-page-tag="#home_author_card"
                     style={{
                       maxWidth: 500,
                       margin: "0 auto",
@@ -5332,7 +5356,7 @@ export default function LifeApp() {
                   </div>
                 </div>
 
-                {/* GUIDED — START HERE */}
+                {/* GUIDED — START HERE — data-page-tag="#home_guided_list" */}
                 <div
                   style={{
                     padding: "36px 20px 0",
@@ -8476,7 +8500,8 @@ export default function LifeApp() {
       </div>
 
       {isOffline && (
-        <div className="life-offline-banner" role="status" aria-live="polite">
+        <div className="life-offline-banner"
+        data-page-tag="#offline_banner" role="status" aria-live="polite">
           Offline mode: cached content only until connection returns.
         </div>
       )}
@@ -8485,6 +8510,7 @@ export default function LifeApp() {
       <button
         onClick={scrollToTop}
         className={`scroll-to-top ${showScrollTop ? "visible" : ""}`}
+        data-page-tag="#scroll_to_top_btn"
         aria-label="Scroll to top"
         title="Scroll to top"
       >
@@ -8505,6 +8531,7 @@ export default function LifeApp() {
       {/* ── BOTTOM NAVIGATION BAR (mobile only) ─────────────── */}
       <nav
         className={`life-bottom-nav${dark ? " life-bottom-nav-dark" : ""}`}
+        data-page-tag="#bottom_nav"
         role="navigation"
         aria-label="Main navigation"
       >
@@ -8705,6 +8732,7 @@ export default function LifeApp() {
       {showA2hs && !isStandalone && (
         <div
           className="life-a2hs-banner"
+          data-page-tag="#a2hs_banner"
           role="complementary"
           aria-label="Install app"
         >
