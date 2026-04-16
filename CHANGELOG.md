@@ -2,6 +2,13 @@
 
 All notable prototype milestones for Life are tracked here.
 
+## v0.4.3 - Profile cleanup and workspace optimization
+
+- removed Settings Hub from the profile page; settings are now only accessible via the gear icon
+- cleaned up dead `applySettingProfile` code that was only used inside the removed hub
+- optimized VS Code workspace settings for ESLint, GitLens, Copilot, and editor defaults
+- added `dev:turbo` script for optional Turbopack development builds
+
 ## v0.4.2 - Reader, shell, and preference polish
 
 - added saved reader quotes/highlights across Reader, Saved, momentum summaries, and progress surfaces

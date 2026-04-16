@@ -109,6 +109,7 @@ const PREF_DEFAULTS = {
 export default function LifeApp() {
   // ── DARK MODE (P11) ───────────────────────────────────────────
   const { dark, toggleTheme, t, themeMode, setThemeMode, systemDark } = useTheme();
+  const showProfileSettingsHub = false;
 
   // ── iOS dark-mode body class (for CSS :root overrides) ───────
   useEffect(() => {
@@ -727,59 +728,6 @@ export default function LifeApp() {
 
   const updateUiPrefs = useCallback((patch) => {
     setUiPrefs((prev) => ({ ...prev, ...patch }));
-  }, []);
-
-  const applySettingProfile = useCallback((profile) => {
-    if (profile === "focus") {
-      setUiPrefs((prev) => ({
-        ...prev,
-        soundEnabled: true,
-        soundMode: "focused",
-        soundScope: "focused",
-        textScale: 100,
-        readingDensity: "comfortable",
-        highContrast: false,
-        dataSaver: false,
-        reduceMotion: false,
-        instantButtons: true,
-        pressIntensity: 44,
-        sidebarSpeed: 58,
-      }));
-      return;
-    }
-    if (profile === "immersive") {
-      setUiPrefs((prev) => ({
-        ...prev,
-        soundEnabled: true,
-        soundMode: "full",
-        soundScope: "full",
-        textScale: 102,
-        readingDensity: "airy",
-        highContrast: false,
-        dataSaver: false,
-        reduceMotion: false,
-        instantButtons: false,
-        pressIntensity: 72,
-        sidebarSpeed: 74,
-      }));
-      return;
-    }
-    if (profile === "calm") {
-      setUiPrefs((prev) => ({
-        ...prev,
-        soundEnabled: true,
-        soundMode: "focused",
-        soundScope: "focused",
-        textScale: 104,
-        readingDensity: "comfortable",
-        highContrast: false,
-        dataSaver: true,
-        reduceMotion: true,
-        instantButtons: true,
-        pressIntensity: 24,
-        sidebarSpeed: 46,
-      }));
-    }
   }, []);
 
   useEffect(() => {
@@ -7423,6 +7371,7 @@ export default function LifeApp() {
                     title="Your momentum"
                   />
                 </div>
+                {showProfileSettingsHub && (
                 <div
                   className="life-profile-card"
                   style={{
@@ -7521,7 +7470,10 @@ export default function LifeApp() {
                       >
                         <button
                           type="button"
-                          onClick={() => applySettingProfile("focus")}
+                          onClick={() => {
+                            play("tap");
+                            setPage("setting_preferences");
+                          }}
                           style={{
                             background: t.white,
                             border: `1px solid ${t.border}`,
@@ -7538,7 +7490,10 @@ export default function LifeApp() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => applySettingProfile("immersive")}
+                          onClick={() => {
+                            play("tap");
+                            setPage("setting_preferences");
+                          }}
                           style={{
                             background: t.greenLt,
                             border: `1px solid ${t.green}`,
@@ -7555,7 +7510,10 @@ export default function LifeApp() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => applySettingProfile("calm")}
+                          onClick={() => {
+                            play("tap");
+                            setPage("setting_preferences");
+                          }}
                           style={{
                             background: t.light,
                             border: `1px solid ${t.border}`,
@@ -8378,6 +8336,7 @@ export default function LifeApp() {
                     </div>
                   </div>
                 </div>
+                )}
                 <div style={{ marginBottom: 8 }}>
                   <p
                     style={{
