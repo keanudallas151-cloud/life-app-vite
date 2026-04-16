@@ -1021,6 +1021,7 @@ export default function LifeApp() {
     play("tap");
     setSiSocialErr("");
     setAuthLoading(true);
+    await new Promise(r => setTimeout(r, 3000));
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -1071,11 +1072,13 @@ export default function LifeApp() {
       return;
     }
     setAuthLoading(true);
+    const _siStart = Date.now();
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: siEmail.toLowerCase().trim(),
         password: siPass,
       });
+      await new Promise(r => setTimeout(r, Math.max(0, 3000 - (Date.now() - _siStart))));
       if (error) {
         const msg = String(error.message || "").toLowerCase();
         if (msg.includes("invalid")) setSiErr("no_account_or_wrong_password");
@@ -1187,8 +1190,11 @@ export default function LifeApp() {
       err.email = "Enter a valid email.";
     if (!rDob) err.dob = "Date of birth is required.";
     else {
-      const [dd, mm, yy] = rDob.split("/").map(Number);
-      const yr = yy < 100 ? (yy <= 26 ? 2000 + yy : 1900 + yy) : yy;
+      const dobParts = rDob.split("/");
+      const dd = Number(dobParts[0]);
+      const mm = Number(dobParts[1]);
+      const yyRaw = Number(dobParts[2] || 0);
+      const yr = yyRaw < 100 ? (yyRaw <= 26 ? 2000 + yyRaw : 1900 + yyRaw) : yyRaw;
       const dob = new Date(yr, mm - 1, dd);
       const today = new Date();
       let age = today.getFullYear() - dob.getFullYear();
@@ -1198,7 +1204,7 @@ export default function LifeApp() {
       )
         age--;
       if (isNaN(dob.getTime()) || dd < 1 || dd > 31 || mm < 1 || mm > 12)
-        err.dob = "Enter a valid date (dd/mm/yy).";
+        err.dob = "Enter a valid date (dd/mm/yyyy).";
       else if (age < 13) err.dob = "You must be 13 or older to use Life.";
     }
     if (rPass.length < 8) err.pass = "Password must be at least 8 characters.";
@@ -1218,6 +1224,7 @@ export default function LifeApp() {
     }
 
     setAuthLoading(true);
+    const _regStart = Date.now();
     try {
         const { data, error } = await supabase.auth.signUp({  
         email: rEmail.toLowerCase().trim(),  
@@ -1231,6 +1238,7 @@ export default function LifeApp() {
           },  
         },  
       });
+      await new Promise(r => setTimeout(r, Math.max(0, 3000 - (Date.now() - _regStart))));
 
       if (error) {
         const raw = String(error.message || "").trim();
@@ -3787,14 +3795,14 @@ export default function LifeApp() {
             <input
               value={rDob}
               onChange={(e) => {
-                let d = e.target.value.replace(/\D/g, "").slice(0, 6);
+                let d = e.target.value.replace(/\D/g, "").slice(0, 8);
                 let f = d.slice(0, 2);
                 if (d.length >= 3) f += "/" + d.slice(2, 4);
-                if (d.length >= 5) f += "/" + d.slice(4, 6);
+                if (d.length >= 5) f += "/" + d.slice(4, 8);
                 setRDob(f);
                 setRErr((p) => ({ ...p, dob: null }));
               }}
-              placeholder="dd/mm/yy"
+              placeholder="dd/mm/yyyy"
               style={{
                 background: C.skin,
                 border: `1.5px solid ${rErr.dob ? C.red : C.border}`,
