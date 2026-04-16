@@ -12,3 +12,6 @@ jobs:
 
       - name: ChatGPT Integration
         uses: kxxt/chatgpt-action@v0.3
+
+      - name: chatgpt-action
+        uses: unsafecoerce/chatgpt-action@release/v2
