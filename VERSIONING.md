@@ -4,9 +4,9 @@ Life is still in prototype phase. The project uses semantic versioning with a `v
 
 ## Canonical format
 
-- Git tag: `v0.4.1`
-- GitHub release title: `v0.4.1 - Next, Supabase, and workflow alignment`
-- `package.json` version: `0.4.1`
+- Git tag: `v0.4.5`
+- GitHub release title: `v0.4.5 - Component extraction and matching MVP`
+- `package.json` version: `0.4.5`
 
 ## Prototype bump rules
 

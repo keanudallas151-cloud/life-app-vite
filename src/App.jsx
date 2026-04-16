@@ -18,13 +18,9 @@ import {
 } from "./data/content";
 import { Ic } from "./icons/Ic";
 import { getReadingStreak, recordReadingDay } from "./systems/readingStreak";
-import {
-  clearResumeTopic,
-  getResumeTopic,
-  setResumeTopic,
-} from "./systems/resumeReading";
+import { setResumeTopic } from "./systems/resumeReading";
 import { LS } from "./systems/storage";
-import { C, S } from "./systems/theme";
+import { C, S, THEME_MODES, useTheme } from "./systems/theme";
 import { useMomentum } from "./systems/useMomentum";
 import { useQuizStats } from "./systems/useQuizStats";
 import { useSound } from "./systems/useSound";
@@ -50,32 +46,11 @@ import {
   TailorQuestions,
   TailorResult,
 } from "./components/AppShell";
-
-/* ── Dark Mode palette (P11) ──────────────────────────────────── */
-const DARK = {
-  skin: "#181818",
-  white: "#242424",
-  green: "#5a9d6c",
-  greenLt: "#223228",
-  ink: "#f2f2f2",
-  mid: "#d1d1d1",
-  muted: "#a29d96",
-  border: "#3b3b3b",
-  light: "#2d2d2d",
-  gold: "#d0ae6c",
-  red: "#d25545",
-};
-
-function useTheme() {
-  const [dark, setDark] = useState(() => LS.get("life_dark_mode", false));
-  const toggle = () => {
-    const next = !dark;
-    setDark(next);
-    LS.set("life_dark_mode", next);
-  };
-  const t = dark ? DARK : C;
-  return { dark, toggle, t };
-}
+import { HomePage } from "./components/HomePage";
+import { SidebarSectionPage } from "./components/SidebarSectionPage";
+import { ConnectPage } from "./components/ConnectPage";
+import ProfilePage from "./components/ProfilePage";
+import SettingsPage from "./components/SettingsPage";
 
 /* ── Categories data (P7) ─────────────────────────────────────── */
 const CATEGORIES = [
@@ -135,7 +110,7 @@ const PREF_DEFAULTS = {
 
 export default function LifeApp() {
   // ── DARK MODE (P11) ───────────────────────────────────────────
-  const { dark, toggle: toggleDark, t } = useTheme();
+  const { dark, toggleTheme, t, themeMode, setThemeMode, systemDark } = useTheme();
 
   // ── iOS dark-mode body class (for CSS :root overrides) ───────
   useEffect(() => {
@@ -430,6 +405,9 @@ export default function LifeApp() {
   const [localReadKeys, setLocalReadKeysRaw] = useState(() =>
     LS.get(`rd_${uid}`, []),
   );
+  const [localHighlights, setLocalHighlightsRaw] = useState(() =>
+    LS.get(`hl_${uid}`, []),
+  );
   const [localProfile, setLocalProfileRaw] = useState(() =>
     LS.get(`tsd_${uid}`, null),
   );
@@ -440,6 +418,10 @@ export default function LifeApp() {
   const bookmarks = userIdForData ? cloud.bookmarks : localBookmarks;
   const notes = userIdForData ? cloud.notes : localNotes;
   const readKeys = userIdForData ? cloud.readKeys : localReadKeys;
+  const highlights =
+    userIdForData && (cloud.highlights?.length ?? 0) > 0
+      ? cloud.highlights
+      : localHighlights;
   const profile = userIdForData ? cloud.tsdProfile : localProfile;
   const momentumState = userIdForData
     ? cloud.momentumState
@@ -469,6 +451,17 @@ export default function LifeApp() {
       LS.set(`rd_${uid}`, next);
     }
   };
+  const setHighlights = useCallback(
+    (v) => {
+      const next = typeof v === "function" ? v(highlights) : v;
+      setLocalHighlightsRaw(next);
+      LS.set(`hl_${uid}`, next);
+      if (userIdForData) {
+        cloud.setHighlights(next);
+      }
+    },
+    [cloud, highlights, uid, userIdForData],
+  );
   const setMomentumState = (v) => {
     const next = typeof v === "function" ? v(momentumState) : v;
     if (userIdForData) cloud.setMomentumState(next);
@@ -486,6 +479,7 @@ export default function LifeApp() {
       persistedState: momentumState,
       readKeys,
       notes,
+      highlights,
       quizStats,
       profile,
       isGuest: !userIdForData,
@@ -510,6 +504,15 @@ export default function LifeApp() {
     setPage("momentum_hub");
     setSidebarOpen(false);
   }, [play, setPage]);
+
+  const openSidebarSectionPage = useCallback(
+    (sectionPage, setSectionOpen) => {
+      play("tap");
+      setPage(sectionPage);
+      if (typeof setSectionOpen === "function") setSectionOpen(true);
+    },
+    [play, setPage],
+  );
 
   const trackMomentumEvent = useCallback(
     (type, options = {}) => {
@@ -546,6 +549,11 @@ export default function LifeApp() {
       mentorship: "Mentorship — Life.",
       setting_preferences: "Settings — Life.",
       momentum_hub: "Momentum Hub — Life.",
+      sidebar_life: "Life — Life.",
+      sidebar_library: "Library — Life.",
+      sidebar_socials: "Socials — Life.",
+      sidebar_guided: "Guided — Life.",
+      sidebar_saved: "Saved — Life.",
       premium: "Premium — Life.",
     };
     document.title = titles[page] || "Life. — Knowledge, Growth, Community";
@@ -577,7 +585,6 @@ export default function LifeApp() {
   const [guidedOpen, setGuidedOpen] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
   const [shareToast, setShareToast] = useState(false);
-  const [resumeTipDismissed, setResumeTipDismissed] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // ── Add-To-Home-Screen (A2HS) — iOS Safari install prompt ────
@@ -724,59 +731,6 @@ export default function LifeApp() {
     setUiPrefs((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  const applySettingProfile = useCallback((profile) => {
-    if (profile === "focus") {
-      setUiPrefs((prev) => ({
-        ...prev,
-        soundEnabled: true,
-        soundMode: "focused",
-        soundScope: "focused",
-        textScale: 100,
-        readingDensity: "comfortable",
-        highContrast: false,
-        dataSaver: false,
-        reduceMotion: false,
-        instantButtons: true,
-        pressIntensity: 44,
-        sidebarSpeed: 58,
-      }));
-      return;
-    }
-    if (profile === "immersive") {
-      setUiPrefs((prev) => ({
-        ...prev,
-        soundEnabled: true,
-        soundMode: "full",
-        soundScope: "full",
-        textScale: 102,
-        readingDensity: "airy",
-        highContrast: false,
-        dataSaver: false,
-        reduceMotion: false,
-        instantButtons: false,
-        pressIntensity: 72,
-        sidebarSpeed: 74,
-      }));
-      return;
-    }
-    if (profile === "calm") {
-      setUiPrefs((prev) => ({
-        ...prev,
-        soundEnabled: true,
-        soundMode: "focused",
-        soundScope: "focused",
-        textScale: 104,
-        readingDensity: "comfortable",
-        highContrast: false,
-        dataSaver: true,
-        reduceMotion: true,
-        instantButtons: true,
-        pressIntensity: 24,
-        sidebarSpeed: 46,
-      }));
-    }
-  }, []);
-
   useEffect(() => {
     setUiPrefs({
       ...PREF_DEFAULTS,
@@ -856,6 +810,7 @@ export default function LifeApp() {
       (cloud.bookmarks?.length ?? 0) > 0 ||
       Object.keys(cloud.notes || {}).some((k) => cloud.notes[k]) ||
       (cloud.readKeys?.length ?? 0) > 0 ||
+      (cloud.highlights?.length ?? 0) > 0 ||
       cloud.tsdProfile != null;
     if (hasCloud) {
       migratedRef.current = true;
@@ -865,17 +820,20 @@ export default function LifeApp() {
     const lb = LS.get(`bk_${email}`, []);
     const ln = LS.get(`nt_${email}`, {});
     const lr = LS.get(`rd_${email}`, []);
+    const lh = LS.get(`hl_${email}`, []);
     const lp = LS.get(`tsd_${email}`, null);
     const hasLocal =
       lb.length > 0 ||
       Object.keys(ln).some((k) => ln[k]) ||
       lr.length > 0 ||
+      lh.length > 0 ||
       lp != null;
     migratedRef.current = true;
     if (hasLocal) {
       cloud.setBookmarks(lb);
       cloud.setNotes(ln);
       cloud.setReadKeys(lr);
+      cloud.setHighlights(lh);
       if (lp) cloud.setTsdProfile(lp);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- see block comment above
@@ -885,11 +843,13 @@ export default function LifeApp() {
     cloud.bookmarks,
     cloud.notes,
     cloud.readKeys,
+    cloud.highlights,
     cloud.tsdProfile,
     user?.email,
     cloud.setBookmarks,
     cloud.setNotes,
     cloud.setReadKeys,
+    cloud.setHighlights,
     cloud.setTsdProfile,
   ]);
 
@@ -901,6 +861,7 @@ export default function LifeApp() {
       setLocalBookmarksRaw(LS.get(`bk_${uid}`, []));
       setLocalNotesRaw(LS.get(`nt_${uid}`, {}));
       setLocalReadKeysRaw(LS.get(`rd_${uid}`, []));
+      setLocalHighlightsRaw(LS.get(`hl_${uid}`, []));
       setLocalProfileRaw(LS.get(`tsd_${uid}`, null));
     }
   }, [uid, userIdForData]);
@@ -1201,7 +1162,6 @@ export default function LifeApp() {
     setPage("reading");
     setSearch("");
     setShowSearch(false);
-    setResumeTipDismissed(false);
     setResumeTopic(key);
     if (!alreadyRead) setReadKeys([...readKeys, key]);
     recordReadingDay();
@@ -1295,34 +1255,53 @@ export default function LifeApp() {
     }
   };
 
-  const exportSettingSnapshot = () => {
-    try {
-      const file = new Blob([JSON.stringify(uiPrefs, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(file);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "life-settings.json";
-      a.click();
-      URL.revokeObjectURL(url);
-      play("ok");
-    } catch {
-      play("err");
-    }
-  };
+  const saveHighlight = useCallback(
+    ({ text, topicTitle, page }) => {
+      if (!selKey) return { status: "error", message: "No topic selected." };
+      const normalizedText = String(text || "")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (!normalizedText) {
+        return { status: "error", message: "Choose a passage to save." };
+      }
+      const alreadySaved = highlights.some(
+        (item) =>
+          item?.contentKey === selKey &&
+          String(item?.text || "").trim() === normalizedText,
+      );
+      if (alreadySaved) {
+        return { status: "duplicate", message: "Quote already saved." };
+      }
 
-  const resetReadingProgress = () => {
-    try {
-      setReadKeys([]);
-      setReaderPages({});
-      LS.set(`rp_${uid}`, {});
-      clearResumeTopic();
-      play("ok");
-    } catch {
-      play("err");
-    }
-  };
+      const nextItem = {
+        id: `hl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        contentKey: selKey,
+        topicTitle: topicTitle || selContent?.title || selKey,
+        text: normalizedText,
+        page: Number(page ?? 0),
+        createdAt: new Date().toISOString(),
+      };
+      setHighlights((prev) => [...prev, nextItem]);
+      trackMomentumEvent("note", {
+        source: "reader",
+        points: 4,
+        contentKey: selKey,
+        topicKey: selKey,
+        meta: { kind: "highlight", length: normalizedText.length },
+      });
+      return { status: "saved", item: nextItem };
+    },
+    [highlights, selContent?.title, selKey, setHighlights, trackMomentumEvent],
+  );
+
+  const removeHighlight = useCallback(
+    (highlightId) => {
+      if (!highlightId) return;
+      setHighlights((prev) => prev.filter((item) => item?.id !== highlightId));
+    },
+    [setHighlights],
+  );
+
   const shareNote = () => {
     if (!selKey || !noteInput.trim()) return;
     play("ok");
@@ -1411,22 +1390,13 @@ export default function LifeApp() {
         .slice(0, 2)
     : "??";
 
-  const resumeSnap = getResumeTopic();
-  const resumePack = resumeSnap?.key ? MAP[resumeSnap.key] : null;
-  const resumeEntry = resumePack
-    ? { key: resumePack.key, node: resumePack.node }
-    : null;
   const readingStreak = getReadingStreak();
   const progressPercent =
     allContent.length > 0
       ? Math.round((readKeys.length / allContent.length) * 100)
       : 0;
   const completedNotes = Object.keys(notes).filter((key) => notes[key]).length;
-  const homeStats = [
-    { label: "Topics Read", value: readKeys.length, color: C.green },
-    { label: "Bookmarks", value: bookmarks.length, color: "#b8975a" },
-    { label: "Notes", value: completedNotes, color: "#7B6FA8" },
-  ];
+  const savedHighlightsCount = highlights.length;
   const passwordHasMinLength = rPass.length >= 8;
   const passwordHasUpper = /[A-Z]/.test(rPass);
   const passwordHasNumber = /\d/.test(rPass);
@@ -3685,7 +3655,7 @@ export default function LifeApp() {
               >
                 {rErr.email === "already_registered" ? (
                   <>
-                    ⚠️ This email is already registered.{" "}
+                    Email already in use.{" "}
                     <span
                       onClick={() => {
                         play("tap");
@@ -3700,7 +3670,7 @@ export default function LifeApp() {
                         fontWeight: 700,
                       }}
                     >
-                      Sign in instead?
+                      Please sign in.
                     </span>
                   </>
                 ) : (
@@ -4074,12 +4044,14 @@ export default function LifeApp() {
     <div
       data-page-tag="#dashboard_home"
       style={{
+        height: "100svh",
         minHeight: "100svh",
         background: t.skin,
         display: "flex",
         flexDirection: "column",
         fontFamily: "Georgia,serif",
         color: t.ink,
+        overflow: "hidden",
       }}
     >
       {shareToast && (
@@ -4402,9 +4374,10 @@ export default function LifeApp() {
           className="life-topbar-dark"
           onClick={() => {
             play("tap");
-            toggleDark();
+            toggleTheme();
           }}
-          title={dark ? "Light mode" : "Dark mode"}
+          title={dark ? "Switch to light mode" : "Switch to dark mode"}
+          aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
           style={{
             width: 32,
             height: 32,
@@ -4776,17 +4749,6 @@ export default function LifeApp() {
             }}
             active={page === "home"}
           />
-          <SL
-            theme={t}
-            label="Daily Growth"
-            icon="star"
-            onClick={() => {
-              play("tap");
-              setPage("daily_growth");
-              setSidebarOpen(false);
-            }}
-            active={page === "daily_growth"}
-          />
           <SS
             theme={t}
             playFn={play}
@@ -4794,6 +4756,8 @@ export default function LifeApp() {
             open={lifeOpen}
             setOpen={setLifeOpen}
             tag="#side_bar_life"
+            onLabelClick={() => openSidebarSectionPage("sidebar_life", setLifeOpen)}
+            active={page === "sidebar_life"}
           >
             <SL
               theme={t}
@@ -4812,6 +4776,17 @@ export default function LifeApp() {
               icon="trending"
               onClick={openMomentumHub}
               active={page === "momentum_hub"}
+            />
+            <SL
+              theme={t}
+              label="Daily Growth"
+              icon="star"
+              onClick={() => {
+                play("tap");
+                setPage("daily_growth");
+                setSidebarOpen(false);
+              }}
+              active={page === "daily_growth"}
             />
             <SL
               theme={t}
@@ -4843,6 +4818,10 @@ export default function LifeApp() {
             open={libOpen}
             setOpen={setLibOpen}
             tag="#side_bar_library"
+            onLabelClick={() =>
+              openSidebarSectionPage("sidebar_library", setLibOpen)
+            }
+            active={page === "sidebar_library"}
           >
             {Object.entries(LIBRARY).map(([k, node]) => (
               <TreeNode
@@ -4854,6 +4833,7 @@ export default function LifeApp() {
                 selectedKey={selKey}
                 defaultOpen={k === "life"}
                 play={play}
+                theme={t}
               />
             ))}
           </SS>
@@ -4864,6 +4844,10 @@ export default function LifeApp() {
             open={socialsOpen}
             setOpen={setSocialsOpen}
             tag="#side_bar_socials"
+            onLabelClick={() =>
+              openSidebarSectionPage("sidebar_socials", setSocialsOpen)
+            }
+            active={page === "sidebar_socials"}
           >
             <SL
               theme={t}
@@ -4905,6 +4889,10 @@ export default function LifeApp() {
             label="Guided"
             open={guidedOpen}
             setOpen={setGuidedOpen}
+            onLabelClick={() =>
+              openSidebarSectionPage("sidebar_guided", setGuidedOpen)
+            }
+            active={page === "sidebar_guided"}
           >
             {GUIDED_ORDER.map((k) => {
               const node = CONTENT[k];
@@ -4928,6 +4916,10 @@ export default function LifeApp() {
             open={savedOpen}
             setOpen={setSavedOpen}
             tag="#side_bar_saved"
+            onLabelClick={() =>
+              openSidebarSectionPage("sidebar_saved", setSavedOpen)
+            }
+            active={page === "sidebar_saved"}
           >
             {bookmarks.length === 0 ? (
               <p
@@ -5032,749 +5024,20 @@ export default function LifeApp() {
             style={{ minHeight: "100%" }}
           >
             {page === "home" && (
-              <div
-                style={{
-                  paddingBottom:
-                    "calc(60px + env(safe-area-inset-bottom, 0px))",
+              <HomePage
+                t={t}
+                onResume={(key) => {
+                  const pack = MAP[key];
+                  if (pack) handleSelect(pack.key, pack.node);
                 }}
-              >
-                {/* PROGRESS BAR — P6: clickable → progress_dashboard */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    play("tap");
-                    setPage("progress_dashboard");
-                  }}
-                  style={{
-                    display: "block",
-                    width: "100%",
-                    padding: "14px 20px 12px",
-                    background: t.white,
-                    border: "none",
-                    borderBottom: `1px solid ${t.border}`,
-                    cursor: "pointer",
-                    textAlign: "left",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: 8,
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        letterSpacing: 2,
-                        textTransform: "uppercase",
-                        color: t.muted,
-                      }}
-                    >
-                      Your Progress
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 11,
-                        color: t.green,
-                        fontWeight: 700,
-                        letterSpacing: 0.5,
-                      }}
-                    >
-                      {progressPercent}%
-                    </span>
-                  </div>
-                  <div
-                    className="life-home-progress-row"
-                    style={{ display: "flex", alignItems: "center", gap: 14 }}
-                  >
-                    <div
-                      style={{
-                        flex: 1,
-                        minWidth: 0,
-                        height: 6,
-                        background: t.light,
-                        borderRadius: 10,
-                        overflow: "hidden",
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: "100%",
-                          width: `${progressPercent}%`,
-                          background: `linear-gradient(90deg,${t.green},#6FBE77)`,
-                          borderRadius: 10,
-                          transition: "width 0.6s cubic-bezier(0.4,0,0.2,1)",
-                        }}
-                      />
-                    </div>
-                    <span
-                      style={{
-                        fontSize: 11,
-                        color: t.green,
-                        fontWeight: 700,
-                        letterSpacing: 0.5,
-                        flexShrink: 0,
-                      }}
-                    >
-                      {readKeys.length}
-                      <span style={{ color: t.muted, fontWeight: 400 }}>
-                        /{allContent.length}
-                      </span>
-                    </span>
-                    {readingStreak.count > 0 && (
-                      <span
-                        title="Consecutive days you've opened a topic"
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          letterSpacing: 1,
-                          textTransform: "uppercase",
-                          color: t.green,
-                          background: t.greenLt,
-                          border: `1px solid rgba(74,140,92,0.35)`,
-                          borderRadius: 20,
-                          padding: "6px 12px",
-                          flexShrink: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
-                      >
-                        🔥 {readingStreak.count} day streak
-                      </span>
-                    )}
-                  </div>
-                </button>
-
-                <div
-                  style={{
-                    padding: "14px 20px 0",
-                    maxWidth: 560,
-                    margin: "0 auto",
-                  }}
-                >
-                  <MomentumCard
-                    snapshot={momentumSnapshot}
-                    onOpenHub={openMomentumHub}
-                    compact
-                    title="Daily momentum"
-                  />
-                </div>
-
-                {resumeEntry && !resumeTipDismissed && (
-                  <div
-                    style={{
-                      padding: "14px 20px 0",
-                      maxWidth: 520,
-                      margin: "0 auto",
-                    }}
-                  >
-                    <div
-                      className="life-card-hover life-resume-card"
-                      style={{
-                        background: `linear-gradient(135deg, ${t.white} 0%, ${t.greenLt} 100%)`,
-                        border: `1px solid rgba(74,140,92,0.35)`,
-                        borderRadius: 16,
-                        padding: "16px 18px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 14,
-                        boxShadow: S.md,
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 12,
-                          background: t.green,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                          boxShadow: "0 4px 12px rgba(74,140,92,0.35)",
-                        }}
-                      >
-                        <span style={{ color: "#fff", fontSize: 18 }}>↻</span>
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p
-                          style={{
-                            margin: "0 0 4px",
-                            fontSize: 9,
-                            fontWeight: 700,
-                            letterSpacing: 2.2,
-                            textTransform: "uppercase",
-                            color: t.green,
-                          }}
-                        >
-                          Continue
-                        </p>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontSize: 15,
-                            fontWeight: 700,
-                            color: t.ink,
-                            lineHeight: 1.35,
-                          }}
-                        >
-                          {resumeEntry.node.label}
-                        </p>
-                        <p
-                          style={{
-                            margin: "4px 0 0",
-                            fontSize: 12,
-                            color: t.muted,
-                            fontStyle: "italic",
-                          }}
-                        >
-                          {resumeEntry.node.content?.readTime
-                            ? `${resumeEntry.node.content.readTime} read · `
-                            : ""}
-                          Pick up where you left off
-                        </p>
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 6,
-                          flexShrink: 0,
-                        }}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => {
-                            play("tap");
-                            handleSelect(resumeEntry.key, resumeEntry.node);
-                          }}
-                          style={{
-                            background: t.green,
-                            border: "none",
-                            borderRadius: 10,
-                            padding: "10px 16px",
-                            color: "#fff",
-                            fontSize: 13,
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            fontFamily: "Georgia,serif",
-                            whiteSpace: "nowrap",
-                            boxShadow: "0 4px 14px rgba(74,140,92,0.28)",
-                          }}
-                        >
-                          Open
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            play("tap");
-                            setResumeTipDismissed(true);
-                            clearResumeTopic();
-                          }}
-                          style={{
-                            background: "transparent",
-                            border: "none",
-                            color: t.muted,
-                            fontSize: 11,
-                            cursor: "pointer",
-                            fontFamily: "Georgia,serif",
-                            textDecoration: "underline",
-                          }}
-                        >
-                          Dismiss
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* HERO */}
-                <div
-                  className="life-grain life-home-hero"
-                  style={{
-                    padding: "44px 24px 40px",
-                    textAlign: "center",
-                    borderBottom: `1px solid ${t.border}`,
-                    background: `linear-gradient(180deg, ${t.skin} 0%, #ebe4d6 100%)`,
-                    position: "relative",
-                    overflow: "hidden",
-                    borderRadius: 0,
-                  }}
-                >
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: -60,
-                      right: -60,
-                      width: 200,
-                      height: 200,
-                      borderRadius: "50%",
-                      border: "1.5px solid rgba(74,140,92,0.1)",
-                      pointerEvents: "none",
-                    }}
-                  />
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "18%",
-                      left: "10%",
-                      width: 54,
-                      height: 54,
-                      borderRadius: "50%",
-                      border: "1.5px solid rgba(74,140,92,0.16)",
-                      pointerEvents: "none",
-                    }}
-                  />
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: -80,
-                      left: -40,
-                      width: 160,
-                      height: 160,
-                      borderRadius: "50%",
-                      border: "1.5px solid rgba(74,140,92,0.08)",
-                      pointerEvents: "none",
-                    }}
-                  />
-                  <div
-                    style={{
-                      position: "absolute",
-                      right: "12%",
-                      bottom: "18%",
-                      width: 126,
-                      height: 126,
-                      borderRadius: "50%",
-                      background:
-                        "radial-gradient(circle, rgba(255,255,255,0.46) 0%, rgba(74,140,92,0.08) 68%, rgba(74,140,92,0) 100%)",
-                      pointerEvents: "none",
-                    }}
-                  />
-                  <p
-                    style={{
-                      margin: "0 130 10px",
-                      fontSize: "clamp(0.72rem, 2.8vw, 0.92rem)",
-                      fontWeight: 700,
-                      letterSpacing: "0.38em",
-                      textTransform: "uppercase",
-                      color: t.muted,
-                      textAlign: "center",
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {(() => {
-                      const h = new Date().getHours();
-                      return h < 12
-                        ? "Good morning"
-                        : h < 17
-                          ? "Good afternoon"
-                          : "Good evening";
-                    })()}
-                    {user?.name ? `, ${user.name.split(" ")[0]}` : ""}
-                  </p>
-                  <h1
-                    style={{
-                      margin: "10 0 6px",
-                      fontSize: "clamp(3.2rem, 15vw, 6.2rem)",
-                      fontWeight: 800,
-                      color: t.ink,
-                      fontFamily: "Nunito, sans-serif",
-                      letterSpacing: "scaleX(1)",
-                      lineHeight: 0.92,
-                      textAlign: "center",
-                      WebkitTextSizeAdjust: "325%",
-                    }}
-                  >
-                    Life.
-                  </h1>
-                  <div
-                    style={{
-                      width: 40,
-                      height: 2.5,
-                      background: t.green,
-                      borderRadius: 2,
-                      margin: "18px auto 22px",
-                    }}
-                  />
-                  <p
-                    style={{
-                      color: t.mid,
-                      fontSize: 13,
-                      lineHeight: 1.7,
-                      margin: "0 auto 6px",
-                      maxWidth: 340,
-                      fontFamily: "Georgia,serif",
-                    }}
-                  >
-                    All-In-One Access To Tailored Networking, Insights, And
-                    Comprehensive Guides
-                  </p>
-                  <p
-                    style={{
-                      color: t.muted,
-                      fontSize: 10,
-                      lineHeight: 1.5,
-                      margin: "0 auto 32px",
-                      maxWidth: 300,
-                      fontStyle: "italic",
-                    }}
-                  >
-                    "The 1st Million Is Hard, But The 2nd Is Imminent" - Without
-                    Knowledge, You Can’t Identify The Right Opportunities
-                  </p>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 10,
-                      justifyContent: "center",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <button
-                      onClick={() => {
-                        play("open");
-                        setSidebarOpen(true);
-                      }}
-                      style={{
-                        background: t.green,
-                        border: "none",
-                        borderRadius: 14,
-                        padding: "15px 32px",
-                        color: "#fff",
-                        fontSize: 15,
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        fontFamily: "Georgia,serif",
-                        boxShadow: S.glow,
-                        letterSpacing: 0.3,
-                      }}
-                    >
-                      Start Reading →
-                    </button>
-                    <button
-                      onClick={() => {
-                        play("tap");
-                        setPage("where_to_start");
-                      }}
-                      style={{
-                        background: t.white,
-                        border: `1.5px solid ${t.border}`,
-                        borderRadius: 14,
-                        padding: "15px 24px",
-                        color: t.ink,
-                        fontSize: 15,
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        fontFamily: "Georgia,serif",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        boxShadow: S.sm,
-                      }}
-                    >
-                      {Ic.leaf("none", t.green, 17)} Daily Growth
-                    </button>
-                    {/* P7: Let's Get Rich → Categories */}
-                    <button
-                      onClick={() => {
-                        play("ok");
-                        setPage("categories");
-                        setCatStep(0);
-                      }}
-                      style={{
-                        background: `linear-gradient(135deg, ${t.gold}, #9a7a3e)`,
-                        border: "none",
-                        borderRadius: 14,
-                        padding: "15px 24px",
-                        color: "#fff",
-                        fontSize: 15,
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        fontFamily: "Georgia,serif",
-                        boxShadow: "0 4px 16px rgba(184,151,90,0.35)",
-                        letterSpacing: 0.3,
-                      }}
-                    >
-                      Let&apos;s Get Rich 💰
-                    </button>
-                  </div>
-                </div>
-
-                <div style={{ padding: "18px 20px 0" }}>
-                  <div
-                    className="life-home-stats"
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                      gap: 10,
-                      maxWidth: 560,
-                      margin: "0 auto",
-                    }}
-                  >
-                    {homeStats.map((stat) => (
-                      <div
-                        key={stat.label}
-                        style={{
-                          background: t.white,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 14,
-                          padding: "14px 12px",
-                          textAlign: "center",
-                          boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 20,
-                            fontWeight: 800,
-                            color: stat.color,
-                            display: "block",
-                            lineHeight: 1,
-                          }}
-                        >
-                          {stat.value}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 9,
-                            fontWeight: 600,
-                            letterSpacing: 1,
-                            textTransform: "uppercase",
-                            color: t.muted,
-                            display: "block",
-                            marginTop: 6,
-                          }}
-                        >
-                          {stat.label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* P3: Author Message (replaces "What's Inside") */}
-                <div style={{ padding: "32px 20px 0" }}>
-                  <div
-                    style={{
-                      maxWidth: 500,
-                      margin: "0 auto",
-                      background: `linear-gradient(135deg, ${t.white} 0%, ${t.greenLt} 100%)`,
-                      border: `1px solid rgba(74,140,92,0.25)`,
-                      borderRadius: 18,
-                      padding: "28px 24px",
-                      boxShadow: S.md,
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        marginBottom: 16,
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: "50%",
-                          background: `linear-gradient(135deg, ${t.green}, #3a7d4a)`,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <span
-                          style={{
-                            color: "#fff",
-                            fontSize: 16,
-                            fontWeight: 800,
-                          }}
-                        >
-                          l.
-                        </span>
-                      </div>
-                      <div>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontSize: 10,
-                            fontWeight: 700,
-                            letterSpacing: 2.5,
-                            textTransform: "uppercase",
-                            color: t.green,
-                          }}
-                        >
-                          From the Author
-                        </p>
-                        <p
-                          style={{
-                            margin: "2px 0 0",
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          A Message For You
-                        </p>
-                      </div>
-                    </div>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: 14,
-                        color: t.mid,
-                        lineHeight: 1.8,
-                        fontFamily: "Georgia,serif",
-                        fontStyle: "italic",
-                      }}
-                    >
-                      &ldquo;I built Life. because I wished someone had given me
-                      this when I was starting out. No fluff, no gatekeeping —
-                      just the real knowledge about money, mindset, and growth
-                      that actually moves the needle. This isn&apos;t another
-                      course or motivational speech. It&apos;s the structured
-                      friend I never had. Welcome — let&apos;s build something
-                      real together.&rdquo;
-                    </p>
-                  </div>
-                </div>
-
-                {/* GUIDED — START HERE */}
-                <div
-                  style={{
-                    padding: "36px 20px 0",
-                    maxWidth: 500,
-                    margin: "0 auto",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      marginBottom: 18,
-                    }}
-                  >
-                    <div style={{ flex: 1, height: 1, background: t.border }} />
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: 10,
-                        fontWeight: 700,
-                        letterSpacing: 3,
-                        textTransform: "uppercase",
-                        color: t.muted,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Start here
-                    </p>
-                    <div style={{ flex: 1, height: 1, background: t.border }} />
-                  </div>
-                  {GUIDED_ORDER.slice(0, 4).map((k, i) => {
-                    const node = CONTENT[k];
-                    if (!node) return null;
-                    return (
-                      <button
-                        key={k}
-                        onClick={() => {
-                          play("open");
-                          handleSelect(k, node);
-                        }}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 14,
-                          width: "100%",
-                          background: t.white,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 14,
-                          padding: "16px 18px",
-                          cursor: "pointer",
-                          marginBottom: 10,
-                          textAlign: "left",
-                          fontFamily: "Georgia,serif",
-                          boxSizing: "border-box",
-                          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-                          transition: "all 0.18s",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.borderColor = "#c8ddc8";
-                          e.currentTarget.style.boxShadow =
-                            "0 4px 14px rgba(74,140,92,0.11)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = t.border;
-                          e.currentTarget.style.boxShadow =
-                            "0 1px 3px rgba(0,0,0,0.04)";
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: 34,
-                            height: 34,
-                            borderRadius: 10,
-                            background: t.green,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexShrink: 0,
-                          }}
-                        >
-                          <span
-                            style={{
-                              color: "#fff",
-                              fontSize: 13,
-                              fontWeight: 800,
-                              fontFamily: "Georgia,serif",
-                            }}
-                          >
-                            {i + 1}
-                          </span>
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div
-                            style={{
-                              fontSize: 14,
-                              fontWeight: 700,
-                              color: t.ink,
-                            }}
-                          >
-                            {node.label}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 11,
-                              color: t.muted,
-                              marginTop: 2,
-                              fontStyle: "italic",
-                            }}
-                          >
-                            {node.content?.level}
-                          </div>
-                        </div>
-                        <svg width="8" height="8" viewBox="0 0 10 10">
-                          <polyline
-                            points="2,2 8,5 2,8"
-                            fill="none"
-                            stroke={t.muted}
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              />
             )}
+
+            {page === "sidebar_life" && <SidebarSectionPage sectionKey="sidebar_life" t={t} />}
+            {page === "sidebar_library" && <SidebarSectionPage sectionKey="sidebar_library" t={t} />}
+            {page === "sidebar_socials" && <SidebarSectionPage sectionKey="sidebar_socials" t={t} />}
+            {page === "sidebar_guided" && <SidebarSectionPage sectionKey="sidebar_guided" t={t} />}
+            {page === "sidebar_saved" && <SidebarSectionPage sectionKey="sidebar_saved" t={t} />}
 
             {page === "where_to_start" && (
               <div
@@ -6130,160 +5393,7 @@ export default function LifeApp() {
             )}
 
             {page === "networking" && (
-              <div
-                data-page-tag="#networking"
-                style={{
-                  padding: "40px 28px",
-                  maxWidth: 520,
-                  margin: "0 auto",
-                }}
-              >
-                <h2
-                  style={{
-                    fontSize: 24,
-                    fontWeight: 700,
-                    color: t.ink,
-                    margin: "0 0 10px",
-                  }}
-                >
-                  Networking Group
-                </h2>
-                <p
-                  style={{
-                    color: t.muted,
-                    fontSize: 15,
-                    lineHeight: 1.8,
-                    margin: "0 0 32px",
-                    fontStyle: "italic",
-                  }}
-                >
-                  Connect with others building real knowledge and financial
-                  independence.
-                </p>
-                {/* P9b: Discord Integration */}
-                <div
-                  style={{
-                    background: t.greenLt,
-                    border: `1px solid ${t.green}`,
-                    borderRadius: 16,
-                    padding: 28,
-                    textAlign: "center",
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: "0 0 8px",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: 2.5,
-                      textTransform: "uppercase",
-                      color: t.green,
-                    }}
-                  >
-                    Life. Community
-                  </p>
-                  <p
-                    style={{
-                      margin: "0 0 20px",
-                      fontSize: 16,
-                      fontWeight: 700,
-                      color: t.ink,
-                    }}
-                  >
-                    Join the Discord Server
-                  </p>
-                  <div
-                    style={{
-                      background: t.white,
-                      border: `1px solid ${t.border}`,
-                      borderRadius: 10,
-                      padding: "14px 20px",
-                      display: "inline-block",
-                      marginBottom: 20,
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 22,
-                        fontWeight: 800,
-                        letterSpacing: 3,
-                        color: t.ink,
-                        fontFamily: "Georgia,serif",
-                      }}
-                    >
-                      #12345
-                    </span>
-                  </div>
-                  <p
-                    style={{
-                      margin: "0 0 20px",
-                      fontSize: 13,
-                      color: t.muted,
-                      fontStyle: "italic",
-                    }}
-                  >
-                    Use invite code #12345 at discord.gg/life
-                  </p>
-                  <button
-                    onClick={() => window.open("https://discord.gg", "_blank")}
-                    style={{
-                      background: "#5865F2",
-                      border: "none",
-                      borderRadius: 12,
-                      padding: "14px 32px",
-                      color: "#fff",
-                      fontSize: 15,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      fontFamily: "Georgia,serif",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 8,
-                    }}
-                  >
-                    <svg width="20" height="20" viewBox="0 0 71 55" fill="#fff">
-                      <path d="M60.1 4.9A58.5 58.5 0 0045.4.2a.2.2 0 00-.2.1 40.8 40.8 0 00-1.8 3.7 54 54 0 00-16.2 0A37.6 37.6 0 0025.4.3a.2.2 0 00-.2-.1A58.4 58.4 0 0010.5 4.9a.2.2 0 00-.1.1C1.5 18.7-.9 32.2.3 45.5v.1a58.7 58.7 0 0017.7 9 .2.2 0 00.3-.1 42 42 0 003.6-5.9.2.2 0 00-.1-.3 38.7 38.7 0 01-5.5-2.6.2.2 0 01 0-.4l1.1-.9a.2.2 0 01.2 0 41.9 41.9 0 0035.6 0 .2.2 0 01.2 0l1.1.9a.2.2 0 010 .4 36.3 36.3 0 01-5.5 2.6.2.2 0 00-.1.3 47.2 47.2 0 003.6 5.9.2.2 0 00.3.1 58.5 58.5 0 0017.7-9v-.1c1.4-15.2-2.4-28.4-10-40.1a.2.2 0 00-.1-.1zM23.7 37.3c-3.5 0-6.3-3.2-6.3-7.1s2.8-7.1 6.3-7.1 6.4 3.2 6.3 7.1c0 3.9-2.8 7.1-6.3 7.1zm23.2 0c-3.5 0-6.3-3.2-6.3-7.1s2.8-7.1 6.3-7.1 6.4 3.2 6.3 7.1c0 3.9-2.8 7.1-6.3 7.1z" />
-                    </svg>
-                    Open Discord
-                  </button>
-                </div>
-                {/* Discord embed placeholder */}
-                <div
-                  style={{
-                    marginTop: 20,
-                    background: t.white,
-                    border: `1px solid ${t.border}`,
-                    borderRadius: 14,
-                    padding: 20,
-                    textAlign: "center",
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: "0 0 8px",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: 2,
-                      textTransform: "uppercase",
-                      color: t.muted,
-                    }}
-                  >
-                    Live Community
-                  </p>
-                  <iframe
-                    title="Discord Widget"
-                    src="https://discord.com/widget?id=000000000000000000&theme=light"
-                    width="100%"
-                    height="300"
-                    frameBorder="0"
-                    sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
-                    style={{
-                      borderRadius: 10,
-                      border: `1px solid ${t.border}`,
-                    }}
-                  />
-                </div>
-              </div>
+              <ConnectPage t={t} user={user} play={play} />
             )}
 
             {/* P7: Categories flow */}
@@ -6649,7 +5759,8 @@ export default function LifeApp() {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns:
+                      "repeat(auto-fit, minmax(min(140px, 100%), 1fr))",
                     gap: 12,
                     marginBottom: 20,
                   }}
@@ -6666,6 +5777,11 @@ export default function LifeApp() {
                       color: t.gold,
                     },
                     { label: "Notes", value: completedNotes, color: t.green },
+                    {
+                      label: "Quotes",
+                      value: savedHighlightsCount,
+                      color: t.green,
+                    },
                     {
                       label: "Streak",
                       value:
@@ -7178,313 +6294,21 @@ export default function LifeApp() {
 
             {/* P10: Setting Preferences */}
             {page === "setting_preferences" && (
-              <div
-                className="life-settings-page"
-                data-page-tag="#setting_preferences"
-                style={{
-                  padding: "48px 28px",
-                  maxWidth: 720,
-                  margin: "0 auto",
-                }}
-              >
-                <button
-                  onClick={() => {
-                    play("back");
-                    setPage("profile");
-                  }}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: t.muted,
-                    fontSize: 13,
-                    cursor: "pointer",
-                    fontFamily: "Georgia,serif",
-                    marginBottom: 20,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>{" "}
-                  Back to Profile
-                </button>
-                <h2
-                  style={{
-                    fontSize: 26,
-                    fontWeight: 700,
-                    color: t.ink,
-                    margin: "0 0 8px",
-                  }}
-                >
-                  Settings
-                </h2>
-                <p
-                  className="life-settings-subtitle"
-                  style={{
-                    margin: "0 0 24px",
-                    color: t.muted,
-                    fontSize: 14,
-                    lineHeight: 1.7,
-                    fontStyle: "italic",
-                  }}
-                >
-                  Cleanly organised controls for appearance, accessibility,
-                  motion, sound, privacy, and account tools.
-                </p>
-                {[
-                  {
-                    tag: "#setting_appearance",
-                    title: "Appearance",
-                    desc: "Theme, contrast, and reading comfort",
-                    items: [
-                      {
-                        label: "Dark Mode",
-                        desc: "Switch between light and dark themes",
-                        value: dark,
-                        onChange: toggleDark,
-                      },
-                      {
-                        label: "High Contrast",
-                        desc: "Sharpen separation and text readability",
-                        value: uiPrefs.highContrast,
-                        onChange: (v) => updateUiPrefs({ highContrast: v }),
-                      },
-                    ],
-                  },
-                  {
-                    tag: "#setting_motion",
-                    title: "Motion & Performance",
-                    desc: "Make the app feel smoother, lighter, and easier to scan",
-                    items: [
-                      {
-                        label: "Reduce Motion",
-                        desc: "Calmer animations and less movement",
-                        value: uiPrefs.reduceMotion,
-                        onChange: (v) => updateUiPrefs({ reduceMotion: v }),
-                      },
-                      {
-                        label: "Data Saver",
-                        desc: "Lower visual effect cost and heavy rendering",
-                        value: uiPrefs.dataSaver,
-                        onChange: (v) => updateUiPrefs({ dataSaver: v }),
-                      },
-                      {
-                        label: "Instant Button Response",
-                        desc: "Reduce perceived tap delay on fast interactions",
-                        value: uiPrefs.instantButtons,
-                        onChange: (v) => updateUiPrefs({ instantButtons: v }),
-                      },
-                    ],
-                  },
-                  {
-                    tag: "#setting_sound",
-                    title: "Sound",
-                    desc: "Feedback sounds and listening comfort",
-                    items: [
-                      {
-                        label: "Sound Effects",
-                        desc: "Toggle all sound effects",
-                        value: uiPrefs.soundEnabled,
-                        onChange: (v) => updateUiPrefs({ soundEnabled: v }),
-                      },
-                    ],
-                  },
-                  {
-                    tag: "#setting_account",
-                    title: "Account & Progress",
-                    desc: "Reset tools and account actions live below",
-                    items: [],
-                  },
-                  {
-                    tag: "#setting_privacy",
-                    title: "Privacy & Legal",
-                    desc: "Policy links and export tools live below",
-                    items: [],
-                  },
-                ].map((section) => (
-                  <div
-                    className="life-settings-card"
-                    key={section.title}
-                    data-page-tag={section.tag}
-                    style={{
-                      background: t.white,
-                      border: `1px solid ${t.border}`,
-                      borderRadius: 16,
-                      padding: 22,
-                      marginBottom: 16,
-                    }}
-                  >
-                    <p
-                      style={{
-                        margin: "0 0 14px",
-                        fontSize: 10,
-                        fontWeight: 700,
-                        letterSpacing: 2.5,
-                        textTransform: "uppercase",
-                        color: t.muted,
-                      }}
-                    >
-                      {section.title}
-                    </p>
-                    {section.desc && (
-                      <p
-                        style={{
-                          margin: "-6px 0 14px",
-                          fontSize: 13,
-                          color: t.muted,
-                          lineHeight: 1.55,
-                          fontStyle: "italic",
-                        }}
-                      >
-                        {section.desc}
-                      </p>
-                    )}
-                    {section.items.length === 0 && (
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: 13,
-                          color: t.muted,
-                          fontStyle: "italic",
-                        }}
-                      >
-                        Organised tools for this section are available below.
-                      </p>
-                    )}
-                    {section.items.map((item) => (
-                      <label
-                        className="life-settings-row"
-                        key={item.label}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 12,
-                          padding: "10px 0",
-                          borderBottom: `1px solid ${t.light}`,
-                        }}
-                      >
-                        <div>
-                          <p
-                            style={{
-                              margin: 0,
-                              fontSize: 14,
-                              fontWeight: 700,
-                              color: t.ink,
-                            }}
-                          >
-                            {item.label}
-                          </p>
-                          <p
-                            style={{
-                              margin: "2px 0 0",
-                              fontSize: 12,
-                              color: t.muted,
-                            }}
-                          >
-                            {item.desc}
-                          </p>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={!!item.value}
-                          onChange={(e) =>
-                            item.onChange(
-                              typeof item.value === "boolean"
-                                ? e.target.checked
-                                : e.target.checked,
-                            )
-                          }
-                          style={{
-                            width: 20,
-                            height: 20,
-                            accentColor: t.green,
-                          }}
-                        />
-                      </label>
-                    ))}
-                  </div>
-                ))}
-                <div
-                  className="life-settings-action-grid"
-                  style={{ display: "flex", flexWrap: "wrap", gap: 8 }}
-                >
-                  <button
-                    onClick={() => {
-                      updateUiPrefs(PREF_DEFAULTS);
-                      play("ok");
-                    }}
-                    style={{
-                      background: t.light,
-                      border: `1px solid ${t.border}`,
-                      borderRadius: 10,
-                      padding: "10px 16px",
-                      color: t.mid,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      fontFamily: "Georgia,serif",
-                    }}
-                  >
-                    Restore Defaults
-                  </button>
-                  <button
-                    onClick={() => {
-                      setReadKeys([]);
-                      play("ok");
-                    }}
-                    style={{
-                      background: t.light,
-                      border: `1px solid ${t.border}`,
-                      borderRadius: 10,
-                      padding: "10px 16px",
-                      color: t.mid,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      fontFamily: "Georgia,serif",
-                    }}
-                  >
-                    Reset Progress
-                  </button>
-                  <button
-                    onClick={() => {
-                      setProfile(null);
-                      LS.del(`tsd_${uid}`);
-                      trackMomentumEvent("profile", {
-                        source: "settings",
-                        points: 2,
-                        meta: { action: "tailor_reset" },
-                      });
-                      play("ok");
-                    }}
-                    style={{
-                      background: t.light,
-                      border: `1px solid ${t.border}`,
-                      borderRadius: 10,
-                      padding: "10px 16px",
-                      color: t.mid,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      fontFamily: "Georgia,serif",
-                    }}
-                  >
-                    Reset Tailoring
-                  </button>
-                </div>
-              </div>
+              <SettingsPage
+                t={t}
+                play={play}
+                setPage={setPage}
+                uiPrefs={uiPrefs}
+                updateUiPrefs={updateUiPrefs}
+                themeMode={themeMode}
+                setThemeMode={setThemeMode}
+                systemDark={systemDark}
+                setReadKeys={setReadKeys}
+                setProfile={setProfile}
+                uid={uid}
+                LS={LS}
+                trackMomentumEvent={trackMomentumEvent}
+              />
             )}
 
             {/* Extra: Premium / Payment */}
@@ -7631,1162 +6455,21 @@ export default function LifeApp() {
             )}
 
             {page === "profile" && (
-              <div
-                className="life-profile-page"
-                data-page-tag="#profile"
-                style={{
-                  padding: "48px 28px",
-                  maxWidth: 480,
-                  margin: "0 auto",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 20,
-                    marginBottom: 36,
-                  }}
-                >
-                  <div style={{ position: "relative", flexShrink: 0 }}>
-                    <div
-                      style={{
-                        width: 74,
-                        height: 74,
-                        borderRadius: "50%",
-                        background: `linear-gradient(135deg, ${t.green}, #2d6e42)`,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        boxShadow: `0 0 0 3px ${t.white}, 0 0 0 5px ${t.green}44`,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 26,
-                          fontWeight: 800,
-                          color: "#fff",
-                          letterSpacing: -0.5,
-                        }}
-                      >
-                        {initials}
-                      </span>
-                    </div>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <h2
-                      style={{
-                        margin: "0 0 4px",
-                        fontSize: 22,
-                        fontWeight: 700,
-                        color: t.ink,
-                      }}
-                    >
-                      {user?.name}
-                    </h2>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: 14,
-                        color: t.muted,
-                        fontStyle: "italic",
-                      }}
-                    >
-                      {user?.email}
-                    </p>
-                  </div>
-                  {/* P10: Gear icon → setting_preferences */}
-                  <button
-                    onClick={() => {
-                      play("tap");
-                      setPage("setting_preferences");
-                    }}
-                    title="Settings"
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: "50%",
-                      background: t.light,
-                      border: `1px solid ${t.border}`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke={t.mid}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="3" />
-                      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-                    </svg>
-                  </button>
-                </div>
-                <div
-                  className="life-profile-card"
-                  style={{
-                    background: t.white,
-                    border: `1px solid ${t.border}`,
-                    borderRadius: 14,
-                    padding: 24,
-                    marginBottom: 20,
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: "0 0 16px",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: 2.5,
-                      textTransform: "uppercase",
-                      color: t.muted,
-                    }}
-                  >
-                    Your Stats
-                  </p>
-                  {[
-                    ["Topics Read", readKeys.length],
-                    ["Bookmarks Saved", bookmarks.length],
-                    ["Notes Written", completedNotes],
-                    [
-                      "Reading streak",
-                      readingStreak.count > 0
-                        ? `${readingStreak.count} day${readingStreak.count === 1 ? "" : "s"}`
-                        : "Open a topic to start",
-                    ],
-                  ].map(([label, val]) => (
-                    <div
-                      key={label}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        padding: "12px 0",
-                        borderBottom: `1px solid ${t.light}`,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 15,
-                          color: t.mid,
-                          fontFamily: "Georgia,serif",
-                        }}
-                      >
-                        {label}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 15,
-                          fontWeight: 700,
-                          color: t.green,
-                        }}
-                      >
-                        {val}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ marginBottom: 20 }}>
-                  <MomentumCard
-                    snapshot={momentumSnapshot}
-                    onOpenHub={openMomentumHub}
-                    title="Your momentum"
-                  />
-                </div>
-                <div
-                  className="life-profile-card"
-                  style={{
-                    background: t.white,
-                    border: `1px solid ${t.border}`,
-                    borderRadius: 14,
-                    padding: 22,
-                    marginBottom: 20,
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: "0 0 16px",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: 2.5,
-                      textTransform: "uppercase",
-                      color: t.muted,
-                    }}
-                  >
-                    Settings Hub
-                  </p>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 6,
-                      marginBottom: 12,
-                    }}
-                  >
-                    {[
-                      "Experience",
-                      "Sound",
-                      "Display",
-                      "Motion",
-                      "Tools",
-                      "Account",
-                    ].map((item) => (
-                      <span
-                        key={item}
-                        style={{
-                          fontSize: 10,
-                          color: t.muted,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 999,
-                          padding: "4px 8px",
-                          background: t.white,
-                          letterSpacing: 0.6,
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        {item}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div style={{ display: "grid", gap: 14 }}>
-                    <div style={{ marginTop: 2 }}>
-                      <p
-                        style={{
-                          margin: "0 0 8px",
-                          fontSize: 10,
-                          fontWeight: 700,
-                          letterSpacing: 2.2,
-                          textTransform: "uppercase",
-                          color: t.muted,
-                        }}
-                      >
-                        Quick Presets
-                      </p>
-                    </div>
-                    <div style={{ display: "grid", gap: 8 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 10,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          Experience Profile
-                        </span>
-                        <span style={{ fontSize: 12, color: t.muted }}>
-                          Quick apply
-                        </span>
-                      </div>
-                      <div
-                        style={{ display: "flex", flexWrap: "wrap", gap: 8 }}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => applySettingProfile("focus")}
-                          style={{
-                            background: t.white,
-                            border: `1px solid ${t.border}`,
-                            borderRadius: 10,
-                            padding: "8px 12px",
-                            color: t.mid,
-                            fontSize: 12,
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            fontFamily: "Georgia,serif",
-                          }}
-                        >
-                          Focus
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => applySettingProfile("immersive")}
-                          style={{
-                            background: t.greenLt,
-                            border: `1px solid ${t.green}`,
-                            borderRadius: 10,
-                            padding: "8px 12px",
-                            color: t.green,
-                            fontSize: 12,
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            fontFamily: "Georgia,serif",
-                          }}
-                        >
-                          Immersive
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => applySettingProfile("calm")}
-                          style={{
-                            background: t.light,
-                            border: `1px solid ${t.border}`,
-                            borderRadius: 10,
-                            padding: "8px 12px",
-                            color: t.mid,
-                            fontSize: 12,
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            fontFamily: "Georgia,serif",
-                          }}
-                        >
-                          Calm
-                        </button>
-                      </div>
-                    </div>
-
-                    <div
-                      style={{
-                        marginTop: 4,
-                        paddingTop: 10,
-                        borderTop: `1px solid ${t.light}`,
-                      }}
-                    >
-                      <p
-                        style={{
-                          margin: "0 0 8px",
-                          fontSize: 10,
-                          fontWeight: 700,
-                          letterSpacing: 2.2,
-                          textTransform: "uppercase",
-                          color: t.muted,
-                        }}
-                      >
-                        Sound
-                      </p>
-                    </div>
-                    <label
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 10,
-                      }}
-                    >
-                      <div>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          Sound Effects
-                        </p>
-                        <p
-                          style={{
-                            margin: "3px 0 0",
-                            fontSize: 12,
-                            color: t.muted,
-                            fontStyle: "italic",
-                          }}
-                        >
-                          Button and feedback sounds
-                        </p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={!!uiPrefs.soundEnabled}
-                        onChange={(e) => {
-                          const next = e.target.checked;
-                          if (next) play("ok");
-                          updateUiPrefs({ soundEnabled: next });
-                        }}
-                        style={{ width: 20, height: 20, accentColor: t.green }}
-                      />
-                    </label>
-
-                    <label style={{ display: "grid", gap: 8 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 10,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          Sound Volume
-                        </span>
-                        <span style={{ fontSize: 12, color: t.muted }}>
-                          {uiPrefs.soundVolume}%
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={uiPrefs.soundVolume}
-                        disabled={!uiPrefs.soundEnabled}
-                        onChange={(e) =>
-                          updateUiPrefs({ soundVolume: Number(e.target.value) })
-                        }
-                        style={{ accentColor: t.green }}
-                      />
-                    </label>
-
-                    <label style={{ display: "grid", gap: 8 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 10,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          Sound Style
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 12,
-                            color: t.muted,
-                            textTransform: "capitalize",
-                          }}
-                        >
-                          {uiPrefs.soundMode || "focused"}
-                        </span>
-                      </div>
-                      <select
-                        value={uiPrefs.soundMode || "focused"}
-                        disabled={!uiPrefs.soundEnabled}
-                        onChange={(e) =>
-                          updateUiPrefs({ soundMode: e.target.value })
-                        }
-                        style={{
-                          background: t.white,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 10,
-                          padding: "10px 12px",
-                          color: t.ink,
-                          fontSize: 13,
-                          fontFamily: "Georgia,serif",
-                        }}
-                      >
-                        <option value="focused">Focused (very minimal)</option>
-                        <option value="balanced">Balanced</option>
-                        <option value="full">Full feedback</option>
-                      </select>
-                    </label>
-
-                    <label style={{ display: "grid", gap: 8 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 10,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          Sound Scope
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 12,
-                            color: t.muted,
-                            textTransform: "capitalize",
-                          }}
-                        >
-                          {uiPrefs.soundScope || "balanced"}
-                        </span>
-                      </div>
-                      <select
-                        value={uiPrefs.soundScope || "balanced"}
-                        disabled={!uiPrefs.soundEnabled}
-                        onChange={(e) =>
-                          updateUiPrefs({ soundScope: e.target.value })
-                        }
-                        style={{
-                          background: t.white,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 10,
-                          padding: "10px 12px",
-                          color: t.ink,
-                          fontSize: 13,
-                          fontFamily: "Georgia,serif",
-                        }}
-                      >
-                        <option value="focused">
-                          Focused (important only)
-                        </option>
-                        <option value="balanced">Balanced</option>
-                        <option value="full">Full (all interactions)</option>
-                      </select>
-                    </label>
-
-                    <div
-                      style={{
-                        marginTop: 4,
-                        paddingTop: 10,
-                        borderTop: `1px solid ${t.light}`,
-                      }}
-                    >
-                      <p
-                        style={{
-                          margin: "0 0 8px",
-                          fontSize: 10,
-                          fontWeight: 700,
-                          letterSpacing: 2.2,
-                          textTransform: "uppercase",
-                          color: t.muted,
-                        }}
-                      >
-                        Display
-                      </p>
-                    </div>
-                    <label style={{ display: "grid", gap: 8 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 10,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          Text Size
-                        </span>
-                        <span style={{ fontSize: 12, color: t.muted }}>
-                          {uiPrefs.textScale || 100}%
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min={88}
-                        max={122}
-                        step={1}
-                        value={uiPrefs.textScale ?? 100}
-                        onChange={(e) =>
-                          updateUiPrefs({ textScale: Number(e.target.value) })
-                        }
-                        style={{ accentColor: t.green }}
-                      />
-                    </label>
-
-                    <label style={{ display: "grid", gap: 8 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 10,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          Reading Density
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 12,
-                            color: t.muted,
-                            textTransform: "capitalize",
-                          }}
-                        >
-                          {uiPrefs.readingDensity || "comfortable"}
-                        </span>
-                      </div>
-                      <select
-                        value={uiPrefs.readingDensity || "comfortable"}
-                        onChange={(e) =>
-                          updateUiPrefs({ readingDensity: e.target.value })
-                        }
-                        style={{
-                          background: t.white,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 10,
-                          padding: "10px 12px",
-                          color: t.ink,
-                          fontSize: 13,
-                          fontFamily: "Georgia,serif",
-                        }}
-                      >
-                        <option value="compact">Compact</option>
-                        <option value="comfortable">Comfortable</option>
-                        <option value="airy">Airy</option>
-                      </select>
-                    </label>
-
-                    <label
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 10,
-                      }}
-                    >
-                      <div>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          High Contrast
-                        </p>
-                        <p
-                          style={{
-                            margin: "3px 0 0",
-                            fontSize: 12,
-                            color: t.muted,
-                            fontStyle: "italic",
-                          }}
-                        >
-                          Sharper text and stronger separation
-                        </p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={!!uiPrefs.highContrast}
-                        onChange={(e) =>
-                          updateUiPrefs({ highContrast: e.target.checked })
-                        }
-                        style={{ width: 20, height: 20, accentColor: t.green }}
-                      />
-                    </label>
-
-                    <label
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 10,
-                      }}
-                    >
-                      <div>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          Data Saver
-                        </p>
-                        <p
-                          style={{
-                            margin: "3px 0 0",
-                            fontSize: 12,
-                            color: t.muted,
-                            fontStyle: "italic",
-                          }}
-                        >
-                          Reduces heavy visual effects and motion cost
-                        </p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={!!uiPrefs.dataSaver}
-                        onChange={(e) =>
-                          updateUiPrefs({ dataSaver: e.target.checked })
-                        }
-                        style={{ width: 20, height: 20, accentColor: t.green }}
-                      />
-                    </label>
-
-                    <div
-                      style={{
-                        marginTop: 4,
-                        paddingTop: 10,
-                        borderTop: `1px solid ${t.light}`,
-                      }}
-                    >
-                      <p
-                        style={{
-                          margin: "0 0 8px",
-                          fontSize: 10,
-                          fontWeight: 700,
-                          letterSpacing: 2.2,
-                          textTransform: "uppercase",
-                          color: t.muted,
-                        }}
-                      >
-                        Motion & Speed
-                      </p>
-                    </div>
-                    <label
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 10,
-                      }}
-                    >
-                      <div>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          Reduce Motion
-                        </p>
-                        <p
-                          style={{
-                            margin: "3px 0 0",
-                            fontSize: 12,
-                            color: t.muted,
-                            fontStyle: "italic",
-                          }}
-                        >
-                          Calmer animations for iPhone comfort
-                        </p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={!!uiPrefs.reduceMotion}
-                        onChange={(e) =>
-                          updateUiPrefs({ reduceMotion: e.target.checked })
-                        }
-                        style={{ width: 20, height: 20, accentColor: t.green }}
-                      />
-                    </label>
-
-                    <label
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 10,
-                      }}
-                    >
-                      <div>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          Instant Button Response
-                        </p>
-                        <p
-                          style={{
-                            margin: "3px 0 0",
-                            fontSize: 12,
-                            color: t.muted,
-                            fontStyle: "italic",
-                          }}
-                        >
-                          Cuts animation lag on quick taps
-                        </p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={!!uiPrefs.instantButtons}
-                        onChange={(e) =>
-                          updateUiPrefs({ instantButtons: e.target.checked })
-                        }
-                        style={{ width: 20, height: 20, accentColor: t.green }}
-                      />
-                    </label>
-
-                    <label style={{ display: "grid", gap: 8 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 10,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          Button Press Strength
-                        </span>
-                        <span style={{ fontSize: 12, color: t.muted }}>
-                          {uiPrefs.pressIntensity}%
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={uiPrefs.pressIntensity}
-                        disabled={!!uiPrefs.reduceMotion}
-                        onChange={(e) =>
-                          updateUiPrefs({
-                            pressIntensity: Number(e.target.value),
-                          })
-                        }
-                        style={{ accentColor: t.green }}
-                      />
-                    </label>
-
-                    <label style={{ display: "grid", gap: 8 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 10,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 14,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          Sidebar Open Speed
-                        </span>
-                        <span style={{ fontSize: 12, color: t.muted }}>
-                          {uiPrefs.sidebarSpeed}%
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={uiPrefs.sidebarSpeed ?? 62}
-                        disabled={!!uiPrefs.reduceMotion}
-                        onChange={(e) =>
-                          updateUiPrefs({
-                            sidebarSpeed: Number(e.target.value),
-                          })
-                        }
-                        style={{ accentColor: t.green }}
-                      />
-                    </label>
-
-                    <div
-                      style={{
-                        marginTop: 4,
-                        paddingTop: 10,
-                        borderTop: `1px solid ${t.light}`,
-                      }}
-                    >
-                      <p
-                        style={{
-                          margin: "0 0 8px",
-                          fontSize: 10,
-                          fontWeight: 700,
-                          letterSpacing: 2.2,
-                          textTransform: "uppercase",
-                          color: t.muted,
-                        }}
-                      >
-                        Tools & Legal
-                      </p>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 8,
-                        paddingTop: 2,
-                      }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => play("star")}
-                        disabled={!uiPrefs.soundEnabled}
-                        style={{
-                          background: t.white,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 10,
-                          padding: "10px 14px",
-                          color: uiPrefs.soundEnabled ? t.mid : t.border,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          cursor: uiPrefs.soundEnabled ? "pointer" : "default",
-                          fontFamily: "Georgia,serif",
-                        }}
-                      >
-                        Test Sound
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => updateUiPrefs(PREF_DEFAULTS)}
-                        style={{
-                          background: t.light,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 10,
-                          padding: "10px 14px",
-                          color: t.mid,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          fontFamily: "Georgia,serif",
-                        }}
-                      >
-                        Reset Settings
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setUiPrefs((prev) => ({
-                            ...prev,
-                            instantButtons: true,
-                            reduceMotion: false,
-                            sidebarSpeed: 58,
-                            pressIntensity: 48,
-                            textScale: 102,
-                            readingDensity: "comfortable",
-                            soundMode: "focused",
-                            soundScope: "focused",
-                            dataSaver: true,
-                          }))
-                        }
-                        style={{
-                          background: t.white,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 10,
-                          padding: "10px 14px",
-                          color: t.mid,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          fontFamily: "Georgia,serif",
-                        }}
-                      >
-                        Optimize Mobile
-                      </button>
-                      <button
-                        type="button"
-                        onClick={resetReadingProgress}
-                        style={{
-                          background: t.white,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 10,
-                          padding: "10px 14px",
-                          color: t.mid,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          fontFamily: "Georgia,serif",
-                        }}
-                      >
-                        Reset Progress
-                      </button>
-                      <button
-                        type="button"
-                        onClick={exportSettingSnapshot}
-                        style={{
-                          background: t.white,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 10,
-                          padding: "10px 14px",
-                          color: t.mid,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          fontFamily: "Georgia,serif",
-                        }}
-                      >
-                        Export Settings
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          window.open(
-                            "/privacy.html",
-                            "_blank",
-                            "noopener,noreferrer",
-                          )
-                        }
-                        style={{
-                          background: t.light,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 10,
-                          padding: "10px 14px",
-                          color: t.mid,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          fontFamily: "Georgia,serif",
-                        }}
-                      >
-                        Privacy & Policy
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          window.open(
-                            "/terms.html",
-                            "_blank",
-                            "noopener,noreferrer",
-                          )
-                        }
-                        style={{
-                          background: t.light,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 10,
-                          padding: "10px 14px",
-                          color: t.mid,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          fontFamily: "Georgia,serif",
-                        }}
-                      >
-                        Terms
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          window.open(
-                            "/cookies.html",
-                            "_blank",
-                            "noopener,noreferrer",
-                          )
-                        }
-                        style={{
-                          background: t.light,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 10,
-                          padding: "10px 14px",
-                          color: t.mid,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          fontFamily: "Georgia,serif",
-                        }}
-                      >
-                        Cookie Notice
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          window.open(
-                            "/community-guidelines.html",
-                            "_blank",
-                            "noopener,noreferrer",
-                          )
-                        }
-                        style={{
-                          background: t.light,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 10,
-                          padding: "10px 14px",
-                          color: t.mid,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          fontFamily: "Georgia,serif",
-                        }}
-                      >
-                        Community Rules
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          window.open(
-                            "/disclaimer.html",
-                            "_blank",
-                            "noopener,noreferrer",
-                          )
-                        }
-                        style={{
-                          background: t.light,
-                          border: `1px solid ${t.border}`,
-                          borderRadius: 10,
-                          padding: "10px 14px",
-                          color: t.mid,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          fontFamily: "Georgia,serif",
-                        }}
-                      >
-                        Disclaimer
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div style={{ marginBottom: 8 }}>
-                  <p
-                    style={{
-                      margin: "0 0 8px",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: 2.2,
-                      textTransform: "uppercase",
-                      color: t.muted,
-                    }}
-                  >
-                    Account
-                  </p>
-                </div>
-                <button
-                  onClick={doSignOut}
-                  style={{
-                    width: "100%",
-                    background: "none",
-                    border: `1.5px solid ${t.border}`,
-                    borderRadius: 12,
-                    padding: "15px",
-                    color: t.red,
-                    fontSize: 15,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontFamily: "Georgia,serif",
-                  }}
-                >
-                  Sign Out
-                </button>
-              </div>
+              <ProfilePage
+                t={t}
+                user={user}
+                play={play}
+                setPage={setPage}
+                readKeys={readKeys}
+                bookmarks={bookmarks}
+                readingStreak={readingStreak}
+                completedNotes={completedNotes}
+                savedHighlightsCount={savedHighlightsCount}
+                momentumSnapshot={momentumSnapshot}
+                openMomentumHub={openMomentumHub}
+                initials={initials}
+                doSignOut={doSignOut}
+              />
             )}
 
             {page === "reading" && selContent && (
@@ -8808,6 +6491,9 @@ export default function LifeApp() {
                   related={related}
                   handleSelect={handleSelect}
                   bookmarks={bookmarks}
+                  highlights={highlights}
+                  onSaveHighlight={saveHighlight}
+                  onRemoveHighlight={removeHighlight}
                   allContent={allContent}
                   profile={profile}
                   savedReaderPage={readerPages[selKey] ?? 0}
