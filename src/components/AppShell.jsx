@@ -122,7 +122,7 @@ export function SS({ label, open, setOpen, children, tag, theme, playFn }) {
 
 // ── Sidebar Link item ─────────────────────────────────────────
 // Props: label, icon, onClick, active, theme
-export function SL({ label, icon: _icon, onClick, active, theme }) {
+export function SL({ label, onClick, active, theme }) {
   const th = theme || C;
   return (
     <button
