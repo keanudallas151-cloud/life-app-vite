@@ -1,5 +1,5 @@
 import React from "react";
-import MomentumCard from "./MomentumCard";
+import { MomentumCard } from "./MomentumCard";
 
 export default function ProfilePage({
   t,

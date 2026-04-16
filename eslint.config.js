@@ -35,7 +35,7 @@ export default defineConfig([
     files: ["**/*.{js,jsx}"],
     extends: [
       js.configs.recommended,
-      nextPlugin.flatConfig.recommended,
+      nextPlugin.configs.recommended,
       reactHooks.configs["recommended-latest"],
     ],
     languageOptions: {
