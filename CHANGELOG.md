@@ -2,6 +2,27 @@
 
 All notable prototype milestones for Life are tracked here.
 
+## v0.4.7 - Massive component extraction
+
+- reduced App.jsx from 6,777 → 3,180 lines (53% reduction)
+- extracted 11 new component files from inline JSX:
+  - WhereToStartPage — recommended reading order page
+  - HelpPage — FAQ page
+  - CategoriesPage — category stepper with completion certificate
+  - ProgressDashboardPage — momentum card, stats grid, challenges
+  - LeaderboardPage — ranking display
+  - DailyGrowthPage — daily growth tips
+  - MentorshipPage — mentorship booking
+  - PremiumPage — premium pricing cards
+  - VerifyEmailPage — email verification screen
+  - ResetPasswordPage — password reset with strength meter
+  - BottomNav — mobile bottom navigation bar
+- extracted 3 large auth screen components (LandingPage, SignInPage, RegisterPage) via background agents
+- moved password strength computation into ResetPasswordPage and RegisterPage (self-contained)
+- moved CATEGORIES constant into CategoriesPage (re-exported for shared use)
+- removed ~3,600 lines of inline JSX from App.jsx
+- all lint errors resolved, build passes clean
+
 ## v0.4.6 - Dependency updates
 
 - bumped Next.js from 15.5.15 to 16.2.4
