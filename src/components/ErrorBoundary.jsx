@@ -1,29 +1,29 @@
-import React from 'react'
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
+import { AlertTriangle, Home, RefreshCw } from "lucide-react";
+import React from "react";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
-    super(props)
-    this.state = { hasError: false, error: null, errorInfo: null }
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true }
+    return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
-    this.setState({ error, errorInfo })
-    console.error('Error caught by boundary:', error, errorInfo)
+    this.setState({ error, errorInfo });
+    console.error("Error caught by boundary:", error, errorInfo);
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null })
-    window.location.reload()
-  }
+    this.setState({ hasError: false, error: null, errorInfo: null });
+    window.location.reload();
+  };
 
   handleHome = () => {
-    window.location.href = '/'
-  }
+    window.location.href = "/";
+  };
 
   render() {
     if (this.state.hasError) {
@@ -33,15 +33,20 @@ class ErrorBoundary extends React.Component {
             <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-6">
               <AlertTriangle size={40} className="text-red-500" />
             </div>
-            
-            <h1 className="text-2xl font-bold mb-3 text-white">Something went wrong</h1>
+
+            <h1 className="text-2xl font-bold mb-3 text-white">
+              Something went wrong
+            </h1>
             <p className="text-slate-400 mb-6">
-              We encountered an unexpected error. Don't worry, your data is safe.
+              We encountered an unexpected error. Don't worry, your data is
+              safe.
             </p>
 
             {this.state.error && (
               <div className="text-left mb-6 p-4 rounded-xl bg-slate-950 overflow-auto max-h-40">
-                <p className="text-xs text-red-400 font-mono">{this.state.error.toString()}</p>
+                <p className="text-xs text-red-400 font-mono">
+                  {this.state.error.toString()}
+                </p>
               </div>
             )}
 
@@ -63,14 +68,14 @@ class ErrorBoundary extends React.Component {
             </div>
           </div>
         </div>
-      )
+      );
     }
 
-    return this.props.children
+    return this.props.children;
   }
 }
 
-export default ErrorBoundary
+export default ErrorBoundary;
 
 import { Component } from "react";
 import { C } from "../systems/theme";
@@ -92,33 +97,54 @@ export class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{
-          minHeight: "100vh",
-          background: C.skin,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "Georgia,serif",
-          padding: 32,
-        }}>
+        <div
+          style={{
+            minHeight: "100vh",
+            background: C.skin,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontFamily: "Georgia,serif",
+            padding: 32,
+          }}
+        >
           <div style={{ textAlign: "center", maxWidth: 400 }}>
-            <div style={{
-              width: 70,
-              height: 70,
-              borderRadius: "20%",
-              background: `linear-gradient(145deg,${C.green},#2d6e42)`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 20px",
-              boxShadow: "0 4px 16px rgba(74,140,92,0.3)",
-            }}>
-              <span style={{ color: "#fff", fontSize: 28, fontWeight: 800 }}>l.</span>
+            <div
+              style={{
+                width: 70,
+                height: 70,
+                borderRadius: "20%",
+                background: `linear-gradient(145deg,${C.green},#2d6e42)`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 20px",
+                boxShadow: "0 4px 16px rgba(74,140,92,0.3)",
+              }}
+            >
+              <span style={{ color: "#fff", fontSize: 28, fontWeight: 800 }}>
+                l.
+              </span>
             </div>
-            <h2 style={{ margin: "0 0 10px", fontSize: 22, fontWeight: 700, color: C.ink }}>
+            <h2
+              style={{
+                margin: "0 0 10px",
+                fontSize: 22,
+                fontWeight: 700,
+                color: C.ink,
+              }}
+            >
               Something went wrong
             </h2>
-            <p style={{ margin: "0 0 24px", fontSize: 14, color: C.muted, lineHeight: 1.7, fontStyle: "italic" }}>
+            <p
+              style={{
+                margin: "0 0 24px",
+                fontSize: 14,
+                color: C.muted,
+                lineHeight: 1.7,
+                fontStyle: "italic",
+              }}
+            >
               An unexpected error occurred. Please refresh the page to continue.
             </p>
             <button
