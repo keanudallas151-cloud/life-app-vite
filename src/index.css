@@ -406,6 +406,45 @@ a,
   -webkit-touch-callout: none;
 }
 
+/* ─── Button press feedback: subtle scale on active ──────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  button:not(:disabled):active,
+  [role="button"]:not(:disabled):active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* ─── Smooth list item stagger for content lists ─────────────────────────── */
+@keyframes life-list-item-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .life-list-stagger > * {
+    animation: life-list-item-in 0.3s cubic-bezier(0.4,0,0.2,1) both;
+  }
+  .life-list-stagger > *:nth-child(1)  { animation-delay: 0.02s; }
+  .life-list-stagger > *:nth-child(2)  { animation-delay: 0.05s; }
+  .life-list-stagger > *:nth-child(3)  { animation-delay: 0.08s; }
+  .life-list-stagger > *:nth-child(4)  { animation-delay: 0.11s; }
+  .life-list-stagger > *:nth-child(5)  { animation-delay: 0.14s; }
+  .life-list-stagger > *:nth-child(6)  { animation-delay: 0.17s; }
+  .life-list-stagger > *:nth-child(7)  { animation-delay: 0.20s; }
+  .life-list-stagger > *:nth-child(8)  { animation-delay: 0.23s; }
+  .life-list-stagger > *:nth-child(n+9){ animation-delay: 0.26s; }
+}
+
+/* ─── Progress bar fill animation ────────────────────────────────────────── */
+@keyframes life-progress-fill {
+  from { width: 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .life-progress-bar-fill {
+    animation: life-progress-fill 0.8s cubic-bezier(0.4,0,0.2,1) both;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════════════ */
 
 /* ─── A11Y: keyboard focus rings ──────────────────────────────────────

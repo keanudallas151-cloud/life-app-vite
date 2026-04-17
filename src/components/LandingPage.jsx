@@ -279,7 +279,7 @@ export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSig
             setScreen("register");
           }}
           style={{
-            background: "linear-gradient(135deg, #3d5a4c 0%, #2e4a3a 100%)",
+            background: "linear-gradient(135deg, #3d5a4c 0%, #5a7d6a 100%)",
             border: "1px solid rgba(255,255,255,0.15)",
             borderRadius: 14,
             padding: "18px 20px",
