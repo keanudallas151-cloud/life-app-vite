@@ -3,11 +3,20 @@ import { LS } from "../systems/storage";
 
 const GOAL_KEY = "life_personal_goals";
 
+function formatDeadlineDate(dateString) {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("-");
+  if (!year || !month || !day) return dateString;
+  return `${month}/${day}/${year}`;
+}
+
 export function GoalSettingPage({ t, play }) {
   const [goals, setGoals] = useState(() => LS.get(GOAL_KEY, []));
   const [title, setTitle] = useState("");
   const [target, setTarget] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [deadlineError, setDeadlineError] = useState("");
+  const today = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     LS.set(GOAL_KEY, goals);
@@ -15,6 +24,11 @@ export function GoalSettingPage({ t, play }) {
 
   const addGoal = () => {
     if (!title.trim()) return;
+    if (deadline && deadline < today) {
+      setDeadlineError("Choose today or a future date.");
+      play?.("back");
+      return;
+    }
     const newGoal = {
       id: Date.now(),
       title: title.trim(),
@@ -143,12 +157,23 @@ export function GoalSettingPage({ t, play }) {
         <input
           type="date"
           value={deadline}
-          onChange={(e) => setDeadline(e.target.value)}
+          min={today}
+          aria-invalid={deadlineError ? "true" : "false"}
+          onChange={(e) => {
+            setDeadline(e.target.value);
+            if (deadlineError) {
+              setDeadlineError(
+                e.target.value && e.target.value < today
+                  ? "Choose today or a future date."
+                  : "",
+              );
+            }
+          }}
           style={{
             width: "100%",
             padding: "12px 14px",
             background: t.skin,
-            border: `1.5px solid ${t.border}`,
+            border: `1.5px solid ${deadlineError ? t.red : t.border}`,
             borderRadius: 10,
             fontSize: 14,
             color: t.ink,
@@ -158,19 +183,31 @@ export function GoalSettingPage({ t, play }) {
             marginBottom: 14,
           }}
         />
+        {deadlineError && (
+          <p
+            style={{
+              margin: "0 0 14px",
+              fontSize: 12,
+              color: t.red,
+              lineHeight: 1.5,
+            }}
+          >
+            {deadlineError}
+          </p>
+        )}
         <button
           onClick={addGoal}
-          disabled={!title.trim()}
+          disabled={!title.trim() || Boolean(deadlineError)}
           style={{
             width: "100%",
             padding: "13px",
-            background: title.trim() ? t.green : t.light,
-            color: title.trim() ? "#fff" : t.muted,
+            background: title.trim() && !deadlineError ? t.green : t.light,
+            color: title.trim() && !deadlineError ? "#fff" : t.muted,
             border: "none",
             borderRadius: 12,
             fontSize: 14,
             fontWeight: 700,
-            cursor: title.trim() ? "pointer" : "not-allowed",
+            cursor: title.trim() && !deadlineError ? "pointer" : "not-allowed",
             fontFamily: "Georgia,serif",
           }}
         >
@@ -277,7 +314,7 @@ export function GoalSettingPage({ t, play }) {
                       fontWeight: 600,
                     }}
                   >
-                    Deadline: {new Date(g.deadline).toLocaleDateString()}
+                     Deadline: {formatDeadlineDate(g.deadline)}
                   </p>
                 )}
               </div>

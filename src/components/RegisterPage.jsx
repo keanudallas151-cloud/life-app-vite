@@ -27,11 +27,13 @@ export function RegisterPage({
   // Password strength computation
   const passwordHasMinLength = rPass.length >= 8;
   const passwordHasUpper = /[A-Z]/.test(rPass);
+  const passwordHasLower = /[a-z]/.test(rPass);
   const passwordHasNumber = /\d/.test(rPass);
   const passwordHasSpecial = /[^A-Za-z0-9]/.test(rPass);
   const passwordStrength = [
     passwordHasMinLength,
     passwordHasUpper,
+    passwordHasLower,
     passwordHasNumber,
     passwordHasSpecial,
   ].filter(Boolean).length;
@@ -44,8 +46,10 @@ export function RegisterPage({
   ];
   const passwordStrengthColors = [C.red, C.red, "#e6a23c", C.gold, C.green];
   const passwordHint =
-    rPass.length > 0 && !passwordHasSpecial
-      ? "Tip: add a special character for a stronger password."
+    rPass.length > 0 && !passwordHasLower
+      ? "Tip: add a lowercase letter to match the password rules."
+      : rPass.length > 0 && !passwordHasSpecial
+        ? "Tip: add a special character for a stronger password."
       : "";
   const confirmMismatch = rPass2.length > 0 && rPass !== rPass2;
 

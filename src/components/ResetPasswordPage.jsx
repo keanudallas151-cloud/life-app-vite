@@ -29,17 +29,21 @@ export function ResetPasswordPage({
 
   const resetPasswordHasMinLength = rpPass.length >= 8;
   const resetPasswordHasUpper = /[A-Z]/.test(rpPass);
+  const resetPasswordHasLower = /[a-z]/.test(rpPass);
   const resetPasswordHasNumber = /\d/.test(rpPass);
   const resetPasswordHasSpecial = /[^A-Za-z0-9]/.test(rpPass);
   const resetPasswordStrength = [
     resetPasswordHasMinLength,
     resetPasswordHasUpper,
+    resetPasswordHasLower,
     resetPasswordHasNumber,
     resetPasswordHasSpecial,
   ].filter(Boolean).length;
   const resetPasswordHint =
-    rpPass.length > 0 && !resetPasswordHasSpecial
-      ? "Add a symbol like !@#$ for extra security"
+    rpPass.length > 0 && !resetPasswordHasLower
+      ? "Add a lowercase letter to match the password rules"
+      : rpPass.length > 0 && !resetPasswordHasSpecial
+        ? "Add a symbol like !@#$ for extra security"
       : "";
   const resetConfirmMismatch = rpPass2.length > 0 && rpPass !== rpPass2;
 

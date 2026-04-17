@@ -820,6 +820,7 @@ body.life-dark .life-main-scroll {
   .life-sidebar {
     display: flex !important;
     flex-direction: column !important;
+    box-shadow: 10px 0 28px rgba(20, 20, 20, 0.12) !important;
   }
 }
 
@@ -827,26 +828,32 @@ body.life-dark .life-main-scroll {
    Ensures every nav item is finger-friendly per Apple HIG & Material.
     */
 @media (max-width: 640px) {
+  .life-sidebar-header {
+    gap: 10px !important;
+  }
+
+  .life-sidebar-progress-card {
+    border-radius: 12px !important;
+  }
+
   /* Section headers (SS component) */
-  .life-sidebar > div > button,
+  .life-sidebar-section-header,
   .life-sidebar > button {
     min-height: 44px !important;
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
   }
 
-  /* Compact the section label text — no larger than needed */
-  .life-sidebar > div > button p,
-  .life-sidebar > button span {
-    font-size: 10px !important;
-    letter-spacing: 1.5px !important;
-  }
-
-  /* Link items (SL component) inside open sections */
-  .life-sidebar button[style*="9px 20px"] {
+  .life-sidebar-link {
     min-height: 44px !important;
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
+    padding-top: 7px !important;
+    padding-bottom: 7px !important;
+    padding-left: 16px !important;
+    padding-right: 12px !important;
+  }
+
+  .life-sidebar-link span {
+    font-size: 12px !important;
   }
 }
 
@@ -2352,6 +2359,14 @@ button:active:not(:disabled),
   .life-bottom-nav-dark {
     background: rgba(18, 18, 18, 0.96) !important;
     border-top-color: #333 !important;
+  }
+
+  .life-sidebar-backdrop {
+    z-index: 80 !important;
+  }
+
+  .life-sidebar {
+    z-index: 90 !important;
   }
 
   .life-bottom-nav-item {

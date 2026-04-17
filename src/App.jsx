@@ -680,6 +680,7 @@ export default function LifeApp() {
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [isNarrowViewport, setIsNarrowViewport] = useState(false);
+  const [sidebarQuery, setSidebarQuery] = useState("");
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return undefined;
@@ -706,6 +707,32 @@ export default function LifeApp() {
   const [socialsOpen, setSocialsOpen] = useState(false);
   const [guidedOpen, setGuidedOpen] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
+
+  const sidebarSearchResults = useMemo(() => {
+    const query = sidebarQuery.trim().toLowerCase();
+    if (query.length < 2) return [];
+
+    return allContent
+      .filter(({ key, node, path }) => {
+        const haystack = [
+          key,
+          node?.label || "",
+          node?.content?.title || "",
+          ...(path || []),
+        ]
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(query);
+      })
+      .slice(0, 24);
+  }, [sidebarQuery]);
+
+  const libraryCategoryCards = useMemo(() => {
+    return Object.entries(LIBRARY).map(([key, node]) => {
+      const topicCount = allContent.filter((entry) => entry.path?.[0] === node.label).length;
+      return { key, node, topicCount };
+    });
+  }, []);
   const [shareToast, setShareToast] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -2619,14 +2646,18 @@ export default function LifeApp() {
             transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)",
           }}
         >
-          {/* User card */}
           <div
+            className="life-sidebar-header"
             style={{
-              padding: "16px 18px 14px",
+              padding: isNarrowViewport ? "14px 14px 12px" : "16px 18px 14px",
               borderBottom: `1px solid ${t.light}`,
               display: "flex",
               flexDirection: "column",
               gap: 12,
+              position: "sticky",
+              top: 0,
+              zIndex: 2,
+              background: t.white,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -2650,6 +2681,18 @@ export default function LifeApp() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p
                   style={{
+                    margin: "0 0 2px",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: 2,
+                    textTransform: "uppercase",
+                    color: t.green,
+                  }}
+                >
+                  Navigation
+                </p>
+                <p
+                  style={{
                     margin: 0,
                     fontSize: 14,
                     fontWeight: 700,
@@ -2671,17 +2714,20 @@ export default function LifeApp() {
                     textOverflow: "ellipsis",
                   }}
                 >
-                  {user?.email || ""}
-                </p>
+                    {user?.email || ""}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div
+            <button
+              type="button"
+              className="life-sidebar-progress-card"
               style={{
                 background: t.light,
                 border: `1px solid ${t.border}`,
-                borderRadius: 12,
-                padding: "10px 12px",
+                borderRadius: 14,
+                padding: isNarrowViewport ? "10px 12px" : "11px 12px",
                 cursor: "pointer",
+                textAlign: "left",
               }}
               onClick={() => {
                 play("tap");
@@ -2739,9 +2785,139 @@ export default function LifeApp() {
               >
                 {readKeys.length}/{allContent.length} topics explored
               </p>
+            </button>
+            <div
+              className="life-sidebar-search-wrap"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+              }}
+            >
+              <input
+                type="search"
+                value={sidebarQuery}
+                onChange={(e) => setSidebarQuery(e.target.value)}
+                placeholder="Search topics, sections, or categories"
+                aria-label="Search sidebar topics"
+                style={{
+                  width: "100%",
+                  minHeight: 42,
+                  borderRadius: 12,
+                  border: `1px solid ${t.border}`,
+                  background: t.skin,
+                  color: t.ink,
+                  padding: "0 14px",
+                  fontSize: 14,
+                  fontFamily: "Georgia,serif",
+                  boxSizing: "border-box",
+                }}
+              />
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                  gap: 8,
+                }}
+              >
+                {[
+                  ["Home", "home"],
+                  ["Quiz", "quiz"],
+                  ["Progress", "progress_dashboard"],
+                ].map(([label, target]) => (
+                  <button
+                    key={target}
+                    type="button"
+                    onClick={() => {
+                      play("tap");
+                      setPage(target);
+                      setSidebarOpen(false);
+                    }}
+                    style={{
+                      minHeight: 38,
+                      borderRadius: 11,
+                      border: `1px solid ${page === target ? `${t.green}55` : t.border}`,
+                      background: page === target ? t.greenLt : t.white,
+                      color: page === target ? t.green : t.mid,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: 0.3,
+                      cursor: "pointer",
+                      fontFamily: "Georgia,serif",
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-          {/* P2: Home independent from Life */}
+
+          {sidebarQuery.trim().length >= 2 && (
+            <div
+              style={{
+                padding: "12px 14px 8px",
+                borderBottom: `1px solid ${t.light}`,
+              }}
+            >
+              <p
+                style={{
+                  margin: "0 0 10px",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: 2,
+                  textTransform: "uppercase",
+                  color: t.muted,
+                }}
+              >
+                Search Results
+              </p>
+              {sidebarSearchResults.length === 0 ? (
+                <p style={{ margin: 0, fontSize: 12, color: t.muted, lineHeight: 1.6 }}>
+                  No topics match that search yet.
+                </p>
+              ) : (
+                <div style={{ display: "grid", gap: 8 }}>
+                  {sidebarSearchResults.map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => {
+                        play("open");
+                        handleSelect(item.key, item.node);
+                        setSidebarOpen(false);
+                      }}
+                      style={{
+                        width: "100%",
+                        textAlign: "left",
+                        border: `1px solid ${t.border}`,
+                        background: t.white,
+                        borderRadius: 12,
+                        padding: "10px 12px",
+                        cursor: "pointer",
+                        fontFamily: "Georgia,serif",
+                      }}
+                    >
+                      <div style={{ fontSize: 13, fontWeight: 700, color: t.ink }}>
+                        {item.node.label}
+                      </div>
+                      <div
+                        style={{
+                          marginTop: 3,
+                          fontSize: 11,
+                          color: t.muted,
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {item.path.join(" / ")}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <SL
             theme={t}
             label="Home"
@@ -2836,20 +3012,83 @@ export default function LifeApp() {
             }
             active={page === "sidebar_library"}
           >
-            {Object.entries(LIBRARY).map(([k, node]) => (
-              <TreeNode
-                key={k}
-                nodeKey={k}
-                node={node}
-                depth={0}
-                onSelect={handleSelect}
-                onFolderSelect={handleFolderSelect}
-                selectedKey={selKey}
-                defaultOpen={k === "life"}
-                play={play}
-                theme={t}
-              />
-            ))}
+            {isNarrowViewport ? (
+              <div
+                style={{
+                  display: "grid",
+                  gap: 8,
+                  padding: "0 12px 10px",
+                }}
+              >
+                {libraryCategoryCards.map(({ key, node, topicCount }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => {
+                      play("tap");
+                      handleFolderSelect(key, node);
+                    }}
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      border: `1px solid ${t.border}`,
+                      background: t.white,
+                      borderRadius: 14,
+                      padding: "12px 12px",
+                      cursor: "pointer",
+                      fontFamily: "Georgia,serif",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 12,
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: t.ink }}>
+                          {node.label}
+                        </div>
+                        <div style={{ marginTop: 3, fontSize: 11, color: t.muted }}>
+                          {topicCount} topics
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          padding: "5px 8px",
+                          borderRadius: 999,
+                          background: t.greenLt,
+                          color: t.green,
+                          fontSize: 10,
+                          fontWeight: 700,
+                          letterSpacing: 1,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Browse
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              Object.entries(LIBRARY).map(([k, node]) => (
+                <TreeNode
+                  key={k}
+                  nodeKey={k}
+                  node={node}
+                  depth={0}
+                  onSelect={handleSelect}
+                  onFolderSelect={handleFolderSelect}
+                  selectedKey={selKey}
+                  defaultOpen={k === "life"}
+                  play={play}
+                  theme={t}
+                />
+              ))
+            )}
           </SS>
           <SS
             theme={t}

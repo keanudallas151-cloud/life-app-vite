@@ -69,11 +69,12 @@ export function SS({
       }}
     >
       <div
+        className="life-sidebar-section-header"
         style={{
           display: "flex",
           alignItems: "center",
           width: "100%",
-          padding: "10px 18px 10px",
+          padding: "8px 14px",
           gap: 8,
         }}
       >
@@ -159,13 +160,14 @@ export function SL({ label, onClick, active, theme }) {
   const th = theme || C;
   return (
     <button
+      className="life-sidebar-link"
       onClick={onClick}
       style={{
         display: "flex",
         alignItems: "center",
         gap: 10,
         width: "100%",
-        padding: "9px 20px 9px 24px",
+        padding: "8px 14px 8px 18px",
         background: active ? `${th.green}14` : "transparent",
         border: "none",
         borderLeft: active ? `2.5px solid ${th.green}` : "2.5px solid transparent",

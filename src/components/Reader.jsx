@@ -528,9 +528,33 @@ function getParchmentBackground(t) {
   return `${glow}, ${fibers}, ${base}`;
 }
 
-function ReaderInlineVisual({ selKey, title, t }) {
-  if (FINANCE_KEYS.includes(selKey)) {
-    return <FinanceChart topicKey={selKey} t={t} />;
+const INLINE_VISUAL_PATTERN = /\{\{(?:chart|visual):([^}]+)\}\}/g;
+
+function getInlineSegments(paragraph) {
+  const segments = [];
+  let lastIndex = 0;
+
+  paragraph.replaceAll(INLINE_VISUAL_PATTERN, (match, rawKey, offset) => {
+    if (offset > lastIndex) {
+      segments.push({ type: "text", value: paragraph.slice(lastIndex, offset) });
+    }
+    segments.push({ type: "visual", key: rawKey.trim().toLowerCase() || "auto" });
+    lastIndex = offset + match.length;
+    return match;
+  });
+
+  if (lastIndex < paragraph.length) {
+    segments.push({ type: "text", value: paragraph.slice(lastIndex) });
+  }
+
+  return segments.length ? segments : [{ type: "text", value: paragraph }];
+}
+
+function ReaderInlineVisual({ selKey, title, t, visualKey = "auto" }) {
+  const topicKey = visualKey === "auto" ? selKey : visualKey;
+
+  if (FINANCE_KEYS.includes(topicKey)) {
+    return <FinanceChart topicKey={topicKey} t={t} />;
   }
 
   const cards = {
@@ -556,7 +580,9 @@ function ReaderInlineVisual({ selKey, title, t }) {
     },
   };
 
-  const parentLabel = String(MAP[selKey]?.path?.[0] || "").toLowerCase();
+  const parentLabel = String(
+    MAP[topicKey]?.path?.[0] || MAP[selKey]?.path?.[0] || "",
+  ).toLowerCase();
   const family =
     ["communication", "psychology", "philosophy", "business"].find((candidate) =>
       parentLabel.includes(candidate),
@@ -1108,6 +1134,10 @@ export function EbookReader({
                   <div style={animStyle}>
                     {cur.map((para, i) => {
                       const globalIndex = globalStart + i;
+                      const segments = getInlineSegments(para);
+                      const hasExplicitInlineVisual = segments.some(
+                        (segment) => segment.type === "visual",
+                      );
                       const shouldShowInlineVisual =
                         i === Math.max(1, Math.floor(cur.length / 2)) &&
                         globalIndex >= Math.max(1, Math.floor(paragraphs.length / 3)) &&
@@ -1115,22 +1145,41 @@ export function EbookReader({
 
                       return (
                         <div key={i} className="life-reader-quote-row" style={{ marginBottom: 24 }}>
-                          <p
-                            style={{
-                              margin: "0 0 10px",
-                              color: t.mid,
-                              fontSize: 17,
-                              lineHeight: 2,
-                              fontFamily: "Georgia,serif",
-                            }}
-                            dangerouslySetInnerHTML={{
-                              __html: para.replaceAll(
-                                /\*\*(.*?)\*\*/g,
-                                `<strong style="color:${t.ink};font-weight:700">$1</strong>`,
-                              ),
-                            }}
-                          />
-                          {shouldShowInlineVisual && (
+                          {segments.map((segment, segmentIndex) => {
+                            if (segment.type === "visual") {
+                              return (
+                                <ReaderInlineVisual
+                                  key={`visual-${segmentIndex}`}
+                                  selKey={selKey}
+                                  visualKey={segment.key}
+                                  title={selContent.title}
+                                  t={t}
+                                />
+                              );
+                            }
+
+                            if (!segment.value.trim()) return null;
+
+                            return (
+                              <p
+                                key={`text-${segmentIndex}`}
+                                style={{
+                                  margin: "0 0 10px",
+                                  color: t.mid,
+                                  fontSize: 17,
+                                  lineHeight: 2,
+                                  fontFamily: "Georgia,serif",
+                                }}
+                                dangerouslySetInnerHTML={{
+                                  __html: segment.value.replaceAll(
+                                    /\*\*(.*?)\*\*/g,
+                                    `<strong style="color:${t.ink};font-weight:700">$1</strong>`,
+                                  ),
+                                }}
+                              />
+                            );
+                          })}
+                          {shouldShowInlineVisual && !hasExplicitInlineVisual && (
                             <ReaderInlineVisual selKey={selKey} title={selContent.title} t={t} />
                           )}
                         </div>
