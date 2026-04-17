@@ -8,7 +8,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
       className="life-grain life-landing-shell"
       style={{
         minHeight: "100svh",
-        background: `linear-gradient(165deg, ${C.skin} 0%, #ebe4d6 45%, ${C.skin} 100%)`,
+        background: "linear-gradient(165deg, #1a1a1a 0%, #2a2a2a 45%, #1a1a1a 100%)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -21,8 +21,9 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
     >
       <style>{`
         @keyframes life-logo-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-        @keyframes life-glow-pulse { 0%,100%{box-shadow:0 8px 32px rgba(74,140,92,0.3)} 50%{box-shadow:0 12px 48px rgba(74,140,92,0.5)} }
+        @keyframes life-glow-pulse { 0%,100%{box-shadow:0 8px 32px rgba(255,255,255,0.08)} 50%{box-shadow:0 12px 48px rgba(255,255,255,0.14)} }
         @keyframes life-tag-fade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes life-shine { 0%{background-position:200% center} 100%{background-position:-200% center} }
       `}</style>
       {/* Decorative circles */}
       <div
@@ -33,7 +34,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
           width: 240,
           height: 240,
           borderRadius: "50%",
-          border: "1.5px solid rgba(74,140,92,0.1)",
+          border: "1.5px solid rgba(255,255,255,0.06)",
           pointerEvents: "none",
         }}
       />
@@ -45,7 +46,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
           width: 72,
           height: 72,
           borderRadius: "50%",
-          background: "rgba(74,140,92,0.1)",
+          background: "rgba(255,255,255,0.04)",
           filter: "blur(1px)",
           pointerEvents: "none",
         }}
@@ -58,7 +59,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
           width: 180,
           height: 180,
           borderRadius: "50%",
-          border: "1.5px solid rgba(74,140,92,0.08)",
+          border: "1.5px solid rgba(255,255,255,0.04)",
           pointerEvents: "none",
         }}
       />
@@ -70,7 +71,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
           width: 100,
           height: 100,
           borderRadius: "50%",
-          background: "rgba(74,140,92,0.05)",
+          background: "rgba(255,255,255,0.02)",
           pointerEvents: "none",
         }}
       />
@@ -83,7 +84,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
           height: 132,
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(255,255,255,0.5) 0%, rgba(74,140,92,0.06) 70%, rgba(74,140,92,0) 100%)",
+            "radial-gradient(circle, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 70%, transparent 100%)",
           pointerEvents: "none",
         }}
       />
@@ -95,7 +96,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
           width: 44,
           height: 44,
           borderRadius: "50%",
-          border: "1.5px solid rgba(74,140,92,0.14)",
+          border: "1.5px solid rgba(255,255,255,0.06)",
           pointerEvents: "none",
         }}
       />
@@ -106,12 +107,12 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
             width: 120,
             height: 120,
             borderRadius: "22%",
-            background: `linear-gradient(145deg,${C.green},#2d6e42)`,
+            background: "linear-gradient(145deg, #2d2d2d, #3a3a3a)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             margin: "0 auto 18px",
-            boxShadow: S.glow,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.08)",
             animation:
               "life-logo-float 4s ease-in-out infinite, life-glow-pulse 3s ease-in-out infinite",
           }}
@@ -133,7 +134,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
             margin: 0,
             fontSize: "clamp(2.8rem, 10vw, 4rem)",
             fontWeight: 800,
-            color: C.ink,
+            color: "#ffffff",
             fontFamily: "Georgia,serif",
             letterSpacing: -1,
           }}
@@ -144,7 +145,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
           style={{
             margin: "8px 0 0",
             fontSize: 15,
-            color: C.muted,
+            color: "rgba(255,255,255,0.5)",
             fontStyle: "italic",
           }}
         >
@@ -182,23 +183,25 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
             <div
               key={v.label}
               style={{
-                background: "rgba(255,255,255,0.7)",
-                border: `1px solid ${C.border}`,
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
                 borderRadius: 12,
                 padding: "12px 10px",
                 textAlign: "center",
                 animation: `life-tag-fade 0.5s ease-out ${0.2 + i * 0.1}s both`,
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
               }}
             >
               <div style={{ marginBottom: 6 }}>
-                {Ic[v.icon]?.("none", C.green, 20)}
+                {Ic[v.icon]?.("none", "#a0a0a0", 20)}
               </div>
               <p
                 style={{
                   margin: 0,
                   fontSize: 12,
                   fontWeight: 700,
-                  color: C.ink,
+                  color: "#ffffff",
                 }}
               >
                 {v.label}
@@ -207,7 +210,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
                 style={{
                   margin: "2px 0 0",
                   fontSize: 10,
-                  color: C.muted,
+                  color: "rgba(255,255,255,0.45)",
                   fontStyle: "italic",
                 }}
               >
@@ -234,20 +237,21 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
             setScreen("signin");
           }}
           style={{
-            background: C.ink,
+            background: "#ffffff",
             border: "none",
             borderRadius: 14,
             padding: "18px 20px",
-            color: "#fff",
+            color: "#1a1a1a",
             fontSize: 17,
             fontWeight: 600,
             cursor: "pointer",
             fontFamily: "Georgia,serif",
-            boxShadow: S.sm,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             gap: 10,
+            transition: "all 0.25s cubic-bezier(0.4,0,0.2,1)",
           }}
         >
           <svg
@@ -255,7 +259,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
             height="18"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#fff"
+            stroke="#1a1a1a"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -273,8 +277,8 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
             setScreen("register");
           }}
           style={{
-            background: `linear-gradient(135deg, ${C.green}, #3a7d4a)`,
-            border: "none",
+            background: "linear-gradient(135deg, #3a3a3a, #4a4a4a)",
+            border: "1px solid rgba(255,255,255,0.12)",
             borderRadius: 14,
             padding: "18px 20px",
             color: "#fff",
@@ -282,11 +286,12 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
             fontWeight: 700,
             cursor: "pointer",
             fontFamily: "Georgia,serif",
-            boxShadow: S.glow,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             gap: 10,
+            transition: "all 0.25s cubic-bezier(0.4,0,0.2,1)",
           }}
         >
           <svg
@@ -318,12 +323,12 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
             style={{
               flex: 1,
               height: 1,
-              background: `linear-gradient(90deg, transparent, ${C.border})`,
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.15))",
             }}
           />
           <span
             style={{
-              color: C.muted,
+              color: "rgba(255,255,255,0.4)",
               fontSize: 12,
               fontStyle: "italic",
               whiteSpace: "nowrap",
@@ -335,7 +340,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
             style={{
               flex: 1,
               height: 1,
-              background: `linear-gradient(90deg, ${C.border}, transparent)`,
+              background: "linear-gradient(90deg, rgba(255,255,255,0.15), transparent)",
             }}
           />
         </div>
@@ -354,8 +359,8 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
               style={{
                 width: 60,
                 height: 60,
-                background: C.white,
-                border: `1.5px solid ${item.live ? item.color : C.border}`,
+                background: "rgba(255,255,255,0.08)",
+                border: "1.5px solid rgba(255,255,255,0.12)",
                 borderRadius: 16,
                 display: "flex",
                 alignItems: "center",
@@ -363,25 +368,21 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
                 cursor: item.live ? "pointer" : "not-allowed",
                 padding: 14,
                 boxSizing: "border-box",
-                opacity: item.live ? 1 : 0.5,
+                opacity: item.live ? 1 : 0.4,
                 transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-                boxShadow: item.live ? `0 2px 12px ${item.color}18` : S.sm,
+                boxShadow: "0 2px 12px rgba(0,0,0,0.2)",
                 transform: "scale(1)",
                 position: "relative",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "scale(1.1)";
-                e.currentTarget.style.boxShadow = `0 6px 20px ${item.color}30`;
-                e.currentTarget.style.borderColor = item.color;
+                e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.3)";
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow = item.live
-                  ? `0 2px 12px ${item.color}18`
-                  : S.sm;
-                e.currentTarget.style.borderColor = item.live
-                  ? item.color
-                  : C.border;
+                e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.2)";
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
               }}
             >
               <Image
@@ -403,7 +404,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
                     bottom: 4,
                     fontSize: 7,
                     fontWeight: 700,
-                    color: C.muted,
+                    color: "rgba(255,255,255,0.35)",
                     letterSpacing: 0.5,
                     textTransform: "uppercase",
                   }}
@@ -419,7 +420,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
             style={{
               margin: "-8px 0 0",
               fontSize: 12,
-              color: C.red,
+              color: "#d25545",
               textAlign: "center",
               fontStyle: "italic",
               lineHeight: 1.5,
@@ -439,7 +440,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
           style={{
             background: "none",
             border: "none",
-            color: C.muted,
+            color: "rgba(255,255,255,0.35)",
             fontSize: 10,
             cursor: "pointer",
             fontFamily: "Georgia,serif",
@@ -456,7 +457,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
           style={{
             background: "none",
             border: "none",
-            color: C.muted,
+            color: "rgba(255,255,255,0.35)",
             fontSize: 10,
             cursor: "pointer",
             fontFamily: "Georgia,serif",
@@ -470,7 +471,7 @@ export function LandingPage({ C, S, Ic, play, setScreen, AUTH_PROVIDERS, doProvi
         className="life-footer"
         style={{
           margin: "28px 0 0",
-          color: C.muted,
+          color: "rgba(255,255,255,0.3)",
           fontSize: 10,
           fontStyle: "italic",
           textAlign: "center",
