@@ -45,12 +45,6 @@ export function RegisterPage({
     "Strong",
   ];
   const passwordStrengthColors = [C.red, C.red, "#e6a23c", C.gold, C.green];
-  const passwordHint =
-    rPass.length > 0 && !passwordHasLower
-      ? "Tip: add a lowercase letter to match the password rules."
-      : rPass.length > 0 && !passwordHasSpecial
-        ? "Tip: add a special character for a stronger password."
-      : "";
   const confirmMismatch = rPass2.length > 0 && rPass !== rPass2;
 
   return (
@@ -448,18 +442,58 @@ export function RegisterPage({
               >
                 {passwordStrengthLabels[passwordStrength]}
               </p>
-              {passwordHint && (
-                <p
-                  style={{
-                    margin: "4px 0 0",
-                    fontSize: 11,
-                    color: C.muted,
-                    fontStyle: "italic",
-                  }}
-                >
-                  {passwordHint}
-                </p>
-              )}
+              {/* Requirement checklist — shows the user EXACTLY what's
+                  needed. Green tick for met, gray for missing. */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: "2px 10px",
+                  marginTop: 6,
+                }}
+              >
+                {[
+                  { met: passwordHasMinLength, label: "8+ characters" },
+                  { met: passwordHasUpper,     label: "Uppercase (A–Z)" },
+                  { met: passwordHasLower,     label: "Lowercase (a–z)" },
+                  { met: passwordHasNumber,    label: "Number (0–9)" },
+                  { met: passwordHasSpecial,   label: "Symbol (!@#$…)" },
+                ].map((req) => (
+                  <div
+                    key={req.label}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      fontSize: 11,
+                      color: req.met ? C.green : C.muted,
+                      fontStyle: req.met ? "normal" : "italic",
+                      transition: "color 0.18s ease",
+                    }}
+                  >
+                    <span
+                      aria-hidden
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 13,
+                        height: 13,
+                        borderRadius: "50%",
+                        background: req.met ? C.green : "transparent",
+                        border: req.met ? "none" : `1px solid ${C.muted}66`,
+                        color: "#fff",
+                        fontSize: 9,
+                        fontWeight: 800,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {req.met ? "✓" : ""}
+                    </span>
+                    {req.label}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           {rErr.pass && (

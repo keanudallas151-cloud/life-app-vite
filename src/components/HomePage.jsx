@@ -3,12 +3,23 @@ import { S } from "../systems/theme";
 import { getResumeTopic, clearResumeTopic } from "../systems/resumeReading";
 import { MAP } from "../data/content";
 
+// Time-of-day greeting based on the user's local hour.
+// Morning 5-11, Afternoon 12-16, Evening 17-21, Night 22-04.
+function greetingFor(hour) {
+  if (hour >= 5 && hour < 12) return "Good Morning";
+  if (hour >= 12 && hour < 17) return "Good Afternoon";
+  if (hour >= 17 && hour < 22) return "Good Evening";
+  return "Good Night";
+}
+
 export function HomePage({
   t,
+  userName,
   onResume,
   onOpenQuiz,
   onOpenDailyGrowth,
   onOpenMomentumHub,
+  onOpenGoalSetting,
   onGetStarted,
 }) {
   const [dismissed, setDismissed] = useState(false);
@@ -17,6 +28,13 @@ export function HomePage({
     if (!saved?.key || !MAP[saved.key]) return null;
     return { key: saved.key, label: MAP[saved.key].node?.label || saved.key };
   }, []);
+
+  // Compute greeting once — use user's local hour via Date.
+  const greeting = useMemo(() => greetingFor(new Date().getHours()), []);
+  const firstName = useMemo(() => {
+    if (!userName) return "";
+    return String(userName).trim().split(/\s+/)[0] || "";
+  }, [userName]);
 
   const handleDismissResume = (e) => {
     e.stopPropagation();
@@ -31,7 +49,7 @@ export function HomePage({
       <div
         className="life-grain life-home-hero"
         style={{
-          padding: "64px 22px 56px",
+          padding: "40px 22px 44px",
           textAlign: "center",
           background: `linear-gradient(180deg, ${t.skin} 0%, ${t.light} 100%)`,
           position: "relative",
@@ -50,7 +68,7 @@ export function HomePage({
 
         <div style={{ maxWidth: 580, width: "100%", position: "relative", margin: "0 auto" }}>
           <p style={{
-            margin: "0 0 14px",
+            margin: "0 0 12px",
             fontSize: "clamp(0.72rem, 2.8vw, 0.9rem)",
             fontWeight: 700,
             letterSpacing: "0.32em",
@@ -58,7 +76,7 @@ export function HomePage({
             color: t.green,
             lineHeight: 1.2,
           }}>
-            Welcome to
+            {greeting}{firstName ? `, ${firstName}` : ""}
           </p>
           <h1 style={{
             margin: "0 0 22px",
@@ -326,7 +344,7 @@ export function HomePage({
           </div>
         </div>
 
-        {/* QUICK ACTIONS GRID */}
+        {/* QUICK ACTIONS GRID — 4 cards, even 2x2 on mobile */}
         <p style={{
           margin: "4px 2px 12px",
           fontSize: 11,
@@ -334,18 +352,20 @@ export function HomePage({
           letterSpacing: 2,
           textTransform: "uppercase",
           color: t.muted,
+          textAlign: "center",
         }}>
           Jump back in
         </p>
         <div style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
           gap: 10,
         }}>
           {[
-            { label: "Practice Quiz", desc: "Jump straight into your next round.", onClick: onOpenQuiz },
-            { label: "Daily Growth", desc: "Keep your momentum alive today.",     onClick: onOpenDailyGrowth },
-            { label: "Momentum Hub", desc: "Review streaks, missions, and wins.", onClick: onOpenMomentumHub },
+            { label: "Practice Quiz", desc: "Jump into your next round.",      onClick: onOpenQuiz },
+            { label: "Daily Growth",  desc: "Keep momentum alive today.",      onClick: onOpenDailyGrowth },
+            { label: "Momentum Hub",  desc: "Streaks, missions, wins.",        onClick: onOpenMomentumHub },
+            { label: "My Goals",      desc: "Set and track what matters.",    onClick: onOpenGoalSetting },
           ].map((action) => (
             <button
               key={action.label}
@@ -357,7 +377,7 @@ export function HomePage({
                 background: t.white,
                 border: `1px solid ${t.border}`,
                 borderRadius: 16,
-                padding: "16px 18px",
+                padding: "14px 16px",
                 boxShadow: S.sm,
                 cursor: "pointer",
                 fontFamily: "Georgia,serif",
@@ -371,12 +391,25 @@ export function HomePage({
               <span style={{ fontSize: 13.5, fontWeight: 700, color: t.ink }}>
                 {action.label}
               </span>
-              <span style={{ fontSize: 12, lineHeight: 1.55, color: t.muted }}>
+              <span style={{ fontSize: 12, lineHeight: 1.5, color: t.muted }}>
                 {action.desc}
               </span>
             </button>
           ))}
         </div>
+
+        {/* FOOTER — centered copyright on dashboard */}
+        <p style={{
+          margin: "32px auto 8px",
+          textAlign: "center",
+          fontSize: 11,
+          color: t.muted,
+          fontFamily: "Georgia,serif",
+          fontStyle: "italic",
+          opacity: 0.8,
+        }}>
+          &copy; {new Date().getFullYear()} Life. All rights reserved.
+        </p>
       </div>
     </div>
   );

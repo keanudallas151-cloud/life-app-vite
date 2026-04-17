@@ -304,29 +304,49 @@ export default function LifeApp() {
   const [rpErr, setRpErr] = useState("");
   const postAuthScreenRef = useRef(null);
   const passwordRecoveryRef = useRef(false);
+  // Snapshots the form values at the moment errors are set.
+  // We only clear an error when that specific field's CURRENT value
+  // differs from its snapshot (i.e. the user actually edited it),
+  // AND the new value is valid. This fixes the "errors flash and
+  // disappear" bug where server-side errors were instantly erased
+  // because the submitted values were already "valid-looking".
+  const rErrSnapshot = useRef({ name: "", email: "", dob: "", pass: "", pass2: "" });
 
   useEffect(() => {
     if (!rErr || Object.keys(rErr).length === 0) return;
     setRErr((prev) => {
       let changed = false;
       const next = { ...prev };
-      if (next.name && rName.trim()) {
+      const snap = rErrSnapshot.current;
+
+      // name: clear once user edits away from snapshot AND value is non-empty.
+      if (next.name && rName !== snap.name && rName.trim()) {
         delete next.name;
         changed = true;
       }
-      if (next.email && rEmail.includes("@")) {
+      // email: clear only on actual edit + valid-looking address.
+      if (next.email && rEmail !== snap.email && rEmail.includes("@") && rEmail.includes(".")) {
         delete next.email;
         changed = true;
       }
-      if (next.dob && rDob.trim()) {
+      // dob: clear on edit + non-empty.
+      if (next.dob && rDob !== snap.dob && rDob.trim()) {
         delete next.dob;
         changed = true;
       }
-      if (next.pass && rPass.length >= 8) {
+      // pass: clear only when it now meets ALL complexity requirements.
+      const passStrong =
+        rPass.length >= 8 &&
+        /[A-Z]/.test(rPass) &&
+        /[a-z]/.test(rPass) &&
+        /[0-9]/.test(rPass) &&
+        /[^A-Za-z0-9]/.test(rPass);
+      if (next.pass && rPass !== snap.pass && passStrong) {
         delete next.pass;
         changed = true;
       }
-      if (next.pass2 && rPass2 && rPass === rPass2) {
+      // pass2: clear only when it matches pass.
+      if (next.pass2 && rPass2 !== snap.pass2 && rPass2 && rPass === rPass2) {
         delete next.pass2;
         changed = true;
       }
@@ -478,20 +498,31 @@ export default function LifeApp() {
         }
         const shapedUser = shapeUser(session.user);
         setUser(shapedUser);
-        // Check if first-time user (no onboarding completed) - redirect to tailoring
+
+        // Only send truly-new users through onboarding.
+        // Signals used, in priority order:
+        //   1) `onboarded_<id>` in LS (set on any prior successful load of `app`)
+        //   2) user.user_metadata.onboarded flag (set during register)
+        //   3) account created_at within the last 10 minutes AND SIGNED_IN event
+        //      (means they JUST registered in this session)
         const onboarded = LS.get(`onboarded_${shapedUser.id}`, false);
-        const hasReadContent =
-          LS.get(`rd_${shapedUser.email || shapedUser.id}`, []).length > 0;
-        const hasBookmarks =
-          LS.get(`bk_${shapedUser.email || shapedUser.id}`, []).length > 0;
-        const isNewUser = !onboarded && !hasReadContent && !hasBookmarks;
-        // First-time users (including OAuth) go to theme picker then tailoring
-        if (
-          (event === "SIGNED_IN" || event === "INITIAL_SESSION") &&
-          isNewUser
-        ) {
+        const metaOnboarded = Boolean(session.user.user_metadata?.onboarded);
+        const createdAt = session.user.created_at
+          ? new Date(session.user.created_at).getTime()
+          : 0;
+        const justCreated = createdAt > 0 && Date.now() - createdAt < 10 * 60 * 1000;
+
+        // New user ONLY if they were just created AND this is a fresh SIGNED_IN.
+        // INITIAL_SESSION (page reloads) should always go straight to app for
+        // returning users — they already finished onboarding before.
+        const isNewUser =
+          !onboarded && !metaOnboarded && justCreated && event === "SIGNED_IN";
+
+        if (isNewUser) {
           setScreen("theme_picker");
         } else {
+          // Mark onboarded on first successful entry so future checks short-circuit.
+          if (!onboarded) LS.set(`onboarded_${shapedUser.id}`, true);
           setScreen("app");
         }
       } else {
@@ -1262,6 +1293,18 @@ export default function LifeApp() {
   const doRegister = async () => {
     if (authLoading) return;
     setRErr({});
+    // Helper that snapshots current form values BEFORE updating errors,
+    // so the clearing-effect knows what "old" values looked like.
+    const setRErrSnap = (errs) => {
+      rErrSnapshot.current = {
+        name: rName,
+        email: rEmail,
+        dob: rDob,
+        pass: rPass,
+        pass2: rPass2,
+      };
+      setRErr(errs);
+    };
     const err = {};
     if (!rName.trim()) err.name = "Full name is required.";
     if (!rEmail.trim() || !rEmail.includes("@"))
@@ -1297,7 +1340,7 @@ export default function LifeApp() {
     }
     if (rPass !== rPass2) err.pass2 = "Passwords do not match.";
     if (Object.keys(err).length) {
-      setRErr(err);
+      setRErrSnap(err);
       play("err");
       return;
     }
@@ -1325,19 +1368,19 @@ export default function LifeApp() {
         const raw = String(error.message || "").trim();
         const msg = raw.toLowerCase();
         if (msg.includes("already")) {
-          setRErr({ email: "already_registered" });
+          setRErrSnap({ email: "already_registered" });
         } else if (
           msg.includes("password") ||
           msg.includes("character") ||
           msg.includes("weak")
         ) {
-          setRErr({
+          setRErrSnap({
             pass: "Password too weak. Use upper/lowercase, number, and symbol.",
           });
         } else if (msg.includes("email")) {
-          setRErr({ email: "Please enter a valid email address." });
+          setRErrSnap({ email: "Please enter a valid email address." });
         } else {
-          setRErr({ email: "Could not create account. Please check details." });
+          setRErrSnap({ email: "Could not create account. Please check details." });
         }
         play("err");
         return;
@@ -1352,11 +1395,14 @@ export default function LifeApp() {
       }
       if (data?.user) {
         setUser(shapeUser(data.user));
+        // Remember locally that this account JUST registered — so they
+        // get the theme_picker + tailoring onboarding flow this session.
+        LS.set(`onboarded_${data.user.id}`, false);
       }
       play("ok");
       setScreen("theme_picker");
     } catch {
-      setRErr({ email: "Something went wrong. Please try again." });
+      setRErrSnap({ email: "Something went wrong. Please try again." });
       play("err");
     } finally {
       setAuthLoading(false);
@@ -3425,6 +3471,7 @@ export default function LifeApp() {
             {page === "home" && (
               <HomePage
                 t={t}
+                userName={user?.name || ""}
                 onResume={(key) => {
                   const pack = MAP[key];
                   if (pack) handleSelect(pack.key, pack.node);
@@ -3435,6 +3482,10 @@ export default function LifeApp() {
                   setPage("daily_growth");
                 }}
                 onOpenMomentumHub={openMomentumHub}
+                onOpenGoalSetting={() => {
+                  play("tap");
+                  setPage("goal_setting");
+                }}
                 onGetStarted={() => {
                   play("tap");
                   setPage("where_to_start");
