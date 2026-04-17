@@ -82,130 +82,181 @@ const PREF_DEFAULTS = {
   sidebarSpeed: 62,
 };
 
-// Swipe left beyond 80px to delete a notification; taps still navigate.
-// Horizontal movement must exceed vertical by this factor to trigger swipe-to-delete
-// (prevents accidental swipes while scrolling the notification list)
+// Swipe left beyond 72px to delete; direction-locked to avoid vertical-scroll conflicts.
 const SWIPE_HORIZONTAL_BIAS = 1.5;
 
-function SwipeableNotification({ n, theme, onTap, onDelete }) {
+// Maps notification type/activity to an emoji icon
+function notifIcon(n) {
+  if (n.activity === "audio") return "🎙️";
+  if (n.targetPage === "home") return "👋";
+  if (n.targetPage === "where_to_start") return "📚";
+  if (n.targetPage === "daily_growth") return "🌱";
+  if (n.targetPage === "quiz") return "🧠";
+  if (n.targetPage === "leaderboard") return "🏆";
+  if (n.targetPage === "profile") return "👤";
+  return "✨";
+}
+
+function SwipeableNotification({ n, theme, dark, onTap, onDelete }) {
   const [offset, setOffset] = useState(0);
-  const [dragging, setDragging] = useState(false);
+  const [exiting, setExiting] = useState(false);
+  const dragging = useRef(false);
   const startX = useRef(0);
   const startY = useRef(0);
   const currentX = useRef(0);
   const didDrag = useRef(false);
-  const directionLocked = useRef(null); // "horizontal" | "vertical" | null
+  const directionLocked = useRef(null);
+
+  const revealRatio = Math.min(1, Math.abs(offset) / 72);
 
   const onStart = (clientX, clientY) => {
+    if (exiting) return;
     startX.current = clientX;
     startY.current = clientY;
     currentX.current = clientX;
     didDrag.current = false;
     directionLocked.current = null;
-    setDragging(true);
+    dragging.current = true;
   };
+
   const onMove = (clientX, clientY) => {
-    if (!dragging) return;
+    if (!dragging.current || exiting) return;
     const dx = clientX - startX.current;
     const dy = clientY - startY.current;
-
-    // Lock direction on first significant movement
-    if (directionLocked.current === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
-      directionLocked.current = Math.abs(dx) > Math.abs(dy) * SWIPE_HORIZONTAL_BIAS ? "horizontal" : "vertical";
+    if (directionLocked.current === null && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+      directionLocked.current =
+        Math.abs(dx) > Math.abs(dy) * SWIPE_HORIZONTAL_BIAS ? "horizontal" : "vertical";
     }
-
-    // If vertical scroll wins, ignore horizontal swipe
     if (directionLocked.current === "vertical") return;
-
     currentX.current = clientX;
-    if (Math.abs(dx) > 6) didDrag.current = true;
-    // Only allow swipe LEFT
+    if (Math.abs(dx) > 5) didDrag.current = true;
     setOffset(Math.min(0, dx));
   };
+
   const onEnd = () => {
-    if (!dragging) return;
-    setDragging(false);
+    if (!dragging.current) return;
+    dragging.current = false;
     const delta = currentX.current - startX.current;
-    if (delta < -80) {
-      // Animate out fully then delete
-      setOffset(-400);
-      setTimeout(() => onDelete?.(), 180);
+    if (delta < -72) {
+      // Fly out, collapse height, then call delete
+      setExiting(true);
+      setOffset(-420);
+      setTimeout(() => onDelete?.(), 280);
     } else {
       setOffset(0);
     }
   };
 
   return (
-    <div style={{ position: "relative", overflow: "hidden", borderBottom: `1px solid ${theme.light}` }}>
-      {/* Delete backdrop — shows through as user swipes */}
+    <div
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}`,
+        maxHeight: exiting ? 0 : 120,
+        opacity: exiting ? 0 : 1,
+        transition: exiting
+          ? "max-height 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.22s ease"
+          : "none",
+      }}
+    >
+      {/* Red delete reveal layer */}
       <div
+        aria-hidden
         style={{
           position: "absolute",
           inset: 0,
-          background: theme.red || "#d25545",
+          background: "linear-gradient(90deg, #e85555 0%, #c0392b 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-end",
           paddingRight: 20,
-          color: "#fff",
-          fontSize: 12,
-          fontWeight: 700,
-          letterSpacing: 1,
-          textTransform: "uppercase",
+          gap: 6,
+          opacity: revealRatio,
+          transition: dragging.current ? "none" : "opacity 0.2s ease",
         }}
       >
-        Delete
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+        <span style={{ color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: 0.5 }}>Delete</span>
       </div>
-      {/* Foreground tappable content — slides with swipe */}
+
+      {/* Foreground card */}
       <div
         role="button"
         tabIndex={0}
-        onClick={() => {
-          if (!didDrag.current) onTap?.();
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") onTap?.();
-        }}
+        onClick={() => { if (!didDrag.current) onTap?.(); }}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onTap?.(); }}
         onTouchStart={(e) => onStart(e.touches[0].clientX, e.touches[0].clientY)}
         onTouchMove={(e) => onMove(e.touches[0].clientX, e.touches[0].clientY)}
         onTouchEnd={onEnd}
         onMouseDown={(e) => onStart(e.clientX, e.clientY)}
-        onMouseMove={(e) => dragging && onMove(e.clientX, e.clientY)}
+        onMouseMove={(e) => dragging.current && onMove(e.clientX, e.clientY)}
         onMouseUp={onEnd}
         onMouseLeave={onEnd}
         style={{
           position: "relative",
-          padding: "12px 16px",
-          background: n.read ? theme.white : theme.greenLt,
+          padding: "13px 14px",
+          background: n.read
+            ? (dark ? "#1e1e1e" : "#ffffff")
+            : (dark ? "rgba(74,140,92,0.10)" : "rgba(74,140,92,0.06)"),
           cursor: "pointer",
           transform: `translateX(${offset}px)`,
-          transition: dragging ? "none" : "transform 0.24s cubic-bezier(0.22,1,0.36,1)",
+          transition: dragging.current ? "none" : "transform 0.3s cubic-bezier(0.22,1,0.36,1)",
           userSelect: "none",
           touchAction: "pan-y",
+          WebkitTapHighlightColor: "transparent",
         }}
       >
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-          {!n.read && (
-            <span
-              aria-hidden
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: theme.green,
-                marginTop: 6,
-                flexShrink: 0,
-              }}
-            />
-          )}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: 13, color: theme.ink, lineHeight: 1.5 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
+          {/* Icon bubble */}
+          <div style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            background: dark ? "rgba(255,255,255,0.06)" : "rgba(74,140,92,0.1)",
+            display: "grid",
+            placeItems: "center",
+            fontSize: 16,
+            flexShrink: 0,
+          }}>
+            {notifIcon(n)}
+          </div>
+
+          {/* Text */}
+          <div style={{ flex: 1, minWidth: 0, paddingTop: 1 }}>
+            <p style={{
+              margin: 0,
+              fontSize: 13,
+              color: dark ? "#e8e8e8" : "#1a1a1a",
+              lineHeight: 1.45,
+              fontWeight: n.read ? 400 : 500,
+            }}>
               {n.text}
             </p>
-            <p style={{ margin: "4px 0 0", fontSize: 10, color: theme.muted }}>
+            <p style={{
+              margin: "4px 0 0",
+              fontSize: 10.5,
+              color: dark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.38)",
+              fontFamily: "-apple-system,BlinkMacSystemFont,system-ui,sans-serif",
+            }}>
               {n.time}
             </p>
           </div>
+
+          {/* Unread dot */}
+          {!n.read && (
+            <span style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: theme.green,
+              flexShrink: 0,
+              marginTop: 5,
+              boxShadow: `0 0 0 2px ${dark ? "#1e1e1e" : "#fff"}`,
+            }} />
+          )}
         </div>
       </div>
     </div>
@@ -2117,37 +2168,52 @@ export default function LifeApp() {
             style={{
               position: "fixed",
               top: `calc(56px + env(safe-area-inset-top, 0px))`,
-              left: isNarrowViewport ? 12 : "auto",
+              left: isNarrowViewport ? 10 : "auto",
               right: isNarrowViewport
-                ? 12
-                : "max(12px, env(safe-area-inset-right, 0px))",
+                ? 10
+                : "max(10px, env(safe-area-inset-right, 0px))",
               zIndex: 200,
-              background: t.white,
-              border: `1px solid ${t.border}`,
-              borderRadius: 14,
-              boxShadow: S.lg,
-              width: isNarrowViewport ? "auto" : 320,
-              maxHeight: "min(460px, calc(100dvh - 80px))",
+              background: dark ? "#1a1a1a" : "#ffffff",
+              border: `1px solid ${dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
+              borderRadius: 18,
+              boxShadow: dark
+                ? "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)"
+                : "0 8px 40px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.06)",
+              width: isNarrowViewport ? "auto" : 340,
+              maxHeight: "min(480px, calc(100dvh - 80px))",
               display: "flex",
               flexDirection: "column",
-              overflow: "hidden",  /* children handle their own scroll */
+              overflow: "hidden",
             }}
           >
-            {/* Sticky header */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "12px 16px",
-                borderBottom: `1px solid ${t.light}`,
-                flexShrink: 0,
-                background: t.white,
-              }}
-            >
-              <span style={{ fontSize: 13, fontWeight: 700, color: t.ink }}>
-                Notifications
-              </span>
+            {/* Header */}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "14px 16px 13px",
+              borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"}`,
+              flexShrink: 0,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 15, fontWeight: 700, color: dark ? "#f0f0f0" : "#111", letterSpacing: -0.2 }}>
+                  Notifications
+                </span>
+                {unreadCount > 0 && (
+                  <span style={{
+                    background: t.green,
+                    color: "#fff",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    borderRadius: 20,
+                    padding: "1px 6px",
+                    lineHeight: "16px",
+                    fontFamily: "-apple-system,BlinkMacSystemFont,system-ui,sans-serif",
+                  }}>
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
               {unreadCount > 0 && (
                 <button
                   onClick={markAllRead}
@@ -2155,47 +2221,65 @@ export default function LifeApp() {
                     background: "none",
                     border: "none",
                     color: t.green,
-                    fontSize: 11,
+                    fontSize: 12,
+                    fontWeight: 500,
                     cursor: "pointer",
-                    fontFamily: "Georgia,serif",
+                    padding: "4px 0",
+                    fontFamily: "-apple-system,BlinkMacSystemFont,system-ui,sans-serif",
                   }}
                 >
                   Mark all read
                 </button>
               )}
             </div>
+
             {/* Scrollable list */}
-            <div
-              style={{
-                flex: 1,
-                overflowY: "auto",
-                WebkitOverflowScrolling: "touch",
-                overscrollBehavior: "contain",
-              }}
-            >
+            <div style={{
+              flex: 1,
+              overflowY: "auto",
+              WebkitOverflowScrolling: "touch",
+              overscrollBehavior: "contain",
+            }}>
               {notifications.length === 0 ? (
-                <p
-                  style={{
-                    padding: 24,
-                    color: t.muted,
-                    fontSize: 13,
-                    textAlign: "center",
-                  }}
-                >
-                  No notifications yet.
-                </p>
+                <div style={{
+                  padding: "40px 24px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 10,
+                }}>
+                  <span style={{ fontSize: 32 }}>🔔</span>
+                  <p style={{ margin: 0, color: dark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.35)", fontSize: 13, textAlign: "center" }}>
+                    You&apos;re all caught up!
+                  </p>
+                </div>
               ) : (
                 notifications.map((n) => (
                   <SwipeableNotification
                     key={n.id}
                     n={n}
                     theme={t}
+                    dark={dark}
                     onTap={() => handleNotifTap(n)}
                     onDelete={() => deleteNotification(n.id)}
                   />
                 ))
               )}
             </div>
+
+            {/* Footer hint */}
+            {notifications.length > 0 && (
+              <div style={{
+                padding: "9px 16px",
+                borderTop: `1px solid ${dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"}`,
+                flexShrink: 0,
+                textAlign: "center",
+              }}>
+                <span style={{ fontSize: 10.5, color: dark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.3)", fontFamily: "-apple-system,BlinkMacSystemFont,system-ui,sans-serif" }}>
+                  Swipe left to dismiss
+                </span>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -2466,22 +2550,23 @@ export default function LifeApp() {
             <span
               style={{
                 position: "absolute",
-                top: 2,
-                right: 2,
-                width: 16,
+                top: 1,
+                right: 1,
+                minWidth: 16,
                 height: 16,
-                borderRadius: "50%",
-                background: t.red,
+                borderRadius: 8,
+                background: "#d63031",
                 color: "#fff",
                 fontSize: 9,
-                fontWeight: 700,
+                fontWeight: 800,
                 display: "grid",
                 placeItems: "center",
-                lineHeight: "16px",
-                padding: 0,
+                lineHeight: 1,
+                padding: "0 3px",
                 fontFamily: "-apple-system, BlinkMacSystemFont, system-ui, sans-serif",
-                textAlign: "center",
                 boxSizing: "border-box",
+                border: `1.5px solid ${dark ? "#1a1a1a" : "#fff"}`,
+                letterSpacing: 0,
               }}
             >
               {unreadCount > 99 ? "99+" : unreadCount}

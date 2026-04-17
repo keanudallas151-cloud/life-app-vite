@@ -575,10 +575,14 @@ canvas {
 }
 
 .life-notif-dropdown {
-  max-height: min(72vh, 560px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  /* Layout handled inline; this class is kept for dark-mode overrides below */
+  animation: notif-drop-in 0.22s cubic-bezier(0.22,1,0.36,1) both;
+  transform-origin: top right;
+}
+
+@keyframes notif-drop-in {
+  from { opacity: 0; transform: scale(0.94) translateY(-8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .life-home-stats > div {
@@ -2423,21 +2427,24 @@ button:active:not(:disabled),
 
   .life-bottom-nav-badge {
     position: absolute;
-    top: 6px;
+    top: 4px;
     left: 50%;
-    transform: translateX(7px);
-    width: 16px;
+    transform: translateX(8px);
+    min-width: 16px;
     height: 16px;
-    border-radius: 50%;
-    background: #c0392b;
+    border-radius: 8px;
+    background: #d63031;
     color: #fff;
-    font-size: 8px;
-    font-weight: 700;
+    font-size: 9px;
+    font-weight: 800;
+    font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     display: grid;
     place-items: center;
-    border: 1.5px solid var(--life-white);
+    border: 1.5px solid var(--life-white, #fff);
     line-height: 1;
-    padding: 0;
+    padding: 0 3px;
+    box-sizing: border-box;
+    letter-spacing: 0;
   }
 
   /* Push page content above the bottom nav */
