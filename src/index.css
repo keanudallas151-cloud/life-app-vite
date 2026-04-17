@@ -237,6 +237,119 @@ p {
   transform: translateY(0) scale(0.985);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   PREMIUM POLISH — subtle animations that elevate the feel of the app
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Landing "Sign In" glass button: subtle border-light sweep on hover ── */
+@media (prefers-reduced-motion: no-preference) {
+  .life-signin-btn {
+    position: relative;
+    overflow: hidden;
+  }
+  .life-signin-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      110deg,
+      transparent 0%,
+      transparent 38%,
+      rgba(255, 255, 255, 0.18) 50%,
+      transparent 62%,
+      transparent 100%
+    );
+    background-size: 220% 100%;
+    background-position: 150% 0;
+    pointer-events: none;
+    transition: background-position 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .life-signin-btn:hover::before {
+    background-position: -50% 0;
+  }
+  .life-signin-btn:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    transform: translateY(-1px);
+  }
+}
+
+/* ─── Custom scrollbars: thin, themed, invisible-on-idle on desktop ────── */
+@media (pointer: fine) {
+  .life-main-scroll,
+  .life-sidebar-body,
+  .life-notif-dropdown > div {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(74, 140, 92, 0.28) transparent;
+  }
+  .life-main-scroll::-webkit-scrollbar,
+  .life-sidebar-body::-webkit-scrollbar,
+  .life-notif-dropdown > div::-webkit-scrollbar {
+    width: 8px;
+  }
+  .life-main-scroll::-webkit-scrollbar-thumb,
+  .life-sidebar-body::-webkit-scrollbar-thumb,
+  .life-notif-dropdown > div::-webkit-scrollbar-thumb {
+    background: rgba(74, 140, 92, 0.28);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background 0.2s ease;
+  }
+  .life-main-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(74, 140, 92, 0.45);
+    background-clip: padding-box;
+  }
+}
+
+/* ─── Sidebar link hover: subtle padding nudge ─────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .life-sidebar-link {
+    transition:
+      background 0.18s ease,
+      padding-left 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* ─── Smoother input focus: green ring grows from border ───────────────── */
+input:focus,
+textarea:focus {
+  box-shadow: 0 0 0 3px rgba(74, 140, 92, 0.15);
+}
+
+/* ─── Page transition: a touch more refined ────────────────────────────── */
+@keyframes life-page-in-refined {
+  0%   { opacity: 0; transform: translateY(8px); filter: blur(2px); }
+  60%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-page-tag] {
+    animation: life-page-in-refined 0.32s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+}
+
+/* ─── Selection color: use brand green instead of browser blue ─────────── */
+::selection {
+  background: rgba(74, 140, 92, 0.28);
+  color: inherit;
+}
+::-moz-selection {
+  background: rgba(74, 140, 92, 0.28);
+  color: inherit;
+}
+
+/* ─── Disable ugly default button tap flash on iOS ──────────────────────── */
+button,
+a,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+
 /* ─── A11Y: keyboard focus rings ──────────────────────────────────────
    Visible only for keyboard users (not mouse) so the UI stays clean for
    most people but remains navigable via tab. */
@@ -2441,11 +2554,11 @@ button:active:not(:disabled),
 
   .life-bottom-nav-item svg {
     flex-shrink: 0;
-    transition: transform 0.2s var(--life-ease-soft);
+    transition: transform 0.22s var(--life-ease-soft);
   }
 
   .life-bottom-nav-item--active svg {
-    transform: translateY(-1px);
+    transform: translateY(-1px) scale(1.05);
   }
 
   .life-bottom-nav-item--active::after {
@@ -2454,10 +2567,17 @@ button:active:not(:disabled),
     top: 6px;
     left: 50%;
     transform: translateX(-50%);
-    width: 16px;
-    height: 2.5px;
-    border-radius: 2px;
-    background: var(--life-green, #4a8c5c);
+    width: 20px;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #4a8c5c, #6FBE77);
+    box-shadow: 0 1px 3px rgba(74, 140, 92, 0.4);
+    animation: life-nav-pill 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes life-nav-pill {
+    0%   { transform: translateX(-50%) scaleX(0.2); opacity: 0; }
+    100% { transform: translateX(-50%) scaleX(1); opacity: 1; }
   }
 
   .life-bottom-nav-label {

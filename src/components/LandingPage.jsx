@@ -231,22 +231,24 @@ export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSig
         }}
       >
         <button
-          className="life-card-hover"
+          className="life-card-hover life-signin-btn"
           onClick={() => {
             play("tap");
             setScreen("signin");
           }}
           style={{
-            background: "#ffffff",
-            border: "none",
+            background: "rgba(255,255,255,0.08)",
+            backdropFilter: "blur(14px) saturate(1.4)",
+            WebkitBackdropFilter: "blur(14px) saturate(1.4)",
+            border: "1.5px solid rgba(255,255,255,0.35)",
             borderRadius: 14,
             padding: "18px 20px",
-            color: "#1a1a1a",
+            color: "#ffffff",
             fontSize: 17,
             fontWeight: 600,
             cursor: "pointer",
             fontFamily: "Georgia,serif",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.25)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -259,7 +261,7 @@ export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSig
             height="18"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#1a1a1a"
+            stroke="#ffffff"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -277,8 +279,8 @@ export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSig
             setScreen("register");
           }}
           style={{
-            background: "linear-gradient(135deg, #3a3a3a, #4a4a4a)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            background: "linear-gradient(135deg, #4a8c5c 0%, #3a7d4a 100%)",
+            border: "1px solid rgba(255,255,255,0.15)",
             borderRadius: 14,
             padding: "18px 20px",
             color: "#fff",
@@ -286,7 +288,7 @@ export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSig
             fontWeight: 700,
             cursor: "pointer",
             fontFamily: "Georgia,serif",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+            boxShadow: "0 8px 24px rgba(74,140,92,0.4), 0 2px 8px rgba(74,140,92,0.25), inset 0 1px 0 rgba(255,255,255,0.15)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
