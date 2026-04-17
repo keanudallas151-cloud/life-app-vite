@@ -147,7 +147,7 @@ export function ConnectPage({ t, user, play }) {
     setConnected((prev) => new Set([...prev, pitch.id]));
   };
 
-  const filtered = filter === "All" ? pitches : pitches.filter((p) => p.role === filter || (filter === "Both" && p.role === "Both"));
+  const filtered = filter === "All" ? pitches : pitches.filter((p) => p.role === filter);
 
   const inputStyle = {
     width: "100%",

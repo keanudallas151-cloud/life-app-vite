@@ -4,7 +4,7 @@ const KEY = "life_reading_streak_v1";
 
 /** Local-timezone date string (YYYY-MM-DD). Using local time avoids the bug
  *  where toISOString() converts to UTC and the date can shift near midnight. */
-function localDateStr(d = new Date()) {
+export function localDateStr(d = new Date()) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");

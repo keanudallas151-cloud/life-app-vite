@@ -175,13 +175,10 @@ export default function SettingsPage({
                 play("ok");
               },
             },
-            {
+            onDeleteAccount && {
               label: "Delete Account",
               danger: true,
-              onClick: () => {
-                if (onDeleteAccount) onDeleteAccount();
-                else play("tap");
-              },
+              onClick: () => onDeleteAccount(),
             },
           ],
         },
@@ -210,7 +207,7 @@ export default function SettingsPage({
           >
             {section.title}
           </p>
-          {section.items.map((item) => (
+          {section.items.filter(Boolean).map((item) => (
             <div
               className="life-settings-row"
               key={item.label}

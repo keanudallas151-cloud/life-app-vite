@@ -247,7 +247,7 @@ export function NotesTab({
           <button
             onClick={saveNote}
             style={{
-              background: "#6FBE77",
+              background: t.green,
               border: "none",
               borderRadius: 10,
               padding: "12px 26px",

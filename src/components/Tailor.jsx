@@ -97,7 +97,7 @@ export function TailorQuestions({onComplete,onBack,t:theme}){
 
   const isAnswered=()=>{
     if(q.slider)return true;
-    if(q.multi)return answers[q.id].length>0;
+    if(q.multi)return (answers[q.id]?.length ?? 0) > 0;
     return answers[q.id]!==null;
   };
 

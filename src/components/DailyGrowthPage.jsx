@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Ic } from "../icons/Ic";
 import { LS } from "../systems/storage";
+import { localDateStr } from "../systems/readingStreak";
 
 const GROWTH_ITEMS = [
   {
@@ -95,7 +96,7 @@ export function DailyGrowthPage({ t, play, setPage, onMomentumEvent }) {
     let streak = 0;
     const cursor = new Date();
     while (true) {
-      const key = cursor.toISOString().slice(0, 10);
+      const key = localDateStr(cursor);
       const entries = LS.get(`daily_growth_${key}`, []);
       if (!entries.length) break;
       streak += 1;
@@ -569,7 +570,7 @@ function DailyGrowthModal({ item, t, play, onClose, onComplete }) {
 }
 
 function JournalTool({ item, t, play, onComplete }) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   const [text, setText] = useState(() =>
     LS.get(`dg_journal_${item.key}_${today}`, ""),
   );
@@ -737,7 +738,7 @@ function TimerTool({ item, t, play, onComplete }) {
 }
 
 function ChecklistTool({ item, t, play, onComplete }) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   const [checked, setChecked] = useState(() =>
     LS.get(`dg_check_${item.key}_${today}`, []),
   );
