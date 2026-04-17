@@ -2412,11 +2412,11 @@ export default function LifeApp() {
                 width: 34,
                 height: 34,
                 borderRadius: "22%",
-                background: `linear-gradient(145deg,${t.green},#2d6e42)`,
+                background: "linear-gradient(145deg, #2d2d2d, #3a3a3a)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(74,140,92,0.25)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.06)",
                 transition: "transform 0.2s ease",
               }}
               onMouseEnter={(e) =>

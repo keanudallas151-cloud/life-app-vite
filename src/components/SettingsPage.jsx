@@ -31,6 +31,7 @@ export default function SettingsPage({
   uid,
   LS,
   trackMomentumEvent,
+  onDeleteAccount,
 }) {
   return (
     <div
@@ -174,6 +175,14 @@ export default function SettingsPage({
                 play("ok");
               },
             },
+            {
+              label: "Delete Account",
+              danger: true,
+              onClick: () => {
+                if (onDeleteAccount) onDeleteAccount();
+                else play("tap");
+              },
+            },
           ],
         },
       ].map((section) => (
@@ -241,15 +250,15 @@ export default function SettingsPage({
               {item.type === "choice" ? (
                 <div
                   style={{
-                    display: "inline-flex",
+                    display: "flex",
                     alignItems: "center",
                     gap: 4,
                     padding: 3,
                     borderRadius: 999,
                     background: t.light,
                     border: `1px solid ${t.border}`,
-                    flexWrap: "wrap",
                     marginTop: 6,
+                    width: "100%",
                   }}
                 >
                   {item.options.map((option) => {
@@ -260,6 +269,7 @@ export default function SettingsPage({
                         type="button"
                         onClick={() => item.onChange(option.value)}
                         style={{
+                          flex: 1,
                           border: "none",
                           borderRadius: 999,
                           padding: "7px 12px",
@@ -269,6 +279,8 @@ export default function SettingsPage({
                           fontWeight: 700,
                           fontFamily: "Georgia,serif",
                           cursor: "pointer",
+                          textAlign: "center",
+                          transition: "all 0.2s ease",
                         }}
                       >
                         {option.label}
@@ -292,21 +304,27 @@ export default function SettingsPage({
             </div>
           ))}
           {section.actions && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+            <div className="life-settings-action-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
               {section.actions.map((action) => (
                 <button
                   key={action.label}
                   onClick={action.onClick}
                   style={{
-                    background: t.light,
-                    border: `1px solid ${t.border}`,
+                    background: action.danger ? "rgba(192,57,43,0.08)" : t.light,
+                    border: `1px solid ${action.danger ? "rgba(192,57,43,0.25)" : t.border}`,
                     borderRadius: 10,
-                    padding: "8px 14px",
-                    color: t.mid,
+                    padding: "12px 14px",
+                    color: action.danger ? t.red : t.mid,
                     fontSize: 12,
                     fontWeight: 700,
                     cursor: "pointer",
                     fontFamily: "Georgia,serif",
+                    minHeight: 48,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    transition: "all 0.2s ease",
                   }}
                 >
                   {action.label}

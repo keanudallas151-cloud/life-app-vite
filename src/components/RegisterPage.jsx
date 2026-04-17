@@ -121,12 +121,12 @@ export function RegisterPage({
           width: 70,
           height: 70,
           borderRadius: "20%",
-          background: `linear-gradient(145deg,${C.green},#2d6e42)`,
+          background: "linear-gradient(145deg, #2d2d2d, #3a3a3a)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           marginBottom: 20,
-          boxShadow: S.md,
+          boxShadow: "0 4px 16px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.06)",
           animation: "life-logo-float 4s ease-in-out infinite",
         }}
       >

@@ -533,6 +533,23 @@ button.life-password-toggle:active:not(:disabled),
 button[data-password-toggle="true"]:active:not(:disabled),
 .life-password-field > button:active:not(:disabled) {
   transform: translate3d(0, -50%, 0) !important;
+  filter: none !important;
+}
+
+/* Extra specificity layer — defeat the JS-injected global button:active rule */
+.life-auth-card button.life-password-toggle:active,
+.life-auth-card button[data-password-toggle="true"]:active,
+.life-auth-shell button.life-password-toggle:active,
+.life-auth-shell button[data-password-toggle="true"]:active,
+.life-password-field button.life-password-toggle,
+.life-password-field button[data-password-toggle="true"] {
+  filter: none !important;
+}
+
+.life-password-field button.life-password-toggle:active,
+.life-password-field button[data-password-toggle="true"]:active {
+  transform: translate3d(0, -50%, 0) !important;
+  filter: none !important;
 }
 
 /* Visual bug-fix + polish pass (batch)  */
