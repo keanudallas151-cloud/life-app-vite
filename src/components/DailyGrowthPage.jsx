@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Ic } from "../icons/Ic";
 import { LS } from "../systems/storage";
 
@@ -264,10 +264,51 @@ export function DailyGrowthPage({ t, play, setPage }) {
 }
 
 function DailyGrowthModal({ item, t, play, onClose, onComplete }) {
+  // Android back button: push a history entry when modal opens,
+  // listen for popstate to close instead of navigating away.
+  // Use a ref for onClose so the effect only runs once per modal mount —
+  // otherwise an inline onClose prop creates a new reference each render
+  // and re-runs this effect, pushing a fresh history entry every time.
+  const onCloseRef = React.useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+  const historyPushed = React.useRef(false);
+  const historyConsumed = React.useRef(false);
+
+  useEffect(() => {
+    window.history.pushState({ dailyGrowthModal: true }, "");
+    historyPushed.current = true;
+    historyConsumed.current = false;
+    const handlePop = () => {
+      // Back button was pressed — the history entry is already consumed
+      historyConsumed.current = true;
+      historyPushed.current = false;
+      onCloseRef.current();
+    };
+    window.addEventListener("popstate", handlePop);
+    return () => {
+      window.removeEventListener("popstate", handlePop);
+      // Pop the history entry we pushed if it hasn't been consumed already,
+      // regardless of whether the modal was closed via the UI or programmatically
+      // (e.g. onComplete). Otherwise stale entries accumulate and the user must
+      // press Back multiple times later to clear them.
+      if (historyPushed.current && !historyConsumed.current) {
+        historyConsumed.current = true;
+        historyPushed.current = false;
+        window.history.back();
+      }
+    };
+  }, []);
+
+  const handleUIClose = () => {
+    onClose();
+  };
+
   return (
     <>
       <div
-        onClick={onClose}
+        onClick={handleUIClose}
         style={{
           position: "fixed",
           inset: 0,
@@ -312,7 +353,7 @@ function DailyGrowthModal({ item, t, play, onClose, onComplete }) {
             {item.title}
           </h3>
           <button
-            onClick={onClose}
+            onClick={handleUIClose}
             aria-label="Close"
             style={{
               width: 32,
