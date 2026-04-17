@@ -151,7 +151,7 @@ export function VerifyEmailPage({ C, play, setScreen, verifyTargetEmail, supabas
         <button
           onClick={() => {
             play("back");
-            setScreen("landing");
+            setScreen("signin");
           }}
           style={{
             background: "none",
