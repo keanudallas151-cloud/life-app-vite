@@ -2,6 +2,14 @@
 
 All notable prototype milestones for Life are tracked here.
 
+## v0.4.9 — ESLint fixes and repo cleanup
+
+- fixed 2 `no-unused-vars` errors in `src/App.jsx` (`saveHighlight`, `removeHighlight` prefixed with `_`)
+- fixed 2 `no-unused-vars` errors in `src/components/QuizPage.jsx` (`t` param in sub-components prefixed with `_`)
+- fixed 20 `no-useless-escape` errors in `src/data/quiz.js` (unnecessary `\'` inside double-quoted strings)
+- deleted two accidental junk files from repo root (`{console.error(error)` and `{const`)
+- CI lint and build now pass clean
+
 ## v0.4.8 - Theme picker, category hub pages, clickable sidebar
 
 - added ThemePickerPage — dark/light/system mode selection shown after sign-in before tailoring
