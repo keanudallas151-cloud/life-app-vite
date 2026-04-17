@@ -2,6 +2,21 @@
 
 All notable prototype milestones for Life are tracked here.
 
+## v0.4.9 — Consolidated UI fixes, dark mode polish, ESLint cleanup
+
+- fixed sidebar gaps on mobile — removed inline width/maxWidth/padding, CSS now controls all sizing with flex-column layout
+- fixed notification badge off-center — switched to `display: grid; placeItems: center`
+- fixed gear icon oval on profile page — wrapped in flexShrink:0 container
+- fixed swipe-to-delete vs vertical scroll conflict — added direction locking with horizontal bias threshold
+- fixed dark mode text: LandingPage Sign In button was invisible (white-on-white), toast now uses theme token
+- fixed QuizPage `StatCard` and `AchievementBadge` sub-components to accept `t` theme prop for proper dark mode support
+- added Android back button support for Daily Growth modal via popstate history management
+- added Goals entry to sidebar under Life section
+- sidebar Sign Out button now reliably pins to bottom (flex-column in base CSS rule)
+- deleted two accidental junk files from repo root (`{console.error(error)` and `{const`)
+- verified: password toggle has no inline positioning, page-turn MP3s exist, hamburger alignment correct
+- CI lint and build pass clean
+
 ## v0.4.8 - Theme picker, category hub pages, clickable sidebar
 
 - added ThemePickerPage — dark/light/system mode selection shown after sign-in before tailoring
