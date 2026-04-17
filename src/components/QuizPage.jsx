@@ -59,26 +59,24 @@ function seededShuffle(arr, seed) {
 
 // ── Sub-components ────────────────────────────────────────
 function StatCard({ label, value, col, _t = C }) {
-  void _t;
   return (
-    <div style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 16px", textAlign:"center" }}>
-      <div style={{ fontSize:22, fontWeight:800, color:col||C.ink, fontFamily:"Georgia,serif" }}>{value}</div>
-      <div style={{ fontSize:10, color:C.muted, marginTop:3, letterSpacing:1.5, textTransform:"uppercase" }}>{label}</div>
+    <div style={{ background:_t.white, border:`1px solid ${_t.border}`, borderRadius:12, padding:"14px 16px", textAlign:"center" }}>
+      <div style={{ fontSize:22, fontWeight:800, color:col||_t.ink, fontFamily:"Georgia,serif" }}>{value}</div>
+      <div style={{ fontSize:10, color:_t.muted, marginTop:3, letterSpacing:1.5, textTransform:"uppercase" }}>{label}</div>
     </div>
   );
 }
 function AchievementBadge({ ach, unlocked, _t = C }) {
-  void _t;
   return (
     <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px",
-      background:unlocked?C.greenLt:C.white, border:`1px solid ${unlocked?C.green:C.border}`,
+      background:unlocked?_t.greenLt:_t.white, border:`1px solid ${unlocked?_t.green:_t.border}`,
       borderRadius:10, opacity:unlocked?1:0.5 }}>
       <span style={{ fontSize:20 }}>{ach.icon}</span>
       <div>
-        <div style={{ fontSize:13, fontWeight:700, color:unlocked?C.green:C.ink }}>{ach.label}</div>
-        <div style={{ fontSize:11, color:C.muted }}>{ach.desc}</div>
+        <div style={{ fontSize:13, fontWeight:700, color:unlocked?_t.green:_t.ink }}>{ach.label}</div>
+        <div style={{ fontSize:11, color:_t.muted }}>{ach.desc}</div>
       </div>
-      {unlocked && <span style={{ marginLeft:"auto", fontSize:10, color:C.green, fontWeight:700 }}>✓</span>}
+      {unlocked && <span style={{ marginLeft:"auto", fontSize:10, color:_t.green, fontWeight:700 }}>✓</span>}
     </div>
   );
 }
