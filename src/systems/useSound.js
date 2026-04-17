@@ -5,6 +5,8 @@ const S = {
   mid: "/sounds/drop_down_category.mp3",
   high: "/sounds/category_selection.mp3",
   home: "/sounds/home_sound.mp3",
+  next_page: "/sounds/next_page.mp3",
+  previous_page: "/sounds/previous_page.mp3",
 };
 
 const VOL = 0.27;
@@ -15,6 +17,8 @@ const TYPE_COOLDOWN_MS = {
   open: 120,
   back: 120,
   pageturn: 120,
+  pageturn_next: 120,
+  pageturn_prev: 120,
   star: 130,
   err: 170,
   wrong: 170,
@@ -206,9 +210,21 @@ export function useSound(settings = {}) {
           return;
         }
 
+        if (type === "pageturn_next") {
+          // Dedicated satisfying forward page-flip sound
+          playMP3(S.next_page, 0.32 * master, { detuneSpread: 6, rateSpread: 0.01 });
+          return;
+        }
+
+        if (type === "pageturn_prev") {
+          // Dedicated backward page-flip sound — slightly softer
+          playMP3(S.previous_page, 0.28 * master, { detuneSpread: 6, rateSpread: 0.01 });
+          return;
+        }
+
         if (type === "pageturn" || type === "back") {
-          const src = chooseSrc([S.mid, S.high]);
-          if (src) playMP3(src, 0.24 * master, { detuneSpread: 10, rateSpread: 0.015 });
+          // Legacy fallback — uses forward sound
+          playMP3(S.next_page, 0.28 * master, { detuneSpread: 8, rateSpread: 0.012 });
           return;
         }
 

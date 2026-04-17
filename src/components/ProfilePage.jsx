@@ -81,16 +81,22 @@ export default function ProfilePage({
                       {user?.email}
                     </p>
                   </div>
-                  {/* P10: Gear icon → setting_preferences */}
+                  {/* P10: Gear icon → setting_preferences — FORCED perfect circle */}
                   <button
                     onClick={() => {
                       play("tap");
                       setPage("setting_preferences");
                     }}
                     title="Settings"
+                    aria-label="Settings"
                     style={{
                       width: 40,
                       height: 40,
+                      minWidth: 40,
+                      minHeight: 40,
+                      maxWidth: 40,
+                      maxHeight: 40,
+                      aspectRatio: "1 / 1",
                       borderRadius: "50%",
                       background: t.light,
                       border: `1px solid ${t.border}`,
@@ -99,6 +105,9 @@ export default function ProfilePage({
                       justifyContent: "center",
                       cursor: "pointer",
                       flexShrink: 0,
+                      flexGrow: 0,
+                      padding: 0,
+                      boxSizing: "border-box",
                     }}
                   >
                     <svg

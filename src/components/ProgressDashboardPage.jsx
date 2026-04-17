@@ -12,6 +12,9 @@ export function ProgressDashboardPage({
   profile,
   totalTopics,
   progressPercent,
+  play,
+  setPage,
+  setScreen,
 }) {
   return (
     <div
@@ -187,73 +190,144 @@ export function ProgressDashboardPage({
           {
             text: "Record yourself talking on a random topic — no ums or ahs",
             done: false,
+            action: "communication",
           },
-          { text: "Read 5 topics in a single day", done: readKeys.length >= 5 },
-          { text: "Save 3 bookmarks", done: bookmarks.length >= 3 },
+          {
+            text: "Read 5 topics in a single day",
+            done: readKeys.length >= 5,
+            action: "home",
+          },
+          {
+            text: "Save 3 bookmarks",
+            done: bookmarks.length >= 3,
+            action: "home",
+          },
           {
             text: "Write your first note on any topic",
             done: completedNotes > 0,
+            action: "home",
           },
           {
             text: "Complete the tailoring questionnaire",
             done: !!profile,
+            action: "tailor",
           },
           {
             text: "Maintain a 3-day reading streak",
             done: readingStreak.count >= 3,
+            action: "daily_growth",
           },
-        ].map((ch) => (
-          <div
-            key={ch.text}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              padding: "12px 0",
-              borderBottom: `1px solid ${t.light}`,
-            }}
-          >
-            <div
+          {
+            text: "Improve Communication",
+            done: false,
+            action: "communication",
+          },
+          {
+            text: "Set a personal goal and track it",
+            done: false,
+            action: "goal",
+          },
+        ].map((ch) => {
+          const handleClick = () => {
+            if (ch.done) return;
+            play?.("tap");
+            if (ch.action === "communication" && setPage) {
+              setPage("quiz");
+            } else if (ch.action === "tailor" && setScreen) {
+              setScreen("tailor_intro");
+            } else if (ch.action === "goal" && setPage) {
+              setPage("goal_setting");
+            } else if (ch.action && setPage) {
+              setPage(ch.action);
+            }
+          };
+          return (
+            <button
+              key={ch.text}
+              type="button"
+              onClick={handleClick}
+              disabled={ch.done}
               style={{
-                width: 24,
-                height: 24,
-                borderRadius: "50%",
-                background: ch.done ? t.green : t.light,
-                border: `2px solid ${ch.done ? t.green : t.border}`,
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
+                gap: 12,
+                width: "100%",
+                padding: "14px 0",
+                borderBottom: `1px solid ${t.light}`,
+                background: "transparent",
+                border: "none",
+                borderBottomWidth: 1,
+                borderBottomStyle: "solid",
+                borderBottomColor: t.light,
+                cursor: ch.done ? "default" : "pointer",
+                textAlign: "left",
+                fontFamily: "Georgia,serif",
+                transition: "background 0.15s ease",
+              }}
+              onMouseEnter={(e) => {
+                if (!ch.done) e.currentTarget.style.background = t.greenLt + "44";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
               }}
             >
-              {ch.done && (
+              <div
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: "50%",
+                  background: ch.done ? t.green : t.light,
+                  border: `2px solid ${ch.done ? t.green : t.border}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                {ch.done && (
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#fff"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </div>
+              <span
+                style={{
+                  flex: 1,
+                  fontSize: 14,
+                  color: ch.done ? t.green : t.mid,
+                  textDecoration: ch.done ? "line-through" : "none",
+                }}
+              >
+                {ch.text}
+              </span>
+              {!ch.done && (
                 <svg
-                  width="12"
-                  height="12"
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="#fff"
-                  strokeWidth="3"
+                  stroke={t.muted}
+                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  aria-hidden="true"
+                  style={{ flexShrink: 0 }}
                 >
-                  <polyline points="20 6 9 17 4 12" />
+                  <polyline points="9 18 15 12 9 6" />
                 </svg>
               )}
-            </div>
-            <span
-              style={{
-                fontSize: 14,
-                color: ch.done ? t.green : t.mid,
-                fontFamily: "Georgia,serif",
-                textDecoration: ch.done ? "line-through" : "none",
-              }}
-            >
-              {ch.text}
-            </span>
-          </div>
-        ))}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

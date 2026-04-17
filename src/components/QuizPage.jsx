@@ -11,6 +11,7 @@ const TOPIC_META = {
   money:      { label:"Money",      col:"#b8975a", bg:"#f7f0e3",  icon:"lock"    },
   philosophy: { label:"Philosophy", col:"#4a7ab8", bg:"#e8f0f8",  icon:"book"    },
   business:   { label:"Business",   col:"#c0604a", bg:"#faecea",  icon:"barChart"},
+  communication: { label:"Communication", col:"#3a7a9e", bg:"#e5f1f8", icon:"users" },
   general:    { label:"General",    col:"#6c757d", bg:"#f8f9fa",  icon:"globe"   },
 };
 const DIFF_COLORS = { easy:C.green, medium:C.gold, hard:C.red };
@@ -57,7 +58,7 @@ function seededShuffle(arr, seed) {
 }
 
 // ── Sub-components ────────────────────────────────────────
-function StatCard({ label, value, col }) {
+function StatCard({ label, value, col, t = C }) {
   return (
     <div style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 16px", textAlign:"center" }}>
       <div style={{ fontSize:22, fontWeight:800, color:col||C.ink, fontFamily:"Georgia,serif" }}>{value}</div>
@@ -65,7 +66,7 @@ function StatCard({ label, value, col }) {
     </div>
   );
 }
-function AchievementBadge({ ach, unlocked }) {
+function AchievementBadge({ ach, unlocked, t = C }) {
   return (
     <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px",
       background:unlocked?C.greenLt:C.white, border:`1px solid ${unlocked?C.green:C.border}`,
@@ -97,7 +98,8 @@ function TimerRing({ pct, value, color }) {
 }
 
 // ── Main Component ────────────────────────────────────────
-export function QuizPage({ play, userId, onQuizComplete }) {
+export function QuizPage({ play, userId, onQuizComplete, t: theme }) {
+  const t = theme || C;
   const { stats, saveStats } = useQuizStats(userId);
 
   const [phase,     setPhase]    = useState("setup");
@@ -120,7 +122,7 @@ export function QuizPage({ play, userId, onQuizComplete }) {
   const handleAnswerRef = useRef(null);
   const maxTime  = fmt==="blitz" ? 8 : QUIZ_SECS[diff];
   const timerPct   = maxTime > 0 ? timeLeft / maxTime : 0;
-  const timerColor = timerPct>0.5 ? C.green : timerPct>0.25 ? C.gold : C.red;
+  const timerColor = timerPct>0.5 ? t.green : timerPct>0.25 ? t.gold : t.red;
 
   const startQuiz = useCallback(() => {
     play("ok");
@@ -128,10 +130,12 @@ export function QuizPage({ play, userId, onQuizComplete }) {
     if (fmt === "daily") {
       const seed    = getDailySeed();
       const allPool = Object.values(QUIZ_QUESTIONS[topic] || {}).flat();
-      selected      = seededShuffle(allPool, seed).slice(0, 10);
+      // Daily: 15 questions (was 10)
+      selected      = seededShuffle(allPool, seed).slice(0, 15);
     } else {
       const pool  = QUIZ_QUESTIONS[topic]?.[diff] || [];
-      const limit = fmt === "blitz" ? 10 : 8;
+      // Blitz: 15 (was 10) · Multiple choice / True-false: 12 (was 8)
+      const limit = fmt === "blitz" ? 15 : 12;
       selected    = shuffle(pool).slice(0, limit);
     }
     setQs(selected); setIdx(0); setScore(0); setChosen(null);
@@ -233,12 +237,12 @@ export function QuizPage({ play, userId, onQuizComplete }) {
     return (
       <div className="life-quiz-page" style={{ paddingBottom:40 }}>
         {/* Header tabs */}
-        <div className="life-quiz-tabs" style={{ display:"flex", borderBottom:`1px solid ${C.border}`, background:C.white, padding:"0 max(12px, env(safe-area-inset-left, 0px)) 0 max(12px, env(safe-area-inset-right, 0px))", position:"sticky", top:0, zIndex:10, overflowX:"auto", WebkitOverflowScrolling:"touch", gap:4 }}>
+        <div className="life-quiz-tabs" style={{ display:"flex", borderBottom:`1px solid ${t.border}`, background:t.white, padding:"0 max(12px, env(safe-area-inset-left, 0px)) 0 max(12px, env(safe-area-inset-right, 0px))", position:"sticky", top:0, zIndex:10, overflowX:"auto", WebkitOverflowScrolling:"touch", gap:4 }}>
           {[["play","Quiz"],["stats","My Stats"],["achievements","Badges"]].map(([id,label]) => (
             <button key={id} onClick={() => { setActiveTab(id); }}
               style={{ padding:"14px 14px", flexShrink:0, background:"none", border:"none",
-                borderBottom:activeTab===id?`2px solid ${C.green}`:"2px solid transparent",
-                color:activeTab===id?C.green:C.muted, fontSize:13,
+                borderBottom:activeTab===id?`2px solid ${t.green}`:"2px solid transparent",
+                color:activeTab===id?t.green:t.muted, fontSize:13,
                 fontWeight:activeTab===id?700:400, cursor:"pointer", fontFamily:"Georgia,serif" }}>
               {label}
             </button>
@@ -247,12 +251,12 @@ export function QuizPage({ play, userId, onQuizComplete }) {
 
         {activeTab === "achievements" && (
           <div className="life-quiz-panel" style={{ padding:"28px max(16px, env(safe-area-inset-left, 0px)) 28px max(16px, env(safe-area-inset-right, 0px))", maxWidth:520, margin:"0 auto", boxSizing:"border-box" }}>
-            <p style={{ margin:"0 0 20px", fontSize:11, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:C.muted }}>
+            <p style={{ margin:"0 0 20px", fontSize:11, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:t.muted }}>
               {stats.achievements?.length||0}/{ACHIEVEMENTS.length} Unlocked
             </p>
             <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
               {ACHIEVEMENTS.map(a => (
-                <AchievementBadge key={a.id} ach={a} unlocked={stats.achievements?.includes(a.id)} />
+                <AchievementBadge t={t} key={a.id} ach={a} unlocked={stats.achievements?.includes(a.id)} />
               ))}
             </div>
           </div>
@@ -261,26 +265,26 @@ export function QuizPage({ play, userId, onQuizComplete }) {
         {activeTab === "stats" && (
           <div className="life-quiz-panel" style={{ padding:"28px max(16px, env(safe-area-inset-left, 0px)) 28px max(16px, env(safe-area-inset-right, 0px))", maxWidth:520, margin:"0 auto", boxSizing:"border-box" }}>
             <div className="life-quiz-stat-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:24 }}>
-              <StatCard label="Quizzes Played" value={stats.totalPlayed||0}   col={C.green}/>
-              <StatCard label="Accuracy"        value={`${overallAcc}%`}       col={C.gold}/>
-              <StatCard label="Best Streak"     value={stats.bestStreak||0}    col={C.red}/>
+              <StatCard t={t} label="Quizzes Played" value={stats.totalPlayed||0}   col={t.green}/>
+              <StatCard t={t} label="Accuracy"        value={`${overallAcc}%`}       col={t.gold}/>
+              <StatCard t={t} label="Best Streak"     value={stats.bestStreak||0}    col={t.red}/>
             </div>
             <div className="life-quiz-stat-grid-2" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:24 }}>
-              <StatCard label="Total Answered" value={stats.totalAnswered||0}/>
-              <StatCard label="Total Correct"  value={stats.totalCorrect||0}  col={C.green}/>
+              <StatCard t={t} label="Total Answered" value={stats.totalAnswered||0}/>
+              <StatCard t={t} label="Total Correct"  value={stats.totalCorrect||0}  col={t.green}/>
             </div>
             {stats.topicsPlayed && Object.keys(stats.topicsPlayed).length > 0 && (
               <>
-                <p style={{ margin:"0 0 12px", fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.muted }}>Topics played</p>
+                <p style={{ margin:"0 0 12px", fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:t.muted }}>Topics played</p>
                 <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:24 }}>
                   {Object.entries(stats.topicsPlayed).sort((a,b)=>b[1]-a[1]).map(([t,n]) => {
                     const meta = TOPIC_META[t];
                     return (
-                      <div key={t} style={{ display:"flex", alignItems:"center", gap:12, background:C.white, border:`1px solid ${C.border}`, borderRadius:10, padding:"12px 14px" }}>
+                      <div key={t} style={{ display:"flex", alignItems:"center", gap:12, background:t.white, border:`1px solid ${t.border}`, borderRadius:10, padding:"12px 14px" }}>
                         <div style={{ width:32, height:32, borderRadius:8, background:meta.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
                           {Ic[meta.icon]?.("none",meta.col,16)}
                         </div>
-                        <span style={{ flex:1, fontSize:14, fontWeight:600, color:C.ink }}>{meta.label}</span>
+                        <span style={{ flex:1, fontSize:14, fontWeight:600, color:t.ink }}>{meta.label}</span>
                         <span style={{ fontSize:13, color:meta.col, fontWeight:700 }}>{n} quiz{n!==1?"zes":""}</span>
                       </div>
                     );
@@ -290,14 +294,14 @@ export function QuizPage({ play, userId, onQuizComplete }) {
             )}
             {(stats.history||[]).length > 0 && (
               <>
-                <p style={{ margin:"0 0 12px", fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.muted }}>Recent history</p>
+                <p style={{ margin:"0 0 12px", fontSize:11, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:t.muted }}>Recent history</p>
                 <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                   {[...(stats.history||[])].reverse().slice(0,8).map((h,i) => (
-                    <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:`1px solid ${C.light}` }}>
-                      <span style={{ fontSize:12, color:C.muted, minWidth:70 }}>{h.date}</span>
-                      <span style={{ fontSize:12, color:TOPIC_META[h.topic]?.col||C.ink, fontWeight:600 }}>{TOPIC_META[h.topic]?.label}</span>
-                      <span style={{ fontSize:11, color:C.muted, textTransform:"capitalize" }}>{h.diff}</span>
-                      <span style={{ marginLeft:"auto", fontSize:13, fontWeight:700, color:h.pct>=70?C.green:h.pct>=50?C.gold:C.red }}>{h.pct}%</span>
+                    <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:`1px solid ${t.light}` }}>
+                      <span style={{ fontSize:12, color:t.muted, minWidth:70 }}>{h.date}</span>
+                      <span style={{ fontSize:12, color:TOPIC_META[h.topic]?.col||t.ink, fontWeight:600 }}>{TOPIC_META[h.topic]?.label}</span>
+                      <span style={{ fontSize:11, color:t.muted, textTransform:"capitalize" }}>{h.diff}</span>
+                      <span style={{ marginLeft:"auto", fontSize:13, fontWeight:700, color:h.pct>=70?t.green:h.pct>=50?t.gold:t.red }}>{h.pct}%</span>
                     </div>
                   ))}
                 </div>
@@ -322,19 +326,19 @@ export function QuizPage({ play, userId, onQuizComplete }) {
             </div>
 
             {/* Topic */}
-            <p style={{ fontSize:10, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:C.muted, margin:"0 0 12px" }}>Topic</p>
+            <p style={{ fontSize:10, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:t.muted, margin:"0 0 12px" }}>Topic</p>
             <div className="life-quiz-topic-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:24 }}>
               {Object.entries(TOPIC_META).map(([k, meta]) => {
                 const sel = topic===k && fmt!=="daily";
                 return (
                   <button key={k} onClick={() => { setTopic(k); if(fmt==="daily") setFmt("multiple"); }}
-                    style={{ background:sel?meta.bg:C.white, border:`1.5px solid ${sel?meta.col:C.border}`,
+                    style={{ background:sel?meta.bg:t.white, border:`1.5px solid ${sel?meta.col:t.border}`,
                       borderRadius:12, padding:"13px 14px", cursor:"pointer", textAlign:"left",
                       display:"flex", alignItems:"center", gap:10, fontFamily:"Georgia,serif" }}>
-                    <div style={{ width:32, height:32, borderRadius:8, background:sel?meta.col+"22":C.light, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <div style={{ width:32, height:32, borderRadius:8, background:sel?meta.col+"22":t.light, display:"flex", alignItems:"center", justifyContent:"center" }}>
                       {Ic[meta.icon]?.("none", sel?meta.col:"#8a8070", 16)}
                     </div>
-                    <span style={{ fontSize:13, fontWeight:sel?700:400, color:sel?meta.col:C.mid }}>{meta.label}</span>
+                    <span style={{ fontSize:13, fontWeight:sel?700:400, color:sel?meta.col:t.mid }}>{meta.label}</span>
                     {sel && <span style={{ marginLeft:"auto", fontSize:10, color:meta.col }}>✓</span>}
                   </button>
                 );
@@ -342,47 +346,47 @@ export function QuizPage({ play, userId, onQuizComplete }) {
             </div>
 
             {/* Difficulty */}
-            <p style={{ fontSize:10, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:C.muted, margin:"0 0 12px" }}>Difficulty</p>
+            <p style={{ fontSize:10, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:t.muted, margin:"0 0 12px" }}>Difficulty</p>
             <div className="life-quiz-diff-row" style={{ display:"flex", gap:8, marginBottom:24, flexWrap:"wrap" }}>
               {["easy","medium","hard"].map(d => {
                 const dm  = DIFF_META[d];
                 const sel = diff===d && fmt!=="daily";
                 return (
                   <button key={d} onClick={() => { setDiff(d); if(fmt==="daily") setFmt("multiple"); }}
-                    style={{ flex:"1 1 100px", minWidth:0, background:sel?DIFF_COLORS[d]:C.white, border:`1.5px solid ${sel?DIFF_COLORS[d]:C.border}`,
+                    style={{ flex:"1 1 100px", minWidth:0, background:sel?DIFF_COLORS[d]:t.white, border:`1.5px solid ${sel?DIFF_COLORS[d]:t.border}`,
                       borderRadius:12, padding:"12px 8px", cursor:"pointer", fontFamily:"Georgia,serif", textAlign:"center" }}>
                     <div style={{ fontSize:16, marginBottom:4 }}>{dm.icon}</div>
-                    <div style={{ fontSize:13, fontWeight:sel?700:400, color:sel?C.white:C.mid, textTransform:"capitalize" }}>{dm.label}</div>
-                    <div style={{ fontSize:10, color:sel?"rgba(255,255,255,0.75)":C.muted, marginTop:2 }}>{dm.secs}s/q</div>
+                    <div style={{ fontSize:13, fontWeight:sel?700:400, color:sel?t.white:t.mid, textTransform:"capitalize" }}>{dm.label}</div>
+                    <div style={{ fontSize:10, color:sel?"rgba(255,255,255,0.75)":t.muted, marginTop:2 }}>{dm.secs}s/q</div>
                   </button>
                 );
               })}
             </div>
 
             {/* Format */}
-            <p style={{ fontSize:10, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:C.muted, margin:"0 0 12px" }}>Format</p>
+            <p style={{ fontSize:10, fontWeight:700, letterSpacing:2.5, textTransform:"uppercase", color:t.muted, margin:"0 0 12px" }}>Format</p>
             <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:28 }}>
               {["multiple","truefalse","blitz"].map(f => {
                 const fm  = FORMAT_META[f];
                 const sel = fmt===f;
                 return (
                   <button key={f} onClick={() => { setFmt(f); }}
-                    style={{ background:sel?C.greenLt:C.white, border:`1.5px solid ${sel?C.green:C.border}`,
+                    style={{ background:sel?t.greenLt:t.white, border:`1.5px solid ${sel?t.green:t.border}`,
                       borderRadius:12, padding:"14px 18px", cursor:"pointer", textAlign:"left",
                       display:"flex", alignItems:"center", gap:12, fontFamily:"Georgia,serif" }}>
                     <span style={{ fontSize:20 }}>{fm.icon}</span>
                     <div style={{ flex:1 }}>
-                      <div style={{ fontSize:14, fontWeight:sel?700:500, color:sel?C.green:C.ink }}>{fm.label}</div>
-                      <div style={{ fontSize:11, color:C.muted, marginTop:2 }}>{fm.desc}</div>
+                      <div style={{ fontSize:14, fontWeight:sel?700:500, color:sel?t.green:t.ink }}>{fm.label}</div>
+                      <div style={{ fontSize:11, color:t.muted, marginTop:2 }}>{fm.desc}</div>
                     </div>
-                    {sel && <div style={{ width:20,height:20,borderRadius:"50%",background:C.green,display:"flex",alignItems:"center",justifyContent:"center" }}><span style={{ color:"#fff",fontSize:11 }}>✓</span></div>}
+                    {sel && <div style={{ width:20,height:20,borderRadius:"50%",background:t.green,display:"flex",alignItems:"center",justifyContent:"center" }}><span style={{ color:"#fff",fontSize:11 }}>✓</span></div>}
                   </button>
                 );
               })}
             </div>
 
             <button onClick={startQuiz}
-              style={{ width:"100%", background:C.green, border:"none", borderRadius:14, padding:"18px", color:"#fff",
+              style={{ width:"100%", background:t.green, border:"none", borderRadius:14, padding:"18px", color:"#fff",
                 fontSize:16, fontWeight:700, cursor:"pointer", fontFamily:"Georgia,serif",
                 boxShadow:"0 6px 20px rgba(74,140,92,0.30)" }}>
               {fmt==="daily" ? "Start Daily Challenge 📅" : "Start Quiz →"}
@@ -401,7 +405,7 @@ export function QuizPage({ play, userId, onQuizComplete }) {
     return (
       <div className="life-quiz-page life-quiz-result-wrap" style={{ padding:"32px max(16px, env(safe-area-inset-left, 0px)) max(60px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-right, 0px))", maxWidth:500, margin:"0 auto", boxSizing:"border-box" }}>
         {newAchs.length > 0 && (
-          <div style={{ background:C.ink, borderRadius:14, padding:"16px 20px", marginBottom:20, display:"flex", alignItems:"center", gap:12 }}>
+          <div style={{ background:t.ink, borderRadius:14, padding:"16px 20px", marginBottom:20, display:"flex", alignItems:"center", gap:12 }}>
             <span style={{ fontSize:24 }}>{newAchs[0].icon}</span>
             <div>
               <div style={{ fontSize:12, color:"rgba(255,255,255,0.6)", fontFamily:"Georgia,serif" }}>Achievement Unlocked</div>
@@ -409,32 +413,32 @@ export function QuizPage({ play, userId, onQuizComplete }) {
             </div>
           </div>
         )}
-        <div style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:20, padding:28, marginBottom:20, textAlign:"center", boxShadow:"0 4px 20px rgba(0,0,0,0.06)" }}>
+        <div style={{ background:t.white, border:`1px solid ${t.border}`, borderRadius:20, padding:28, marginBottom:20, textAlign:"center", boxShadow:"0 4px 20px rgba(0,0,0,0.06)" }}>
           <div style={{ width:64, height:64, borderRadius:20, background:topicMeta.bg, margin:"0 auto 16px", display:"flex", alignItems:"center", justifyContent:"center" }}>
             {Ic[topicMeta.icon]?.("none", topicMeta.col, 28)}
           </div>
-          <h2 style={{ margin:"0 0 4px", fontSize:24, fontWeight:800, color:C.ink, fontFamily:"Georgia,serif" }}>{grade}</h2>
-          <p style={{ margin:"0 0 20px", color:C.muted, fontSize:13, fontStyle:"italic" }}>
+          <h2 style={{ margin:"0 0 4px", fontSize:24, fontWeight:800, color:t.ink, fontFamily:"Georgia,serif" }}>{grade}</h2>
+          <p style={{ margin:"0 0 20px", color:t.muted, fontSize:13, fontStyle:"italic" }}>
             {topicMeta.label} · {DIFF_META[diff]?.label} · {FORMAT_META[fmt]?.label}
           </p>
           <div className="life-quiz-result-score" style={{ fontSize:"clamp(2.5rem, 12vw, 3.75rem)", fontWeight:800, color:topicMeta.col, lineHeight:1, fontFamily:"Georgia,serif" }}>
-            {score}<span style={{ fontSize:"clamp(1rem, 5vw, 1.5rem)", color:C.muted, fontWeight:400 }}>/{qs.length}</span>
+            {score}<span style={{ fontSize:"clamp(1rem, 5vw, 1.5rem)", color:t.muted, fontWeight:400 }}>/{qs.length}</span>
           </div>
-          <p style={{ margin:"6px 0 20px", color:C.muted, fontSize:14 }}>{pct}% correct</p>
-          <div style={{ height:8, background:C.light, borderRadius:20, marginBottom:20, overflow:"hidden" }}>
-            <div style={{ height:"100%", width:`${pct}%`, background:pct>=70?C.green:pct>=50?C.gold:C.red, borderRadius:20, transition:"width 0.6s ease" }}/>
+          <p style={{ margin:"6px 0 20px", color:t.muted, fontSize:14 }}>{pct}% correct</p>
+          <div style={{ height:8, background:t.light, borderRadius:20, marginBottom:20, overflow:"hidden" }}>
+            <div style={{ height:"100%", width:`${pct}%`, background:pct>=70?t.green:pct>=50?t.gold:t.red, borderRadius:20, transition:"width 0.6s ease" }}/>
           </div>
           <div style={{ display:"flex", justifyContent:"space-around" }}>
-            <div><div style={{ fontSize:22, fontWeight:700, color:C.ink }}>{bestStreak}</div><div style={{ fontSize:10, color:C.muted, letterSpacing:1 }}>BEST STREAK</div></div>
-            <div><div style={{ fontSize:22, fontWeight:700, color:C.ink }}>{qs.length-score}</div><div style={{ fontSize:10, color:C.muted, letterSpacing:1 }}>MISSED</div></div>
-            <div><div style={{ fontSize:22, fontWeight:700, color:DIFF_COLORS[diff] }}>{DIFF_META[diff]?.icon}</div><div style={{ fontSize:10, color:C.muted, letterSpacing:1, textTransform:"uppercase" }}>{diff}</div></div>
+            <div><div style={{ fontSize:22, fontWeight:700, color:t.ink }}>{bestStreak}</div><div style={{ fontSize:10, color:t.muted, letterSpacing:1 }}>BEST STREAK</div></div>
+            <div><div style={{ fontSize:22, fontWeight:700, color:t.ink }}>{qs.length-score}</div><div style={{ fontSize:10, color:t.muted, letterSpacing:1 }}>MISSED</div></div>
+            <div><div style={{ fontSize:22, fontWeight:700, color:DIFF_COLORS[diff] }}>{DIFF_META[diff]?.icon}</div><div style={{ fontSize:10, color:t.muted, letterSpacing:1, textTransform:"uppercase" }}>{diff}</div></div>
           </div>
         </div>
 
         {/* Answer trail */}
         <div style={{ display:"flex", gap:5, flexWrap:"wrap", justifyContent:"center", marginBottom:20 }}>
           {answers.map((a,i) => (
-            <div key={i} title={a.q?.q||""} style={{ width:30, height:30, borderRadius:8, background:a.correct?C.green:C.red, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div key={i} title={a.q?.q||""} style={{ width:30, height:30, borderRadius:8, background:a.correct?t.green:t.red, display:"flex", alignItems:"center", justifyContent:"center" }}>
               <span style={{ color:"#fff", fontSize:13 }}>{a.correct?"✓":"✗"}</span>
             </div>
           ))}
@@ -443,12 +447,12 @@ export function QuizPage({ play, userId, onQuizComplete }) {
         {/* Review wrong answers */}
         {answers.filter(a=>!a.correct).length > 0 && (
           <div style={{ marginBottom:20 }}>
-            <p style={{ fontSize:10, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.red, margin:"0 0 10px" }}>Review missed questions</p>
+            <p style={{ fontSize:10, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:t.red, margin:"0 0 10px" }}>Review missed questions</p>
             {answers.filter(a=>!a.correct).map((a,i) => (
-              <div key={i} style={{ background:"#fff8f8", border:`1px solid ${C.red}22`, borderRadius:12, padding:"14px 16px", marginBottom:8 }}>
-                <p style={{ margin:"0 0 6px", fontSize:13, fontWeight:700, color:C.ink, fontFamily:"Georgia,serif" }}>{a.q?.q}</p>
-                <p style={{ margin:"0 0 4px", fontSize:12, color:C.green }}>✓ {a.q?.opts?.[a.q?.a]}</p>
-                {a.q?.explain && <p style={{ margin:0, fontSize:11, color:C.muted, fontStyle:"italic", lineHeight:1.6 }}>{a.q.explain}</p>}
+              <div key={i} style={{ background:"#fff8f8", border:`1px solid ${t.red}22`, borderRadius:12, padding:"14px 16px", marginBottom:8 }}>
+                <p style={{ margin:"0 0 6px", fontSize:13, fontWeight:700, color:t.ink, fontFamily:"Georgia,serif" }}>{a.q?.q}</p>
+                <p style={{ margin:"0 0 4px", fontSize:12, color:t.green }}>✓ {a.q?.opts?.[a.q?.a]}</p>
+                {a.q?.explain && <p style={{ margin:0, fontSize:11, color:t.muted, fontStyle:"italic", lineHeight:1.6 }}>{a.q.explain}</p>}
               </div>
             ))}
           </div>
@@ -456,11 +460,11 @@ export function QuizPage({ play, userId, onQuizComplete }) {
 
         <div className="life-quiz-result-actions" style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
           <button onClick={() => { play("tap"); setPhase("setup"); setActiveTab("play"); setNewAchs([]); }}
-            style={{ flex:"1 1 140px", minWidth:0, background:C.white, border:`1.5px solid ${C.border}`, borderRadius:12, padding:"15px", color:C.mid, fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"Georgia,serif" }}>
+            style={{ flex:"1 1 140px", minWidth:0, background:t.white, border:`1.5px solid ${t.border}`, borderRadius:12, padding:"15px", color:t.mid, fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"Georgia,serif" }}>
             Change Setup
           </button>
           <button onClick={() => { play("ok"); setNewAchs([]); startQuiz(); }}
-            style={{ flex:"2 1 180px", minWidth:0, background:C.green, border:"none", borderRadius:12, padding:"15px", color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"Georgia,serif" }}>
+            style={{ flex:"2 1 180px", minWidth:0, background:t.green, border:"none", borderRadius:12, padding:"15px", color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"Georgia,serif" }}>
             Play Again →
           </button>
         </div>
@@ -482,24 +486,24 @@ export function QuizPage({ play, userId, onQuizComplete }) {
           <div style={{ width:26, height:26, borderRadius:7, background:topicMeta.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
             {Ic[topicMeta.icon]?.("none",topicMeta.col,13)}
           </div>
-          <span style={{ fontSize:12, color:C.muted, fontFamily:"Georgia,serif", fontStyle:"italic" }}>{topicMeta.label} · {DIFF_META[diff]?.label}</span>
+          <span style={{ fontSize:12, color:t.muted, fontFamily:"Georgia,serif", fontStyle:"italic" }}>{topicMeta.label} · {DIFF_META[diff]?.label}</span>
         </div>
         <div style={{ display:"flex", gap:8, alignItems:"center" }}>
           {streak >= 2 && (
-            <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, color:C.gold, fontWeight:700, background:"#fdf6e8", padding:"3px 8px", borderRadius:20 }}>
+            <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:12, color:t.gold, fontWeight:700, background:"#fdf6e8", padding:"3px 8px", borderRadius:20 }}>
               🔥 {streak}
             </span>
           )}
-          <span style={{ fontSize:13, fontWeight:700, color:C.green, fontFamily:"Georgia,serif" }}>{score}/{idx}</span>
+          <span style={{ fontSize:13, fontWeight:700, color:t.green, fontFamily:"Georgia,serif" }}>{score}/{idx}</span>
         </div>
       </div>
 
       <div className="life-quiz-progress-bars" style={{ display:"flex", gap:3, marginBottom:20, minWidth:0, width:"100%", overflow:"hidden" }}>
         {qs.map((_,i) => (
           <div key={i} style={{ flex:"1 1 4px", minWidth:3, height:4, borderRadius:4,
-            background: answers[i]?.correct===true ? C.green
-              : answers[i]?.correct===false ? C.red
-              : i===idx ? C.gold : C.light }} />
+            background: answers[i]?.correct===true ? t.green
+              : answers[i]?.correct===false ? t.red
+              : i===idx ? t.gold : t.light }} />
         ))}
       </div>
 
@@ -515,20 +519,20 @@ export function QuizPage({ play, userId, onQuizComplete }) {
         </div>
       )}
 
-      <div style={{ background:C.white, border:`1px solid ${C.border}`, borderRadius:16, padding:"22px 20px", marginBottom:16, boxShadow:"0 2px 10px rgba(0,0,0,0.05)" }}>
-        <p style={{ margin:"0 0 4px", fontSize:10, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:C.muted }}>
+      <div style={{ background:t.white, border:`1px solid ${t.border}`, borderRadius:16, padding:"22px 20px", marginBottom:16, boxShadow:"0 2px 10px rgba(0,0,0,0.05)" }}>
+        <p style={{ margin:"0 0 4px", fontSize:10, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:t.muted }}>
           Question {idx+1} of {qs.length}
         </p>
-        <p style={{ margin:0, fontSize:17, fontWeight:700, color:C.ink, lineHeight:1.55, fontFamily:"Georgia,serif" }}>{q.q}</p>
+        <p style={{ margin:0, fontSize:17, fontWeight:700, color:t.ink, lineHeight:1.55, fontFamily:"Georgia,serif" }}>{q.q}</p>
       </div>
 
       <div style={{ display:"flex", flexDirection:"column", gap:9 }}>
         {opts.map((opt,i) => {
-          let bg=C.white, border=`1.5px solid ${C.border}`, col=C.ink, fw=400;
+          let bg=t.white, border=`1.5px solid ${t.border}`, col=t.ink, fw=400;
           if (chosen !== null) {
-            if (i===correctIdx)                       { bg=C.greenLt; border=`1.5px solid ${C.green}`; col=C.green; fw=700; }
-            else if (i===chosen && chosen!==correctIdx){ bg="#fef2f2"; border=`1.5px solid ${C.red}`; col=C.red; fw=700; }
-            else                                       { col=C.muted; }
+            if (i===correctIdx)                       { bg=t.greenLt; border=`1.5px solid ${t.green}`; col=t.green; fw=700; }
+            else if (i===chosen && chosen!==correctIdx){ bg="#fef2f2"; border=`1.5px solid ${t.red}`; col=t.red; fw=700; }
+            else                                       { col=t.muted; }
           }
           return (
             <button key={i} onClick={() => handleAnswer(i)} disabled={chosen!==null}
@@ -537,8 +541,8 @@ export function QuizPage({ play, userId, onQuizComplete }) {
                 color:col, fontSize:15, fontWeight:fw, display:"flex", alignItems:"center", gap:12, transition:"all 0.18s" }}>
               <span style={{ width:28, height:28, borderRadius:"50%", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center",
                 fontSize:12, fontWeight:700, transition:"all 0.18s",
-                background:chosen===null?C.light:i===correctIdx?C.green:i===chosen?C.red:C.light,
-                color:chosen!==null&&(i===correctIdx||i===chosen)?"#fff":C.muted }}>
+                background:chosen===null?t.light:i===correctIdx?t.green:i===chosen?t.red:t.light,
+                color:chosen!==null&&(i===correctIdx||i===chosen)?"#fff":t.muted }}>
                 {chosen!==null ? (i===correctIdx?"✓":i===chosen?"✗":String.fromCharCode(65+i)) : String.fromCharCode(65+i)}
               </span>
               {opt}
@@ -549,9 +553,9 @@ export function QuizPage({ play, userId, onQuizComplete }) {
 
       {showFact && chosen !== null && q.explain && (
         <div style={{ marginTop:14, padding:"14px 16px",
-          background:chosen===correctIdx?C.greenLt:"#fff8f8",
-          border:`1px solid ${chosen===correctIdx?C.green+"44":C.red+"44"}`, borderRadius:12 }}>
-          <p style={{ margin:0, fontSize:13, color:chosen===correctIdx?C.green:C.red, fontFamily:"Georgia,serif", lineHeight:1.7 }}>
+          background:chosen===correctIdx?t.greenLt:"#fff8f8",
+          border:`1px solid ${chosen===correctIdx?t.green+"44":t.red+"44"}`, borderRadius:12 }}>
+          <p style={{ margin:0, fontSize:13, color:chosen===correctIdx?t.green:t.red, fontFamily:"Georgia,serif", lineHeight:1.7 }}>
             <span style={{ fontWeight:700 }}>{chosen===correctIdx?"✓ Correct — ":"✗ Incorrect — "}</span>
             {q.explain}
           </p>

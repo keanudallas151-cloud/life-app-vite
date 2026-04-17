@@ -3,12 +3,13 @@ import { C } from "../systems/theme";
 import { CONTENT_TAGS, buildProfile, computeEssentialScore } from "../data/tailoring";
 import { CONTENT } from "../data/content";
 
-export function TailorIntro({userName,onExplore,onTailor}){
+export function TailorIntro({userName,onExplore,onTailor,t:theme}){
+  const t = theme || C;
   return(
-    <div style={{minHeight:"100svh",paddingBottom:"env(safe-area-inset-bottom, 0px)",background:C.skin,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif"}}>
+    <div style={{minHeight:"100svh",paddingBottom:"env(safe-area-inset-bottom, 0px)",background:t.skin,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif"}}>
       <div style={{padding:"52px 32px 0",textAlign:"center"}}>
-        <p style={{margin:"0 0 8px",fontSize:10,fontWeight:700,letterSpacing:3.5,textTransform:"uppercase",color:C.muted}}>Welcome{userName?`, ${userName.split(" ")[0]}`:""}</p>
-        <h1 style={{margin:"0 0 0",fontSize:26,fontWeight:800,color:C.ink,lineHeight:1.2,letterSpacing:-0.5}}>Tailored Self-Development</h1>
+        <p style={{margin:"0 0 8px",fontSize:10,fontWeight:700,letterSpacing:3.5,textTransform:"uppercase",color:t.muted}}>Welcome{userName?`, ${userName.split(" ")[0]}`:""}</p>
+        <h1 style={{margin:"0 0 0",fontSize:26,fontWeight:800,color:t.ink,lineHeight:1.2,letterSpacing:-0.5}}>Tailored Self-Development</h1>
       </div>
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"36px 28px"}}>
         <div style={{maxWidth:420,width:"100%"}}>
@@ -19,7 +20,7 @@ export function TailorIntro({userName,onExplore,onTailor}){
               </svg>
             </div>
           </div>
-          <p style={{margin:"0 0 8px",fontSize:16,color:C.mid,lineHeight:1.85,textAlign:"center",fontFamily:"Georgia,serif"}}>
+          <p style={{margin:"0 0 8px",fontSize:16,color:t.mid,lineHeight:1.85,textAlign:"center",fontFamily:"Georgia,serif"}}>
             To best personalise your experience and help you grow, we would like to ask you a few questions so you do not waste valuable time learning on a subject that doesn't align with your values and goals.
           </p>
           <p style={{margin:"20px 0 36px",fontSize:13,color:"#b0a898",fontStyle:"italic",textAlign:"center",lineHeight:1.7,padding:"0 12px"}}>
@@ -27,22 +28,23 @@ export function TailorIntro({userName,onExplore,onTailor}){
           </p>
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
             <button onClick={onTailor}
-              style={{width:"100%",background:"#6FBE77",border:"none",borderRadius:14,padding:"18px",color:C.white,fontSize:16,fontWeight:700,cursor:"pointer",fontFamily:"Georgia,serif",boxShadow:"0 4px 16px rgba(111,190,119,0.35)"}}>
+              style={{width:"100%",background:"#6FBE77",border:"none",borderRadius:14,padding:"18px",color:t.white,fontSize:16,fontWeight:700,cursor:"pointer",fontFamily:"Georgia,serif",boxShadow:"0 4px 16px rgba(111,190,119,0.35)"}}>
               Let's Get Tailoring! →
             </button>
             <button onClick={onExplore}
-              style={{width:"100%",background:C.red,border:"none",borderRadius:14,padding:"18px",color:C.white,fontSize:16,fontWeight:600,cursor:"pointer",fontFamily:"Georgia,serif"}}>
+              style={{width:"100%",background:t.red,border:"none",borderRadius:14,padding:"18px",color:t.white,fontSize:16,fontWeight:600,cursor:"pointer",fontFamily:"Georgia,serif"}}>
               I'm an Explorer!
             </button>
           </div>
         </div>
       </div>
-      <p style={{textAlign:"center",padding:"0 0 24px",fontSize:10,color:C.muted,fontStyle:"italic"}}>You can retake this at any time from your profile.</p>
+      <p style={{textAlign:"center",padding:"0 0 24px",fontSize:10,color:t.muted,fontStyle:"italic"}}>You can retake this at any time from your profile.</p>
     </div>
   );
 }
 
-export function TailorQuestions({onComplete,onBack}){
+export function TailorQuestions({onComplete,onBack,t:theme}){
+  const t = theme || C;
   const[step,setStep]=useState(0);
   const[answers,setAnswers]=useState({goals:null,motivation:null,finance_level:null,english_level:null,learning_style:null,time:40,life_areas:[]});
   const[animDir,setAnimDir]=useState("in");
@@ -100,38 +102,38 @@ export function TailorQuestions({onComplete,onBack}){
   const pct=Math.round(((step+1)/total)*100);
 
   return(
-    <div style={{minHeight:"100svh",paddingBottom:"env(safe-area-inset-bottom, 0px)",background:C.skin,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif"}}>
-      <div style={{background:C.white,borderBottom:`1px solid ${C.border}`,padding:"18px 24px"}}>
+    <div style={{minHeight:"100svh",paddingBottom:"env(safe-area-inset-bottom, 0px)",background:t.skin,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif"}}>
+      <div style={{background:t.white,borderBottom:`1px solid ${t.border}`,padding:"18px 24px"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-          <button onClick={goPrev} style={{background:"none",border:"none",cursor:"pointer",color:C.muted,fontSize:13,padding:0,fontFamily:"Georgia,serif"}}>← Back</button>
-          <span style={{fontSize:12,color:C.muted,fontWeight:600}}>{step+1} / {total}</span>
+          <button onClick={goPrev} style={{background:"none",border:"none",cursor:"pointer",color:t.muted,fontSize:13,padding:0,fontFamily:"Georgia,serif"}}>← Back</button>
+          <span style={{fontSize:12,color:t.muted,fontWeight:600}}>{step+1} / {total}</span>
           <div style={{width:40}}/>
         </div>
-        <div style={{height:4,background:C.light,borderRadius:4}}>
+        <div style={{height:4,background:t.light,borderRadius:4}}>
           <div style={{height:"100%",width:`${pct}%`,background:"#6FBE77",borderRadius:4,transition:"width 0.35s ease"}}/>
         </div>
       </div>
       <div style={{flex:1,padding:"36px 24px 24px",maxWidth:520,margin:"0 auto",width:"100%",boxSizing:"border-box",
         opacity:animDir==="out"?0:1,transform:animDir==="out"?"translateX(18px)":"translateX(0)",transition:"opacity 0.18s,transform 0.18s"}}>
-        <p style={{margin:"0 0 6px",fontSize:10,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase",color:C.muted}}>Question {step+1}</p>
-        <h2 style={{margin:"0 0 28px",fontSize:21,fontWeight:800,color:C.ink,lineHeight:1.3,letterSpacing:-0.3}}>{q.label}</h2>
+        <p style={{margin:"0 0 6px",fontSize:10,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase",color:t.muted}}>Question {step+1}</p>
+        <h2 style={{margin:"0 0 28px",fontSize:21,fontWeight:800,color:t.ink,lineHeight:1.3,letterSpacing:-0.3}}>{q.label}</h2>
         {q.slider&&(
           <div style={{padding:"8px 0 24px"}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:20,flexWrap:"wrap",gap:8}}>
               {timeLabels.map(t=>(
-                <span key={t.v} style={{fontSize:10,color:Math.abs(t.v-answers.time)<14?C.green:C.muted,fontWeight:Math.abs(t.v-answers.time)<14?700:400,fontFamily:"Georgia,serif",textAlign:"center",maxWidth:70,lineHeight:1.3}}>{t.label}</span>
+                <span key={t.v} style={{fontSize:10,color:Math.abs(t.v-answers.time)<14?t.green:t.muted,fontWeight:Math.abs(t.v-answers.time)<14?700:400,fontFamily:"Georgia,serif",textAlign:"center",maxWidth:70,lineHeight:1.3}}>{t.label}</span>
               ))}
             </div>
             <div style={{position:"relative",height:44,display:"flex",alignItems:"center"}}>
-              <div style={{position:"absolute",left:0,right:0,height:5,background:C.border,borderRadius:4}}>
+              <div style={{position:"absolute",left:0,right:0,height:5,background:t.border,borderRadius:4}}>
                 <div style={{height:"100%",width:`${answers.time}%`,background:"#6FBE77",borderRadius:4}}/>
               </div>
               <input type="range" min="0" max="100" value={answers.time}
                 onChange={e=>setAnswers(a=>({...a,time:Number(e.target.value)}))}
                 style={{position:"absolute",left:0,right:0,width:"100%",opacity:0,height:44,cursor:"pointer",zIndex:2}}/>
-              <div style={{position:"absolute",left:`calc(${answers.time}% - 14px)`,width:28,height:28,borderRadius:"50%",background:"#6FBE77",boxShadow:"0 2px 10px rgba(111,190,119,0.45)",border:`3px solid ${C.white}`,pointerEvents:"none",transition:"left 0.05s"}}/>
+              <div style={{position:"absolute",left:`calc(${answers.time}% - 14px)`,width:28,height:28,borderRadius:"50%",background:"#6FBE77",boxShadow:"0 2px 10px rgba(111,190,119,0.45)",border:`3px solid ${t.white}`,pointerEvents:"none",transition:"left 0.05s"}}/>
             </div>
-            <p style={{marginTop:20,textAlign:"center",fontSize:14,fontWeight:700,color:C.green,fontFamily:"Georgia,serif"}}>{getNearestLabel(answers.time)}</p>
+            <p style={{marginTop:20,textAlign:"center",fontSize:14,fontWeight:700,color:t.green,fontFamily:"Georgia,serif"}}>{getNearestLabel(answers.time)}</p>
           </div>
         )}
         {!q.slider&&q.opts&&(
@@ -140,7 +142,7 @@ export function TailorQuestions({onComplete,onBack}){
               const sel=q.multi?answers[q.id].includes(opt):answers[q.id]===opt;
               return(
                 <button key={opt} onClick={()=>toggleOpt(q.id,opt,q.multi)}
-                  style={{background:sel?"#6FBE77":C.white,border:`1.5px solid ${sel?"#6FBE77":C.border}`,borderRadius:24,padding:"11px 20px",fontSize:14,fontWeight:sel?700:400,color:sel?C.white:C.mid,cursor:"pointer",fontFamily:"Georgia,serif",transition:"all 0.15s",display:"flex",alignItems:"center",gap:8}}>
+                  style={{background:sel?"#6FBE77":t.white,border:`1.5px solid ${sel?"#6FBE77":t.border}`,borderRadius:24,padding:"11px 20px",fontSize:14,fontWeight:sel?700:400,color:sel?t.white:t.mid,cursor:"pointer",fontFamily:"Georgia,serif",transition:"all 0.15s",display:"flex",alignItems:"center",gap:8}}>
                   {sel&&<svg width="13" height="13" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   {opt}
                 </button>
@@ -148,11 +150,11 @@ export function TailorQuestions({onComplete,onBack}){
             })}
           </div>
         )}
-        {q.multi&&<p style={{margin:"16px 0 0",fontSize:11,color:C.muted,fontStyle:"italic"}}>Select all that apply.</p>}
+        {q.multi&&<p style={{margin:"16px 0 0",fontSize:11,color:t.muted,fontStyle:"italic"}}>Select all that apply.</p>}
       </div>
       <div style={{padding:"16px 24px 36px",maxWidth:520,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
         <button onClick={goNext} disabled={!isAnswered()}
-          style={{width:"100%",background:isAnswered()?"#6FBE77":C.light,border:"none",borderRadius:14,padding:"17px",color:isAnswered()?C.white:C.muted,fontSize:16,fontWeight:700,cursor:isAnswered()?"pointer":"default",fontFamily:"Georgia,serif",transition:"all 0.2s"}}>
+          style={{width:"100%",background:isAnswered()?"#6FBE77":t.light,border:"none",borderRadius:14,padding:"17px",color:isAnswered()?t.white:t.muted,fontSize:16,fontWeight:700,cursor:isAnswered()?"pointer":"default",fontFamily:"Georgia,serif",transition:"all 0.2s"}}>
           {step<total-1?"Next →":"Build My Plan ✦"}
         </button>
       </div>
@@ -160,7 +162,8 @@ export function TailorQuestions({onComplete,onBack}){
   );
 }
 
-export function TailorResult({profile,userName,onContinue}){
+export function TailorResult({profile,userName,onContinue,t:theme}){
+  const t = theme || C;
   if(!profile)return null;
   const first=userName?userName.split(" ")[0]:"Explorer";
 
@@ -187,7 +190,7 @@ export function TailorResult({profile,userName,onContinue}){
     .map(x=>x.key);
 
   return(
-    <div style={{minHeight:"100svh",paddingBottom:"env(safe-area-inset-bottom, 0px)",background:C.skin,fontFamily:"Georgia,serif",overflowY:"auto"}}>
+    <div style={{minHeight:"100svh",paddingBottom:"env(safe-area-inset-bottom, 0px)",background:t.skin,fontFamily:"Georgia,serif",overflowY:"auto"}}>
       <div style={{background:`linear-gradient(160deg,#6FBE77 0%,#4a8c5c 100%)`,padding:"max(40px, env(safe-area-inset-top, 0px)) 28px 36px",textAlign:"center",position:"relative"}}>
         <div style={{width:56,height:56,borderRadius:"18px",background:"rgba(255,255,255,0.18)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
@@ -196,46 +199,46 @@ export function TailorResult({profile,userName,onContinue}){
         <p style={{margin:0,fontSize:14,color:"rgba(255,255,255,0.82)",fontStyle:"italic",lineHeight:1.6}}>Personalised to your goals, pace, and level.</p>
       </div>
       <div style={{padding:"28px 24px",maxWidth:520,margin:"0 auto"}}>
-        <p style={{fontSize:10,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase",color:C.muted,margin:"0 0 14px"}}>Your Focus Areas</p>
+        <p style={{fontSize:10,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase",color:t.muted,margin:"0 0 14px"}}>Your Focus Areas</p>
         <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:28}}>
           {topCats.filter(c=>catMeta[c]).map(cat=>{
             const meta=catMeta[cat];
             const pct=Math.round((scores[cat]||0)*100);
             return(
-              <div key={cat} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px"}}>
+              <div key={cat} style={{background:t.white,border:`1px solid ${t.border}`,borderRadius:12,padding:"14px 16px"}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8,color:meta.col}}>{meta.icon}<span style={{fontSize:14,fontWeight:700,color:C.ink}}>{meta.label}</span></div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,color:meta.col}}>{meta.icon}<span style={{fontSize:14,fontWeight:700,color:t.ink}}>{meta.label}</span></div>
                   <span style={{fontSize:13,fontWeight:700,color:meta.col}}>{pct}%</span>
                 </div>
-                <div style={{height:5,background:C.light,borderRadius:4}}>
+                <div style={{height:5,background:t.light,borderRadius:4}}>
                   <div style={{height:"100%",width:`${pct}%`,background:meta.col,borderRadius:4}}/>
                 </div>
               </div>
             );
           })}
         </div>
-        <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 18px",marginBottom:28,display:"flex",alignItems:"center",gap:14}}>
-          <div style={{width:40,height:40,borderRadius:10,background:C.greenLt,display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div style={{background:t.white,border:`1px solid ${t.border}`,borderRadius:12,padding:"16px 18px",marginBottom:28,display:"flex",alignItems:"center",gap:14}}>
+          <div style={{width:40,height:40,borderRadius:10,background:t.greenLt,display:"flex",alignItems:"center",justifyContent:"center"}}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a8c5c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
           </div>
           <div>
-            <p style={{margin:"0 0 2px",fontSize:11,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:C.muted}}>Starting Level</p>
-            <p style={{margin:0,fontSize:16,fontWeight:700,color:C.ink,textTransform:"capitalize"}}>{profile.difficulty}</p>
+            <p style={{margin:"0 0 2px",fontSize:11,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:t.muted}}>Starting Level</p>
+            <p style={{margin:0,fontSize:16,fontWeight:700,color:t.ink,textTransform:"capitalize"}}>{profile.difficulty}</p>
           </div>
         </div>
-        <p style={{fontSize:10,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase",color:C.muted,margin:"0 0 12px"}}>Where to Begin</p>
+        <p style={{fontSize:10,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase",color:t.muted,margin:"0 0 12px"}}>Where to Begin</p>
         <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:32}}>
           {starters.map((key,i)=>{
             const node=CONTENT[key];if(!node)return null;
             const pct=Math.round((computeEssentialScore(key,profile)||0)*100);
             return(
-              <div key={key} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
+              <div key={key} style={{background:t.white,border:`1px solid ${t.border}`,borderRadius:12,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
                 <div style={{width:28,height:28,borderRadius:"50%",background:"#6FBE77",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  <span style={{color:C.white,fontSize:12,fontWeight:700}}>{i+1}</span>
+                  <span style={{color:t.white,fontSize:12,fontWeight:700}}>{i+1}</span>
                 </div>
                 <div style={{flex:1}}>
-                  <p style={{margin:"0 0 2px",fontSize:14,fontWeight:600,color:C.ink}}>{node.label}</p>
-                  <p style={{margin:0,fontSize:11,color:C.muted,fontStyle:"italic"}}>{node.content?.level}</p>
+                  <p style={{margin:"0 0 2px",fontSize:14,fontWeight:600,color:t.ink}}>{node.label}</p>
+                  <p style={{margin:0,fontSize:11,color:t.muted,fontStyle:"italic"}}>{node.content?.level}</p>
                 </div>
                 <span style={{fontSize:11,fontWeight:700,color:"#6FBE77",background:"#eaf3ec",padding:"3px 10px",borderRadius:20}}>{pct}% match</span>
               </div>
@@ -243,10 +246,10 @@ export function TailorResult({profile,userName,onContinue}){
           })}
         </div>
         <button onClick={onContinue}
-          style={{width:"100%",background:"#6FBE77",border:"none",borderRadius:14,padding:"18px",color:C.white,fontSize:16,fontWeight:700,cursor:"pointer",fontFamily:"Georgia,serif",boxShadow:"0 4px 16px rgba(111,190,119,0.32)"}}>
+          style={{width:"100%",background:"#6FBE77",border:"none",borderRadius:14,padding:"18px",color:t.white,fontSize:16,fontWeight:700,cursor:"pointer",fontFamily:"Georgia,serif",boxShadow:"0 4px 16px rgba(111,190,119,0.32)"}}>
           Start Learning →
         </button>
-        <p style={{textAlign:"center",margin:"14px 0 0",fontSize:12,color:C.muted,fontStyle:"italic"}}>Your personalised experience is now active.</p>
+        <p style={{textAlign:"center",margin:"14px 0 0",fontSize:12,color:t.muted,fontStyle:"italic"}}>Your personalised experience is now active.</p>
       </div>
     </div>
   );

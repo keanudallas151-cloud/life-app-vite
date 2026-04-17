@@ -1,14 +1,22 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { S } from "../systems/theme";
-import { getResumeTopic } from "../systems/resumeReading";
+import { getResumeTopic, clearResumeTopic } from "../systems/resumeReading";
 import { MAP } from "../data/content";
 
 export function HomePage({ t, onResume }) {
+  const [dismissed, setDismissed] = useState(false);
   const resumeTopic = useMemo(() => {
     const saved = getResumeTopic();
     if (!saved?.key || !MAP[saved.key]) return null;
     return { key: saved.key, label: MAP[saved.key].node?.label || saved.key };
   }, []);
+
+  const handleDismissResume = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    clearResumeTopic();
+    setDismissed(true);
+  };
 
   return (
     <div
@@ -96,27 +104,43 @@ export function HomePage({ t, onResume }) {
             The first million is the hardest, the second is imminent
           </p>
 
-          {/* Resume Reading Card */}
-          {resumeTopic && (
-            <button
-              onClick={() => onResume(resumeTopic.key)}
+          {/* Resume Reading Card — now with dismiss button */}
+          {resumeTopic && !dismissed && (
+            <div
+              role="group"
+              aria-label="Continue reading"
               style={{
+                position: "relative",
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
                 width: "100%",
                 maxWidth: 460,
                 margin: "0 auto 24px",
-                padding: "16px 20px",
+                padding: "16px 44px 16px 20px",
                 background: t.white,
                 border: `1.5px solid ${t.green}44`,
                 borderRadius: 16,
-                cursor: "pointer",
-                textAlign: "left",
-                transition: "box-shadow 0.2s",
                 boxShadow: S.sm,
+                boxSizing: "border-box",
               }}
             >
+              {/* Main tap area — opens topic */}
+              <button
+                type="button"
+                onClick={() => onResume(resumeTopic.key)}
+                aria-label={`Continue reading ${resumeTopic.label}`}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  margin: 0,
+                  borderRadius: 16,
+                }}
+              />
               <div
                 style={{
                   width: 40,
@@ -127,6 +151,9 @@ export function HomePage({ t, onResume }) {
                   alignItems: "center",
                   justifyContent: "center",
                   flexShrink: 0,
+                  pointerEvents: "none",
+                  position: "relative",
+                  zIndex: 1,
                 }}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={t.green} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -134,7 +161,7 @@ export function HomePage({ t, onResume }) {
                   <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
                 </svg>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flex: 1, minWidth: 0, pointerEvents: "none", position: "relative", zIndex: 1 }}>
                 <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: t.green }}>
                   Continue Reading
                 </p>
@@ -142,10 +169,46 @@ export function HomePage({ t, onResume }) {
                   {resumeTopic.label}
                 </p>
               </div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={t.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
+              {/* Dismiss button — lives ABOVE the main tap area */}
+              <button
+                type="button"
+                onClick={handleDismissResume}
+                aria-label="Dismiss continue reading"
+                title="Dismiss"
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: t.muted,
+                  padding: 0,
+                  zIndex: 2,
+                  flexShrink: 0,
+                  transition: "background 0.15s ease, color 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = `${t.muted}22`;
+                  e.currentTarget.style.color = t.ink;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = t.muted;
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
           )}
 
           <div
@@ -178,12 +241,41 @@ export function HomePage({ t, onResume }) {
                 fontSize: 15,
                 lineHeight: 1.9,
                 fontFamily: "Georgia,serif",
+                fontStyle: "italic",
+                position: "relative",
+                paddingLeft: 24,
+                paddingRight: 16,
               }}
             >
+              <span
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  top: -4,
+                  fontSize: 42,
+                  color: t.green,
+                  lineHeight: 1,
+                  fontFamily: "Georgia,serif",
+                  opacity: 0.5,
+                }}
+              >&ldquo;</span>
               I built Life. to make money, growth, and opportunity
               feel less hidden and less confusing. This should be a
               place where you can learn clearly, move with purpose,
               and build toward something real. Let&apos;s get rich.
+              <span
+                aria-hidden="true"
+                style={{
+                  display: "inline-block",
+                  marginLeft: 4,
+                  fontSize: 22,
+                  color: t.green,
+                  lineHeight: 0.6,
+                  verticalAlign: "middle",
+                  opacity: 0.5,
+                }}
+              >&rdquo;</span>
             </p>
           </div>
         </div>

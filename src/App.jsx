@@ -59,6 +59,7 @@ import { CategoriesPage, CATEGORIES } from "./components/CategoriesPage";
 import { ProgressDashboardPage } from "./components/ProgressDashboardPage";
 import { LeaderboardPage } from "./components/LeaderboardPage";
 import { DailyGrowthPage } from "./components/DailyGrowthPage";
+import { GoalSettingPage } from "./components/GoalSettingPage";
 import { MentorshipPage } from "./components/MentorshipPage";
 import { PremiumPage } from "./components/PremiumPage";
 import { LandingPage } from "./components/LandingPage";
@@ -85,6 +86,122 @@ const PREF_DEFAULTS = {
   instantButtons: true,
   sidebarSpeed: 62,
 };
+
+/* ── Swipe-to-delete Notification item ─────────────────────────
+   Horizontal swipe left > 80px reveals & triggers delete.
+   Tap (no drag) triggers the onTap callback → navigates.
+   Works with both touch and mouse events.
+   ──────────────────────────────────────────────────────────── */
+function SwipeableNotification({ n, theme, onTap, onDelete }) {
+  const [offset, setOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const startX = useRef(0);
+  const currentX = useRef(0);
+  const didDrag = useRef(false);
+
+  const onStart = (clientX) => {
+    startX.current = clientX;
+    currentX.current = clientX;
+    didDrag.current = false;
+    setDragging(true);
+  };
+  const onMove = (clientX) => {
+    if (!dragging) return;
+    currentX.current = clientX;
+    const delta = clientX - startX.current;
+    if (Math.abs(delta) > 6) didDrag.current = true;
+    // Only allow swipe LEFT
+    setOffset(Math.min(0, delta));
+  };
+  const onEnd = () => {
+    if (!dragging) return;
+    setDragging(false);
+    const delta = currentX.current - startX.current;
+    if (delta < -80) {
+      // Animate out fully then delete
+      setOffset(-400);
+      setTimeout(() => onDelete?.(), 180);
+    } else {
+      setOffset(0);
+    }
+  };
+
+  return (
+    <div style={{ position: "relative", overflow: "hidden", borderBottom: `1px solid ${theme.light}` }}>
+      {/* Delete backdrop — shows through as user swipes */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: theme.red || "#d25545",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          paddingRight: 20,
+          color: "#fff",
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: 1,
+          textTransform: "uppercase",
+        }}
+      >
+        Delete
+      </div>
+      {/* Foreground tappable content — slides with swipe */}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => {
+          if (!didDrag.current) onTap?.();
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") onTap?.();
+        }}
+        onTouchStart={(e) => onStart(e.touches[0].clientX)}
+        onTouchMove={(e) => onMove(e.touches[0].clientX)}
+        onTouchEnd={onEnd}
+        onMouseDown={(e) => onStart(e.clientX)}
+        onMouseMove={(e) => dragging && onMove(e.clientX)}
+        onMouseUp={onEnd}
+        onMouseLeave={onEnd}
+        style={{
+          position: "relative",
+          padding: "12px 16px",
+          background: n.read ? theme.white : theme.greenLt,
+          cursor: "pointer",
+          transform: `translateX(${offset}px)`,
+          transition: dragging ? "none" : "transform 0.24s cubic-bezier(0.22,1,0.36,1)",
+          userSelect: "none",
+          touchAction: "pan-y",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+          {!n.read && (
+            <span
+              aria-hidden
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: "50%",
+                background: theme.green,
+                marginTop: 6,
+                flexShrink: 0,
+              }}
+            />
+          )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: 13, color: theme.ink, lineHeight: 1.5 }}>
+              {n.text}
+            </p>
+            <p style={{ margin: "4px 0 0", fontSize: 10, color: theme.muted }}>
+              {n.time}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function LifeApp() {
   // ── DARK MODE (P11) ───────────────────────────────────────────
@@ -666,6 +783,29 @@ export default function LifeApp() {
     const next = notifications.map((n) => ({ ...n, read: true }));
     setNotifications(next);
     LS.set(`notif_${uid}`, next);
+  };
+  const deleteNotification = (id) => {
+    const next = notifications.filter((n) => n.id !== id);
+    setNotifications(next);
+    LS.set(`notif_${uid}`, next);
+  };
+  const handleNotifTap = (n) => {
+    // Mark the individual notification as read
+    const next = notifications.map((item) =>
+      item.id === n.id ? { ...item, read: true } : item,
+    );
+    setNotifications(next);
+    LS.set(`notif_${uid}`, next);
+    // Redirect to the target if provided, else go to Daily Growth as sensible default
+    setShowNotif(false);
+    play("tap");
+    if (n.targetPage) {
+      setPage(n.targetPage);
+    } else if (n.text && /tailor/i.test(n.text)) {
+      setScreen("tailor_intro");
+    } else {
+      setPage("daily_growth");
+    }
   };
 
   // ── Categories flow (P7) ──────────────────────────────────────
@@ -1834,6 +1974,7 @@ export default function LifeApp() {
     return (
       <Suspense fallback={<RouteFallback />}>
         <TailorIntro
+          t={t}
           userName={user?.name}
           onExplore={() => {
             play("tap");
@@ -1850,6 +1991,7 @@ export default function LifeApp() {
     return (
       <Suspense fallback={<RouteFallback />}>
         <TailorQuestions
+          t={t}
           onComplete={(prof) => {
             setProfile(prof);
             trackMomentumEvent("profile", {
@@ -1871,6 +2013,7 @@ export default function LifeApp() {
     return (
       <Suspense fallback={<RouteFallback />}>
         <TailorResult
+          t={t}
           profile={profile}
           userName={user?.name}
           onContinue={() => {
@@ -1989,11 +2132,14 @@ export default function LifeApp() {
               border: `1px solid ${t.border}`,
               borderRadius: 14,
               boxShadow: S.lg,
-              width: 300,
-              maxHeight: 360,
-              overflowY: "auto",
+              width: 320,
+              maxHeight: "min(460px, calc(100dvh - 80px))",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",  /* children handle their own scroll */
             }}
           >
+            {/* Sticky header */}
             <div
               style={{
                 display: "flex",
@@ -2001,6 +2147,8 @@ export default function LifeApp() {
                 justifyContent: "space-between",
                 padding: "12px 16px",
                 borderBottom: `1px solid ${t.light}`,
+                flexShrink: 0,
+                background: t.white,
               }}
             >
               <span style={{ fontSize: 13, fontWeight: 700, color: t.ink }}>
@@ -2022,45 +2170,38 @@ export default function LifeApp() {
                 </button>
               )}
             </div>
-            {notifications.length === 0 ? (
-              <p
-                style={{
-                  padding: 16,
-                  color: t.muted,
-                  fontSize: 13,
-                  textAlign: "center",
-                }}
-              >
-                No notifications yet.
-              </p>
-            ) : (
-              notifications.map((n) => (
-                <div
-                  key={n.id}
+            {/* Scrollable list */}
+            <div
+              style={{
+                flex: 1,
+                overflowY: "auto",
+                WebkitOverflowScrolling: "touch",
+                overscrollBehavior: "contain",
+              }}
+            >
+              {notifications.length === 0 ? (
+                <p
                   style={{
-                    padding: "12px 16px",
-                    borderBottom: `1px solid ${t.light}`,
-                    background: n.read ? "transparent" : t.greenLt,
+                    padding: 24,
+                    color: t.muted,
+                    fontSize: 13,
+                    textAlign: "center",
                   }}
                 >
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: 13,
-                      color: t.ink,
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {n.text}
-                  </p>
-                  <p
-                    style={{ margin: "4px 0 0", fontSize: 10, color: t.muted }}
-                  >
-                    {n.time}
-                  </p>
-                </div>
-              ))
-            )}
+                  No notifications yet.
+                </p>
+              ) : (
+                notifications.map((n) => (
+                  <SwipeableNotification
+                    key={n.id}
+                    n={n}
+                    theme={t}
+                    onTap={() => handleNotifTap(n)}
+                    onDelete={() => deleteNotification(n.id)}
+                  />
+                ))
+              )}
+            </div>
           </div>
         </>
       )}
@@ -2087,9 +2228,10 @@ export default function LifeApp() {
         <div
           style={{
             display: "flex",
-            alignItems: "center",
+            alignItems: "center",  /* vertically centers hamburger with logo + search */
             gap: 10,
             flexShrink: 0,
+            height: "100%",
           }}
         >
           <button
@@ -2097,14 +2239,21 @@ export default function LifeApp() {
               play("tap");
               setSidebarOpen(!sidebarOpen);
             }}
+            aria-label="Toggle sidebar"
             style={{
               background: "none",
               border: "none",
               cursor: "pointer",
               display: "flex",
               flexDirection: "column",
+              justifyContent: "center",  /* aligns hamburger dashes with siblings */
+              alignItems: "flex-start",
               gap: 5,
-              padding: "6px 4px",
+              /* Match height of logo/search so it's perfectly centered */
+              width: 40,
+              height: 40,
+              padding: "0 4px",
+              boxSizing: "border-box",
               transition: "opacity 0.2s ease",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.7")}
@@ -2325,19 +2474,27 @@ export default function LifeApp() {
                 position: "absolute",
                 top: 2,
                 right: 2,
-                width: 14,
-                height: 14,
+                width: 16,
+                height: 16,
                 borderRadius: "50%",
                 background: t.red,
                 color: "#fff",
-                fontSize: 8,
+                fontSize: 9,
                 fontWeight: 700,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                lineHeight: 1,
+                padding: 0,
+                fontFamily: "-apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+                /* Tight font stack + line-height:1 + padding:0 centers perfectly */
+                textAlign: "center",
+                boxSizing: "border-box",
+                /* Nudge up by 0.5px to optically center inside the circle */
+                paddingBottom: 1,
               }}
             >
-              {unreadCount}
+              {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}
         </button>
@@ -2486,7 +2643,7 @@ export default function LifeApp() {
           />
         )}
 
-        {/* SIDEBAR */}
+        {/* SIDEBAR — CSS handles mobile overrides via .life-sidebar class */}
         <div
           className="life-sidebar"
           style={{
@@ -2494,7 +2651,7 @@ export default function LifeApp() {
             top: 0,
             left: 0,
             bottom: 0,
-            width: 288,
+            width: 288,          /* desktop width; CSS overrides on mobile */
             maxWidth: "min(288px, 100vw)",
             background: t.white,
             borderRight: `1px solid ${t.border}`,
@@ -2846,10 +3003,11 @@ export default function LifeApp() {
           </SS>
           <div
             data-page-tag="#side_bar_sign_out"
+            className="life-sidebar-signout"
             style={{
               padding: "20px 18px 8px",
               borderTop: `1px solid ${t.light}`,
-              marginTop: 16,
+              marginTop: "auto",
             }}
           >
             <button
@@ -2956,6 +3114,7 @@ export default function LifeApp() {
               <Suspense fallback={<RouteFallback />}>
                 <QuizPage
                   play={play}
+                  t={t}
                   userId={isSupabaseConfigured ? user?.id : null}
                   onQuizComplete={(result) => {
                     trackMomentumEvent("quiz", {
@@ -3042,6 +3201,9 @@ export default function LifeApp() {
                 profile={profile}
                 totalTopics={allContent.length}
                 progressPercent={progressPercent}
+                play={play}
+                setPage={setPage}
+                setScreen={setScreen}
               />
             )}
 
@@ -3051,7 +3213,9 @@ export default function LifeApp() {
             )}
 
             {/* Daily Growth page */}
-            {page === "daily_growth" && <DailyGrowthPage t={t} />}
+            {page === "daily_growth" && <DailyGrowthPage t={t} play={play} setPage={setPage} />}
+
+            {page === "goal_setting" && <GoalSettingPage t={t} play={play} />}
 
             {/* Extra: Mentorship Booking */}
             {page === "mentorship" && (
@@ -3101,6 +3265,7 @@ export default function LifeApp() {
             {page === "reading" && selContent && (
               <Suspense fallback={<RouteFallback />}>
                 <EbookReader
+                  t={t}
                   selKey={selKey}
                   selContent={selContent}
                   tab={tab}
@@ -3117,9 +3282,6 @@ export default function LifeApp() {
                   related={related}
                   handleSelect={handleSelect}
                   bookmarks={bookmarks}
-                  highlights={highlights}
-                  onSaveHighlight={saveHighlight}
-                  onRemoveHighlight={removeHighlight}
                   allContent={allContent}
                   profile={profile}
                   savedReaderPage={readerPages[selKey] ?? 0}
