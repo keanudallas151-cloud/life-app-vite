@@ -34,7 +34,7 @@ export function VerifyEmailPage({ C, play, setScreen, verifyTargetEmail, supabas
           width: 70,
           height: 70,
           borderRadius: "20%",
-          background: `linear-gradient(145deg,${C.green},#2d6e42)`,
+          background: `linear-gradient(145deg,${C.green},${C.greenAlt})`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

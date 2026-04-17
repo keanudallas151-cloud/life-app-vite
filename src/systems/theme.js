@@ -1,32 +1,39 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { LS } from "./storage";
 
+// ── Professional Gray Palette ──────────────────────────────────────────
+// Light mode: crisp cool grays, sage-muted green accent, warm gold
+// Dark mode:  deep charcoal surfaces, balanced contrast (WCAG AA+)
 export const C = {
-  skin: "#f5f0e8",
-  white: "#ffffff",
-  green: "#4a8c5c",
-  greenLt: "#eaf3ec",
-  ink: "#141414",
-  mid: "#3a3a3a",
-  muted: "#8a8070",
-  border: "#ddd5c4",
-  light: "#ede8de",
-  gold: "#b8975a",
+  skin: "#f7f8fa",        // cool off-white page bg
+  white: "#ffffff",        // card / surface
+  green: "#3d5a4c",        // deep sage — primary accent (sophisticated, not kid-green)
+  greenAlt: "#5a7d6a",     // medium sage — gradient end, secondary accent
+  greenLt: "#edf1ef",      // barely-there sage tint
+  ink: "#1c1f23",          // charcoal text
+  mid: "#464b53",          // secondary text
+  muted: "#888e96",        // tertiary / placeholder
+  border: "#e2e4e8",       // clean gray border
+  light: "#f0f1f3",        // light surface / hover bg
+  gold: "#b8975a",         // warm professional gold accent
   red: "#c0392b",
+  orange: "#d4834a",
 };
 
 export const DARK = {
-  skin: "#181818",
-  white: "#242424",
-  green: "#5a9d6c",
-  greenLt: "#223228",
-  ink: "#f2f2f2",
-  mid: "#d1d1d1",
-  muted: "#a29d96",
-  border: "#3b3b3b",
-  light: "#2d2d2d",
-  gold: "#d0ae6c",
+  skin: "#131517",          // deep charcoal bg
+  white: "#1c1e22",         // dark card surface
+  green: "#5a8a6a",         // muted sage in dark
+  greenAlt: "#74a888",      // lighter sage
+  greenLt: "#1e2824",       // dark sage tint
+  ink: "#e8eaed",           // bright text (14:1 on skin)
+  mid: "#bfc3c9",           // secondary text
+  muted: "#8c929a",         // muted text
+  border: "#2e3138",        // subtle dark border
+  light: "#222528",         // dark hover / surface
+  gold: "#d4b55e",          // warm gold in dark
   red: "#d25545",
+  orange: "#e09560",
 };
 
 export const THEME_MODE_KEY = "life_theme_mode";
@@ -37,12 +44,12 @@ export const THEME_MODES = {
   dark: "dark",
 };
 
-/** Depth tokens — use for cards / sheets */
+/** Depth tokens — neutral gray shadows (no colored tint) */
 export const S = {
-  sm: "0 1px 2px rgba(20,20,20,0.04), 0 2px 8px rgba(20,20,20,0.06)",
-  md: "0 4px 6px rgba(20,20,20,0.04), 0 12px 28px rgba(74,140,92,0.08), 0 2px 4px rgba(20,20,20,0.04)",
-  lg: "0 8px 16px rgba(20,20,20,0.06), 0 24px 48px rgba(74,140,92,0.12)",
-  glow: "0 0 0 1px rgba(74,140,92,0.12), 0 16px 40px rgba(74,140,92,0.15)",
+  sm: "0 1px 2px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.04)",
+  md: "0 2px 4px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.08)",
+  lg: "0 8px 16px rgba(0,0,0,0.06), 0 24px 48px rgba(0,0,0,0.10)",
+  glow: "0 0 0 1px rgba(184,151,90,0.14), 0 12px 36px rgba(0,0,0,0.10)",
 };
 
 function canUseDOM() {

@@ -394,7 +394,7 @@ export default function LifeApp() {
       label: "Phone",
       file: "/phone_login.png",
       live: false,
-      color: "#4a8c5c",
+      color: "#3d5a4c",
     },
     {
       key: "facebook",
@@ -1687,12 +1687,12 @@ export default function LifeApp() {
               width: 90,
               height: 90,
               borderRadius: "22%",
-              background: `linear-gradient(145deg,${C.green},#2d6e42)`,
+              background: `linear-gradient(145deg,${C.green},${C.greenAlt})`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               margin: "0 auto 20px",
-              boxShadow: "0 8px 32px rgba(74,140,92,0.35)",
+              boxShadow: `0 8px 32px ${C.green}44`,
               animation:
                 "life-pulse 2s ease-in-out infinite, life-bounce 3s ease-in-out infinite",
               position: "relative",
@@ -2919,7 +2919,7 @@ export default function LifeApp() {
                     width: `${progressPercent}%`,
                     height: "100%",
                     borderRadius: 999,
-                    background: `linear-gradient(90deg, ${t.green}, #6FBE77)`,
+                    background: `linear-gradient(90deg, ${t.green}, ${t.greenAlt})`,
                   }}
                 />
               </div>

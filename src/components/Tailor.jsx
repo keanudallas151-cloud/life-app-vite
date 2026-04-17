@@ -14,7 +14,7 @@ export function TailorIntro({userName,onExplore,onTailor,t:theme}){
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"36px 28px"}}>
         <div style={{maxWidth:420,width:"100%"}}>
           <div style={{display:"flex",justifyContent:"center",marginBottom:28}}>
-            <div style={{width:80,height:80,borderRadius:"24px",background:`linear-gradient(145deg,#6FBE77,#4a8c5c)`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 8px 28px rgba(74,140,92,0.28)"}}>
+            <div style={{width:80,height:80,borderRadius:"24px",background:`linear-gradient(145deg,${t.greenAlt},${t.green})`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 8px 28px ${t.green}40`}}>
               <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
               </svg>
@@ -23,12 +23,12 @@ export function TailorIntro({userName,onExplore,onTailor,t:theme}){
           <p style={{margin:"0 0 8px",fontSize:16,color:t.mid,lineHeight:1.85,textAlign:"center",fontFamily:"Georgia,serif"}}>
             To best personalise your experience and help you grow, we would like to ask you a few questions so you do not waste valuable time learning on a subject that doesn't align with your values and goals.
           </p>
-          <p style={{margin:"20px 0 36px",fontSize:13,color:"#b0a898",fontStyle:"italic",textAlign:"center",lineHeight:1.7,padding:"0 12px"}}>
+          <p style={{margin:"20px 0 36px",fontSize:13,color:t.muted,fontStyle:"italic",textAlign:"center",lineHeight:1.7,padding:"0 12px"}}>
             "Knowledge is the first step onto becoming successful, action is the second and final step."
           </p>
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
             <button onClick={onTailor}
-              style={{width:"100%",background:"#6FBE77",border:"none",borderRadius:14,padding:"18px",color:t.white,fontSize:16,fontWeight:700,cursor:"pointer",fontFamily:"Georgia,serif",boxShadow:"0 4px 16px rgba(111,190,119,0.35)"}}>
+              style={{width:"100%",background:t.green,border:"none",borderRadius:14,padding:"18px",color:"#fff",fontSize:16,fontWeight:700,cursor:"pointer",fontFamily:"Georgia,serif",boxShadow:`0 4px 16px ${t.green}44`}}>
               Let's Get Tailoring! →
             </button>
             <button onClick={onExplore}
@@ -223,7 +223,7 @@ export function TailorResult({profile,userName,onContinue,t:theme}){
   const first=userName?userName.split(" ")[0]:"Explorer";
 
   const catMeta={
-    finance:{label:"Finance",col:"#6FBE77",icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>},
+    finance:{label:"Finance",col:t.greenAlt,icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>},
     mindset:{label:"Mindset",col:"#7B9ED9",icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2a4.5 4.5 0 000 9"/><path d="M14.5 2a4.5 4.5 0 010 9"/><path d="M5 11a4 4 0 004 4v5h6v-5a4 4 0 004-4"/></svg>},
     psychology:{label:"Psychology",col:"#C48BB8",icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>},
     business:{label:"Business",col:"#b8975a",icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>},
@@ -246,7 +246,7 @@ export function TailorResult({profile,userName,onContinue,t:theme}){
 
   return(
     <div style={{minHeight:"100svh",paddingBottom:"env(safe-area-inset-bottom, 0px)",background:t.skin,fontFamily:"Georgia,serif",overflowY:"auto"}}>
-      <div style={{background:`linear-gradient(160deg,#6FBE77 0%,#4a8c5c 100%)`,padding:"max(40px, env(safe-area-inset-top, 0px)) 28px 36px",textAlign:"center",position:"relative"}}>
+      <div style={{background:`linear-gradient(160deg,${t.greenAlt} 0%,${t.green} 100%)`,padding:"max(40px, env(safe-area-inset-top, 0px)) 28px 36px",textAlign:"center",position:"relative"}}>
         <div style={{width:56,height:56,borderRadius:"18px",background:"rgba(255,255,255,0.18)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
         </div>
@@ -274,7 +274,7 @@ export function TailorResult({profile,userName,onContinue,t:theme}){
         </div>
         <div style={{background:t.white,border:`1px solid ${t.border}`,borderRadius:12,padding:"16px 18px",marginBottom:28,display:"flex",alignItems:"center",gap:14}}>
           <div style={{width:40,height:40,borderRadius:10,background:t.greenLt,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a8c5c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={t.green} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
           </div>
           <div>
             <p style={{margin:"0 0 2px",fontSize:11,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:t.muted}}>Starting Level</p>
@@ -288,20 +288,20 @@ export function TailorResult({profile,userName,onContinue,t:theme}){
             const pct=Math.round((computeEssentialScore(key,profile)||0)*100);
             return(
               <div key={key} style={{background:t.white,border:`1px solid ${t.border}`,borderRadius:12,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
-                <div style={{width:28,height:28,borderRadius:"50%",background:"#6FBE77",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <div style={{width:28,height:28,borderRadius:"50%",background:t.greenAlt,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                   <span style={{color:t.white,fontSize:12,fontWeight:700}}>{i+1}</span>
                 </div>
                 <div style={{flex:1}}>
                   <p style={{margin:"0 0 2px",fontSize:14,fontWeight:600,color:t.ink}}>{node.label}</p>
                   <p style={{margin:0,fontSize:11,color:t.muted,fontStyle:"italic"}}>{node.content?.level}</p>
                 </div>
-                <span style={{fontSize:11,fontWeight:700,color:"#6FBE77",background:"#eaf3ec",padding:"3px 10px",borderRadius:20}}>{pct}% match</span>
+                <span style={{fontSize:11,fontWeight:700,color:t.green,background:t.greenLt,padding:"3px 10px",borderRadius:20}}>{pct}% match</span>
               </div>
             );
           })}
         </div>
         <button onClick={onContinue}
-          style={{width:"100%",background:"#6FBE77",border:"none",borderRadius:14,padding:"18px",color:t.white,fontSize:16,fontWeight:700,cursor:"pointer",fontFamily:"Georgia,serif",boxShadow:"0 4px 16px rgba(111,190,119,0.32)"}}>
+          style={{width:"100%",background:t.green,border:"none",borderRadius:14,padding:"18px",color:"#fff",fontSize:16,fontWeight:700,cursor:"pointer",fontFamily:"Georgia,serif",boxShadow:`0 4px 16px ${t.green}44`}}>
           Start Learning →
         </button>
         <p style={{textAlign:"center",margin:"14px 0 0",fontSize:12,color:t.muted,fontStyle:"italic"}}>Your personalised experience is now active.</p>

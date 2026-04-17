@@ -189,7 +189,7 @@ export function CategoriesPage({ t, play, catStep, setCatStep, setPage, userName
               width: 90,
               height: 90,
               borderRadius: "50%",
-              background: `linear-gradient(135deg, ${t.green}, #6FBE77)`,
+              background: `linear-gradient(135deg, ${t.green}, ${t.greenAlt})`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

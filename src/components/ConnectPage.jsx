@@ -33,7 +33,7 @@ function PitchCard({ pitch, t, onConnect, isOwn }) {
             width: 38,
             height: 38,
             borderRadius: "50%",
-            background: `linear-gradient(135deg, ${t.green}, #2d6e42)`,
+            background: `linear-gradient(135deg, ${t.green}, ${t.greenAlt})`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -208,7 +208,7 @@ export function ConnectPage({ t, user, play }) {
           style={{
             width: "100%",
             padding: "16px",
-            background: `linear-gradient(135deg, ${t.green}, #2d6e42)`,
+            background: `linear-gradient(135deg, ${t.green}, ${t.greenAlt})`,
             border: "none",
             borderRadius: 14,
             color: "#fff",

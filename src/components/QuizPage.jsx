@@ -6,7 +6,7 @@ import { LS } from "../systems/storage";
 import { useQuizStats } from "../systems/useQuizStats";
 
 const TOPIC_META = {
-  finance:    { label:"Finance",       col:"#4a8c5c", bg:"#eaf3ec",  icon:"wallet"  },
+  finance:    { label:"Finance",       col:"#3d5a4c", bg:"#edf1ef",  icon:"wallet"  },
   psychology: { label:"Psychology",    col:"#7B6FA8", bg:"#f0edf8",  icon:"brain"   },
   money:      { label:"Money",         col:"#b8975a", bg:"#f7f0e3",  icon:"lock"    },
   philosophy: { label:"Philosophy",    col:"#4a7ab8", bg:"#e8f0f8",  icon:"book"    },
@@ -737,7 +737,7 @@ export function QuizPage({
         {activeTab === "play" && (
           <div className="life-quiz-panel" style={{ padding:"28px max(16px, env(safe-area-inset-left, 0px)) 0 max(16px, env(safe-area-inset-right, 0px))", maxWidth:520, margin:"0 auto", boxSizing:"border-box" }}>
             {/* Daily Challenge banner */}
-            <div className="life-quiz-daily-banner" style={{ background:`linear-gradient(135deg,#4a8c5c,#2d6e42)`, borderRadius:14, padding:"16px 18px", marginBottom:24, display:"flex", alignItems:"center", gap:12, cursor:"pointer", flexWrap:"wrap" }}
+            <div className="life-quiz-daily-banner" style={{ background:`linear-gradient(135deg,${t.green},${t.greenAlt})`, borderRadius:14, padding:"16px 18px", marginBottom:24, display:"flex", alignItems:"center", gap:12, cursor:"pointer", flexWrap:"wrap" }}
               onClick={() => { setFmt("daily"); }}>
               <span style={{ fontSize:28 }}>📅</span>
               <div style={{ flex:1 }}>

@@ -38,7 +38,7 @@ export default function ProfilePage({
                         width: 74,
                         height: 74,
                         borderRadius: "50%",
-                        background: `linear-gradient(135deg, ${t.green}, #2d6e42)`,
+                        background: `linear-gradient(135deg, ${t.green}, ${t.greenAlt})`,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",

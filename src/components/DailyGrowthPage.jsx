@@ -257,7 +257,7 @@ export function DailyGrowthPage({ t, play, setPage, onMomentumEvent }) {
             style={{
               width: `${(completed.length / GROWTH_ITEMS.length) * 100}%`,
               height: "100%",
-              background: `linear-gradient(90deg, ${t.green}, #6FBE77)`,
+              background: `linear-gradient(90deg, ${t.green}, ${t.greenAlt})`,
               transition: "width 0.4s ease",
             }}
           />
