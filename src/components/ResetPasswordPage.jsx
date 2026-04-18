@@ -25,7 +25,7 @@ export function ResetPasswordPage({
     "Strong",
     "Very strong",
   ];
-  const passwordStrengthColors = [C.red, C.red, "#e6a23c", C.gold, C.green];
+  const passwordStrengthColors = [C.red, C.red, C.orange, C.gold, C.green];
 
   const resetPasswordHasMinLength = rpPass.length >= 8;
   const resetPasswordHasUpper = /[A-Z]/.test(rpPass);
