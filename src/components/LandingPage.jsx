@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 const PROVIDER_ICONS = {
   google: (
     <svg width="22" height="22" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -23,7 +25,66 @@ const PROVIDER_ICONS = {
   ),
 };
 
+const VALUE_PROPS = [
+  {
+    icon: "users",
+    label: "Networking",
+    sub: "Connect with driven people",
+    title: "Networking",
+    summary:
+      "At Life. it is not just about knowledge. You can connect with driven people, ambitious builders, and future collaborators who want to grow, make money, and move forward together.",
+    bullets: [
+      "Meet people who care about growth and execution",
+      "Build relationships around shared ambition",
+      "Turn conversations into opportunities and partnerships",
+    ],
+  },
+  {
+    icon: "lock",
+    label: "Secret Knowledge",
+    sub: "What they don't teach you",
+    title: "Secret Knowledge",
+    summary:
+      "Life. highlights the practical truths most people never get shown early enough: how money works, how systems are designed, and where real leverage tends to come from.",
+    bullets: [
+      "Learn what is usually skipped in school",
+      "Understand the hidden rules behind money and status",
+      "Spot leverage, incentives, and real-world advantage faster",
+    ],
+  },
+  {
+    icon: "star",
+    label: "Tailored Growth",
+    sub: "Personalised to your goals",
+    title: "Tailored Growth",
+    summary:
+      "Your path should match your goals. Life. helps shape the experience around what you want to improve, so growth feels relevant instead of random.",
+    bullets: [
+      "Focus on what matters to your stage of life",
+      "Spend less time guessing what to learn next",
+      "Build momentum around your actual priorities",
+    ],
+  },
+  {
+    icon: "compass",
+    label: "Structured Path",
+    sub: "Your friend to success",
+    title: "Structured Path",
+    summary:
+      "Life. gives you direction, not noise. The platform is designed to help you move from confusion to clarity with a path that is easier to follow and easier to stick to.",
+    bullets: [
+      "Get a clearer route instead of scattered advice",
+      "Move step by step with purpose",
+      "Stay consistent with structure that supports progress",
+    ],
+  },
+];
+
 export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSignIn, siSocialErr }) {
+  const [activeValueProp, setActiveValueProp] = useState(null);
+  const activeValuePropData =
+    VALUE_PROPS.find((item) => item.label === activeValueProp) || null;
+
   return (
     <div
       data-page-tag="#landing_page"
@@ -178,40 +239,28 @@ export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSig
         <div
           style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
         >
-          {[
-            {
-              icon: "users",
-              label: "Networking",
-              sub: "Connect with driven people",
-            },
-            {
-              icon: "lock",
-              label: "Secret Knowledge",
-              sub: "What they don't teach you",
-            },
-            {
-              icon: "star",
-              label: "Tailored Growth",
-              sub: "Personalised to your goals",
-            },
-            {
-              icon: "compass",
-              label: "Structured Path",
-              sub: "Your friend to success",
-            },
-          ].map((v, i) => (
-            <div
+          {VALUE_PROPS.map((v, i) => (
+            <button
               key={v.label}
+              type="button"
+              onClick={() => {
+                play("tap");
+                setActiveValueProp(v.label);
+              }}
+              data-page-tag={`#landing_value_prop_${v.label.toLowerCase().replace(/\s+/g, "_")}`}
               style={{
                 background: "rgba(255,255,255,0.06)",
                 border: "1px solid rgba(255,255,255,0.1)",
                 borderRadius: 12,
                 padding: "12px 10px",
                 textAlign: "center",
+                cursor: "pointer",
                 animation: `life-tag-fade 0.5s ease-out ${0.2 + i * 0.1}s both`,
                 backdropFilter: "blur(8px)",
                 WebkitBackdropFilter: "blur(8px)",
+                minHeight: 96,
               }}
+              aria-label={`Open ${v.label} overview`}
             >
               <div style={{ marginBottom: 6 }}>
                 {Ic[v.icon]?.("none", "#a0a0a0", 20)}
@@ -236,10 +285,188 @@ export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSig
               >
                 {v.sub}
               </p>
-            </div>
+            </button>
           ))}
         </div>
       </div>
+
+      {activeValuePropData && (
+        <div
+          data-page-tag="#landing_value_prop_overlay"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 90,
+            display: "flex",
+            alignItems: "stretch",
+            justifyContent: "center",
+            background: "rgba(0,0,0,0.58)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+          }}
+        >
+          <button
+            type="button"
+            aria-label="Close overview"
+            onClick={() => setActiveValueProp(null)}
+            style={{
+              position: "absolute",
+              inset: 0,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+            }}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="landing-value-prop-title"
+            style={{
+              position: "relative",
+              zIndex: 1,
+              width: "min(100vw, 520px)",
+              minHeight: "100dvh",
+              padding:
+                "max(26px, calc(18px + env(safe-area-inset-top))) 22px max(26px, calc(22px + env(safe-area-inset-bottom)))",
+              background:
+                "linear-gradient(180deg, rgba(8,8,8,0.98) 0%, rgba(14,14,14,0.98) 100%)",
+              color: "#ffffff",
+              boxSizing: "border-box",
+              overflowY: "auto",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+                gap: 16,
+                marginBottom: 22,
+              }}
+            >
+              <div>
+                <p
+                  style={{
+                    margin: "0 0 10px",
+                    color: "rgba(255,255,255,0.42)",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.24em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  #landing_homepage
+                </p>
+                <h2
+                  id="landing-value-prop-title"
+                  style={{
+                    margin: 0,
+                    fontSize: "clamp(2rem, 8vw, 2.8rem)",
+                    fontWeight: 800,
+                    color: "#ffffff",
+                    fontFamily: "Georgia,serif",
+                    letterSpacing: -0.8,
+                  }}
+                >
+                  {activeValuePropData.title}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveValueProp(null)}
+                aria-label={`Close ${activeValuePropData.title} overview`}
+                style={{
+                  width: 44,
+                  height: 44,
+                  minWidth: 44,
+                  borderRadius: "50%",
+                  border: "1px solid rgba(255,255,255,0.14)",
+                  background: "rgba(255,255,255,0.05)",
+                  color: "#ffffff",
+                  cursor: "pointer",
+                  fontSize: 22,
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 64,
+                height: 64,
+                borderRadius: 18,
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                marginBottom: 18,
+              }}
+            >
+              {Ic[activeValuePropData.icon]?.("none", "#d5d5d5", 28)}
+            </div>
+
+            <p
+              style={{
+                margin: "0 0 22px",
+                color: "rgba(255,255,255,0.76)",
+                fontSize: 16,
+                lineHeight: 1.8,
+                fontFamily: "Georgia,serif",
+              }}
+            >
+              {activeValuePropData.summary}
+            </p>
+
+            <div style={{ display: "grid", gap: 12 }}>
+              {activeValuePropData.bullets.map((item) => (
+                <div
+                  key={item}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 12,
+                    padding: "14px 14px",
+                    borderRadius: 16,
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <span
+                    aria-hidden
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: "50%",
+                      background: "rgba(90,125,106,0.24)",
+                      color: "#b9d7c7",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      fontSize: 13,
+                      fontWeight: 700,
+                    }}
+                  >
+                    +
+                  </span>
+                  <span
+                    style={{
+                      color: "rgba(255,255,255,0.82)",
+                      fontSize: 14,
+                      lineHeight: 1.7,
+                    }}
+                  >
+                    {item}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div
         style={{
@@ -455,11 +682,14 @@ export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSig
           style={{
             background: "none",
             border: "none",
+            outline: "none",
+            boxShadow: "none",
             color: "rgba(255,255,255,0.35)",
             fontSize: 10,
             cursor: "pointer",
             fontFamily: "Georgia,serif",
-            textDecoration: "underline",
+            textDecoration: "none",
+            padding: 0,
           }}
         >
           Privacy Policy
@@ -472,11 +702,14 @@ export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSig
           style={{
             background: "none",
             border: "none",
+            outline: "none",
+            boxShadow: "none",
             color: "rgba(255,255,255,0.35)",
             fontSize: 10,
             cursor: "pointer",
             fontFamily: "Georgia,serif",
-            textDecoration: "underline",
+            textDecoration: "none",
+            padding: 0,
           }}
         >
           Terms & Conditions

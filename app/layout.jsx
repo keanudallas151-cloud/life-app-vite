@@ -36,7 +36,7 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#4a8c5c'
+  themeColor: '#50c878'
 }
 
 export default function RootLayout({ children }) {
@@ -45,14 +45,10 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="apple-touch-icon" href="/favicon.svg" />
-        <link rel="stylesheet" href="/password-toggle-fix.css" />
-        <link rel="stylesheet" href="/home-hero-polish.css" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
       </head>
       <body>
         {children}
-        <script src="/password-toggle-fix.js" defer></script>
-        <script src="/home-hero-polish.js" defer></script>
       </body>
     </html>
   )

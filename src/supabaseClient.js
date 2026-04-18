@@ -37,14 +37,26 @@ export function getAuthRedirectUrl(path = "") {
   return `${origin}${normalizedPath}`;
 }
 
-export const supabase = createClient(
-  SUPABASE_URL || FALLBACK_SUPABASE_URL,
-  SUPABASE_KEY || FALLBACK_SUPABASE_KEY,
-  {
+const SUPABASE_OPTIONS = {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
   },
-  },
-);
+};
+
+const globalKey = "__lifeSupabaseClient";
+const existingClient =
+  typeof globalThis !== "undefined" ? globalThis[globalKey] : undefined;
+
+export const supabase =
+  existingClient ||
+  createClient(
+    SUPABASE_URL || FALLBACK_SUPABASE_URL,
+    SUPABASE_KEY || FALLBACK_SUPABASE_KEY,
+    SUPABASE_OPTIONS,
+  );
+
+if (typeof globalThis !== "undefined" && !existingClient) {
+  globalThis[globalKey] = supabase;
+}

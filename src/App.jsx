@@ -34,6 +34,7 @@ import { useUserData } from "./systems/useUserData";
 import {
   EbookReader,
   MomentumHubPage,
+  IncomeIdeasPage,
   PostItFeed,
   QuizPage,
   RouteFallback,
@@ -391,21 +392,18 @@ export default function LifeApp() {
     {
       key: "google",
       label: "Google",
-      file: "/google_login.png",
       live: true,
       color: "#4285F4",
     },
     {
       key: "phone",
       label: "Phone",
-      file: "/phone_login.png",
       live: false,
       color: "#3d5a4c",
     },
     {
       key: "facebook",
       label: "Facebook",
-      file: "/facebook_login.png",
       live: false,
       color: "#1877F2",
     },
@@ -707,7 +705,6 @@ export default function LifeApp() {
     (key, node) => {
       setCategoryPageData({ key, node });
       setPage("category_hub");
-      setSidebarOpen(false);
     },
     [setPage],
   );
@@ -744,6 +741,7 @@ export default function LifeApp() {
       progress_dashboard: "Progress — Life.",
       leaderboard: "Leaderboard — Life.",
       daily_growth: "Daily Growth — Life.",
+      income_ideas: "100+ Ways To Generate Income — Life.",
       mentorship: "Mentorship — Life.",
       setting_preferences: "Settings — Life.",
       momentum_hub: "Momentum Hub — Life.",
@@ -1122,10 +1120,14 @@ export default function LifeApp() {
       lp != null;
     migratedRef.current = true;
     if (hasLocal) {
-      cloud.setBookmarks(lb);
-      cloud.setNotes(ln);
-      cloud.setReadKeys(lr);
-      if (lp) cloud.setTsdProfile(lp);
+      cloud.replaceAllData({
+        bookmarks: lb,
+        notes: ln,
+        read_keys: lr,
+        highlights: cloud.highlights,
+        tsd_profile: lp,
+        momentum_state: cloud.momentumState,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- see block comment above
   }, [
@@ -1136,10 +1138,9 @@ export default function LifeApp() {
     cloud.readKeys,
     cloud.tsdProfile,
     user?.email,
-    cloud.setBookmarks,
-    cloud.setNotes,
-    cloud.setReadKeys,
-    cloud.setTsdProfile,
+    cloud.highlights,
+    cloud.momentumState,
+    cloud.replaceAllData,
   ]);
 
   // localStorage-only: reload when switching accounts / guest key
@@ -2219,7 +2220,7 @@ export default function LifeApp() {
             padding: "10px 22px",
             borderRadius: 20,
             fontSize: 13,
-            zIndex: 999,
+            zIndex: 90,
             boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
             maxWidth: "min(92vw, 340px)",
             textAlign: "center",
@@ -2235,7 +2236,7 @@ export default function LifeApp() {
         <>
           <div
             onClick={() => setShowNotif(false)}
-            style={{ position: "fixed", inset: 0, zIndex: 199 }}
+            style={{ position: "fixed", inset: 0, zIndex: 69 }}
           />
           <div
             className="life-notif-dropdown"
@@ -2246,7 +2247,7 @@ export default function LifeApp() {
               right: isNarrowViewport
                 ? 10
                 : "max(10px, env(safe-area-inset-right, 0px))",
-              zIndex: 200,
+              zIndex: 70,
               background: dark ? "#1a1a1a" : "#ffffff",
               border: `1px solid ${dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
               borderRadius: 18,
@@ -2694,7 +2695,7 @@ export default function LifeApp() {
             position: "fixed",
             left: 0,
             right: 0,
-            zIndex: 200,
+            zIndex: 70,
             background: dark ? "rgba(30,30,30,0.98)" : "rgba(255,255,255,0.98)",
             backdropFilter: "blur(14px)",
             WebkitBackdropFilter: "blur(14px)",
@@ -3507,6 +3508,10 @@ export default function LifeApp() {
                   play("tap");
                   setPage("goal_setting");
                 }}
+                onOpenIncomeIdeas={() => {
+                  play("tap");
+                  setPage("income_ideas");
+                }}
                 onGetStarted={() => {
                   play("tap");
                   setPage("where_to_start");
@@ -3540,6 +3545,12 @@ export default function LifeApp() {
                 onOpenQuiz={openQuizHome}
                 onSelect={handleSelect}
               />
+            )}
+
+            {page === "income_ideas" && (
+              <Suspense fallback={<RouteFallback />}>
+                <IncomeIdeasPage t={t} />
+              </Suspense>
             )}
 
             {page === "quiz" && (

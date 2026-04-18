@@ -199,7 +199,7 @@ function SwipeDeck({ profiles, t, play }) {
       </p>
       {toast&&<div style={{position:"fixed",bottom:100,left:"50%",transform:"translateX(-50%)",
         background:t.green,color:"#fff",padding:"12px 24px",borderRadius:12,fontSize:14,fontWeight:700,
-        boxShadow:"0 8px 24px rgba(80,200,120,0.4)",zIndex:300,whiteSpace:"nowrap",
+        boxShadow:"0 8px 24px rgba(80,200,120,0.4)",zIndex:90,whiteSpace:"nowrap",
         animation:"life-badge-enter 0.3s cubic-bezier(0.22,1,0.36,1) both"}}>♥ Saved!</div>}
     </div>
   );

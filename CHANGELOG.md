@@ -2,6 +2,16 @@
 
 All notable prototype milestones for Life are tracked here.
 
+## v0.5.8 — Big Updates
+
+- added interactive landing-page overview overlays for Networking, Secret Knowledge, Tailored Growth, and Structured Path
+- updated dashboard home hero copy, restored the custom Life. wordmark sizing, and added a new `100+ Ways To Generate Income` page with a dedicated CTA
+- removed legacy raw DOM patch assets, cleaned unused social PNG icons, and switched Apple touch / manifest icons to PNG assets
+- clarified leaderboard preview data, refreshed mobile metadata theme color, and replaced the Tailwind-only error boundary with real styling
+- tightened high-risk overlay z-index values and fixed sidebar/category navigation behavior
+- hardened Supabase auth/data sync by reusing a singleton client and batching `user_data` writes to avoid overlapping requests
+- lint and production build pass clean
+
 ## v0.5.0 — Full polish sweep, workflow upgrades, and cleanup
 
 - removed AI-style decorative banner comments from `src/` and cleaned leftover section markers

@@ -294,7 +294,7 @@ export function NotesTab({
               position: "fixed",
               inset: 0,
               background: "rgba(0,0,0,0.4)",
-              zIndex: 200,
+              zIndex: 70,
               backdropFilter: "blur(2px)",
             }}
           />
@@ -304,7 +304,7 @@ export function NotesTab({
               bottom: 0,
               left: 0,
               right: 0,
-              zIndex: 201,
+              zIndex: 71,
               background: t.white,
               borderRadius: "20px 20px 0 0",
               padding: "8px 0 32px",

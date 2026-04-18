@@ -2,12 +2,12 @@ export function LeaderboardPage({ t, readKeys, bookmarks }) {
   const userScore = readKeys.length * 10 + bookmarks.length * 5;
   const entries = [
     { name: "You", score: userScore, isUser: true },
-    { name: "Alex T.", score: 420 },
-    { name: "Jordan M.", score: 380 },
-    { name: "Sam K.", score: 310 },
-    { name: "Riley P.", score: 275 },
-    { name: "Casey L.", score: 220 },
-    { name: "Morgan D.", score: 185 },
+    { name: "Sample Member 1", score: 420, isPreview: true },
+    { name: "Sample Member 2", score: 380, isPreview: true },
+    { name: "Sample Member 3", score: 310, isPreview: true },
+    { name: "Sample Member 4", score: 275, isPreview: true },
+    { name: "Sample Member 5", score: 220, isPreview: true },
+    { name: "Sample Member 6", score: 185, isPreview: true },
   ]
     .sort((a, b) => b.score - a.score)
     .map((e, i) => ({ ...e, rank: i + 1 }));
@@ -27,6 +27,24 @@ export function LeaderboardPage({ t, readKeys, bookmarks }) {
       >
         Leaderboard
       </h2>
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          margin: "0 0 12px",
+          padding: "8px 12px",
+          borderRadius: 999,
+          background: t.greenLt,
+          color: t.green,
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: "0.04em",
+          textTransform: "uppercase",
+        }}
+      >
+        Preview data
+      </div>
       <p
         style={{
           color: t.muted,
@@ -36,7 +54,7 @@ export function LeaderboardPage({ t, readKeys, bookmarks }) {
           fontStyle: "italic",
         }}
       >
-        See how you stack up against other Life. members.
+        Live community rankings are not connected yet. Your score is real to this device; the other rows are sample placements for preview only.
       </p>
       {entries.map((entry, index) => (
         <div
@@ -87,6 +105,7 @@ export function LeaderboardPage({ t, readKeys, bookmarks }) {
           >
             {entry.name}
             {entry.isUser ? " (You)" : ""}
+            {entry.isPreview ? " — preview" : ""}
           </span>
           <span
             style={{

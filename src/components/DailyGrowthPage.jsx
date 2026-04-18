@@ -481,7 +481,7 @@ function DailyGrowthModal({ item, t, play, onClose, onComplete }) {
           background: "rgba(0,0,0,0.45)",
           backdropFilter: "blur(4px)",
           WebkitBackdropFilter: "blur(4px)",
-          zIndex: 200,
+          zIndex: 70,
         }}
       />
       <div
@@ -498,7 +498,7 @@ function DailyGrowthModal({ item, t, play, onClose, onComplete }) {
           border: `1px solid ${t.border}`,
           borderRadius: 20,
           padding: "24px 24px 20px",
-          zIndex: 201,
+          zIndex: 71,
           boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
           fontFamily: "Georgia,serif",
           overflowY: "auto",

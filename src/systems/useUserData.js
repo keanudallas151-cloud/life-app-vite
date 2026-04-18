@@ -1,15 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "../supabaseClient";
 
-// Debounce helper — waits ms after last call before firing fn
-function useDebouncedCallback(fn, ms) {
-  const timer = useRef(null);
-  return useCallback((...args) => {
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => fn(...args), ms);
-  }, [fn, ms]);
-}
-
 export function useUserData(userId) {
   const [bookmarks,   setBookmarksState]  = useState([]);
   const [notes,       setNotesState]      = useState({});
@@ -20,6 +11,15 @@ export function useUserData(userId) {
   const [loading,     setLoading]         = useState(false);
 
   const isGuest = !userId || userId === "_";
+  const persistTimerRef = useRef(null);
+  const pendingPatchRef = useRef(null);
+  const persistInFlightRef = useRef(false);
+
+  const clearPersistTimer = useCallback(() => {
+    if (!persistTimerRef.current) return;
+    clearTimeout(persistTimerRef.current);
+    persistTimerRef.current = null;
+  }, []);
 
   const applyFetchedData = useCallback((data = {}) => {
     setBookmarksState(data.bookmarks  ?? []);
@@ -30,7 +30,79 @@ export function useUserData(userId) {
     setMomentumStateRaw(data.momentum_state ?? null);
   }, []);
 
+  const flushPersistQueue = useCallback(async () => {
+    if (isGuest || persistInFlightRef.current || !pendingPatchRef.current) return;
+
+    persistInFlightRef.current = true;
+    clearPersistTimer();
+
+    try {
+      while (pendingPatchRef.current) {
+        const patch = pendingPatchRef.current;
+        pendingPatchRef.current = null;
+
+        const payload = {
+          user_id: userId,
+          ...patch,
+          updated_at: new Date().toISOString(),
+        };
+
+        const { error } = await supabase
+          .from("user_data")
+          .upsert(payload, { onConflict: "user_id" });
+
+        if (!error) continue;
+
+        if (
+          Object.prototype.hasOwnProperty.call(patch, "highlights") &&
+          String(error.message || "").toLowerCase().includes("highlights")
+        ) {
+          const { highlights: _ignoredHighlights, ...fallbackPatch } = patch;
+          if (Object.keys(fallbackPatch).length === 0) continue;
+
+          const { error: fallbackError } = await supabase
+            .from("user_data")
+            .upsert(
+              {
+                user_id: userId,
+                ...fallbackPatch,
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: "user_id" },
+            );
+
+          if (fallbackError) {
+            console.error("useUserData persist fallback:", fallbackError.message);
+          }
+          continue;
+        }
+
+        console.error("useUserData persist:", error.message);
+      }
+    } finally {
+      persistInFlightRef.current = false;
+      if (pendingPatchRef.current) void flushPersistQueue();
+    }
+  }, [clearPersistTimer, isGuest, userId]);
+
+  const schedulePersist = useCallback((patch, delay = 250) => {
+    if (isGuest) return;
+    pendingPatchRef.current = {
+      ...(pendingPatchRef.current || {}),
+      ...patch,
+    };
+    clearPersistTimer();
+    persistTimerRef.current = setTimeout(() => {
+      persistTimerRef.current = null;
+      void flushPersistQueue();
+    }, delay);
+  }, [clearPersistTimer, flushPersistQueue, isGuest]);
+
   useEffect(() => {
+    clearPersistTimer();
+    pendingPatchRef.current = null;
+    persistInFlightRef.current = false;
+
     if (isGuest) {
       setBookmarksState([]);
       setNotesState({});
@@ -40,6 +112,8 @@ export function useUserData(userId) {
       setMomentumStateRaw(null);
       return;
     }
+
+    let cancelled = false;
     setLoading(true);
     supabase
       .from("user_data")
@@ -47,6 +121,7 @@ export function useUserData(userId) {
       .eq("user_id", userId)
       .maybeSingle()
       .then(({ data, error }) => {
+        if (cancelled) return;
         if (!error) {
           if (data) applyFetchedData(data);
           setLoading(false);
@@ -66,6 +141,7 @@ export function useUserData(userId) {
           .eq("user_id", userId)
           .maybeSingle()
           .then(({ data: fallbackData, error: fallbackError }) => {
+            if (cancelled) return;
             if (fallbackError) {
               console.error("useUserData fallback fetch:", fallbackError.message);
               setLoading(false);
@@ -75,61 +151,60 @@ export function useUserData(userId) {
             setLoading(false);
           })
           .catch(() => {
+            if (cancelled) return;
             console.error("useUserData fallback query failed");
             setLoading(false);
           });
       });
-  }, [applyFetchedData, userId, isGuest]);
+    return () => {
+      cancelled = true;
+    };
+  }, [applyFetchedData, clearPersistTimer, userId, isGuest]);
 
-  const persist = useCallback(async (patch) => {
-    if (isGuest) return;
-    const { error } = await supabase
-      .from("user_data")
-      .upsert({ user_id: userId, ...patch, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
-    if (error) {
-      if (
-        Object.prototype.hasOwnProperty.call(patch, "highlights") &&
-        String(error.message || "").toLowerCase().includes("highlights")
-      ) {
-        console.error("useUserData persist: legacy highlights column missing; skipping that field.");
-        return;
-      }
-      console.error("useUserData persist:", error.message);
-    }
-  }, [userId, isGuest]);
-
-  // Debounced persist — notes can change rapidly while typing
-  const debouncedPersist = useDebouncedCallback(persist, 800);
+  useEffect(() => () => clearPersistTimer(), [clearPersistTimer]);
 
   const setBookmarks = useCallback((v) => {
     setBookmarksState(v);
-    persist({ bookmarks: v });
-  }, [persist]);
+    schedulePersist({ bookmarks: v }, 180);
+  }, [schedulePersist]);
 
   const setNotes = useCallback((v) => {
     setNotesState(v);
-    debouncedPersist({ notes: v });
-  }, [debouncedPersist]);
+    schedulePersist({ notes: v }, 700);
+  }, [schedulePersist]);
 
   const setReadKeys = useCallback((v) => {
     setReadKeysState(v);
-    persist({ read_keys: v });
-  }, [persist]);
+    schedulePersist({ read_keys: v }, 180);
+  }, [schedulePersist]);
 
   const setHighlights = useCallback((v) => {
     setHighlightsState(v);
-    persist({ highlights: v });
-  }, [persist]);
+    schedulePersist({ highlights: v }, 220);
+  }, [schedulePersist]);
 
   const setTsdProfile = useCallback((v) => {
     setTsdProfileState(v);
-    persist({ tsd_profile: v });
-  }, [persist]);
+    schedulePersist({ tsd_profile: v }, 220);
+  }, [schedulePersist]);
 
   const setMomentumState = useCallback((v) => {
     setMomentumStateRaw(v);
-    persist({ momentum_state: v });
-  }, [persist]);
+    schedulePersist({ momentum_state: v }, 260);
+  }, [schedulePersist]);
+
+  const replaceAllData = useCallback((next) => {
+    const merged = {
+      bookmarks: next?.bookmarks ?? [],
+      notes: next?.notes ?? {},
+      read_keys: next?.read_keys ?? [],
+      highlights: next?.highlights ?? [],
+      tsd_profile: next?.tsd_profile ?? null,
+      momentum_state: next?.momentum_state ?? null,
+    };
+    applyFetchedData(merged);
+    schedulePersist(merged, 120);
+  }, [applyFetchedData, schedulePersist]);
 
   return {
     bookmarks,  setBookmarks,
@@ -138,6 +213,7 @@ export function useUserData(userId) {
     highlights, setHighlights,
     tsdProfile, setTsdProfile,
     momentumState, setMomentumState,
+    replaceAllData,
     loading,
   };
 }

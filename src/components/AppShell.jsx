@@ -29,6 +29,9 @@ export const TailorResult = lazy(() =>
 export const MomentumHubPage = lazy(() =>
   import("./MomentumHub").then((m) => ({ default: m.MomentumHub })),
 );
+export const IncomeIdeasPage = lazy(() =>
+  import("./IncomeIdeasPage").then((m) => ({ default: m.IncomeIdeasPage })),
+);
 
 export function RouteFallback() {
   return (
