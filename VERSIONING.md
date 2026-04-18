@@ -4,20 +4,20 @@ Life is still in prototype phase. The project uses semantic versioning with a `v
 
 ## Canonical format
 
-- Git tag: `v0.4.6`
-- GitHub release title: `v0.4.6 - Dependency updates`
-- `package.json` version: `0.4.6`
+- Git tag: `v0.6.1`
+- GitHub release title: `v0.6.1 - Bug sweep fixes`
+- `package.json` version: `0.6.1`
 
 ## Prototype bump rules
 
-- Use `v0.4.x` for current prototype snapshots.
+- Use `v0.6.x` for current prototype snapshots.
 - Increment the patch version for each substantial completed release batch.
-- Move from `v0.4.9` to `v0.5.0`.
+- Use the next minor version only for a clearly new release phase.
 - Use `v1.0.0` only for the first real public release.
 
 ## Release naming rules
 
-- Keep tags exact: `v0.4.1`
+- Keep tags exact: `v0.6.1`
 - Keep release titles short and readable.
 - Keep `package.json` aligned with the same numeric version, without the `v`
 - Avoid tiny release commits; prefer one commit per meaningful completed project batch.
@@ -32,9 +32,12 @@ Life is still in prototype phase. The project uses semantic versioning with a `v
 
 ## Prototype sequence
 
-- `v0.4.0`: prototype baseline before the current release rules
+- `v0.4.0`: early prototype baseline before the current release rules
 - `v0.4.1`: Next.js, Supabase, GitHub workflow, and planning-doc cleanup release
+- `v0.5.8`: Big Updates release before the UI overhaul sequence
+- `v0.6.0`: Complete UI overhaul release
+- `v0.6.1`: Bug sweep fixes
 
 ## Current target
 
-The current `main` branch should be treated as the `v0.4.1` prototype baseline, with `main_backup` kept aligned as a backup branch.
+The current `main` branch should be treated as the `v0.6.1` prototype baseline, with `main_backup` kept aligned as the backup branch.

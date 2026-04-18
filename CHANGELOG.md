@@ -2,6 +2,21 @@
 
 All notable prototype milestones for Life are tracked here.
 
+## v0.6.1 — Bug sweep fixes
+
+- added page titles for `discord_networking` and `account_customize`
+- corrected the main networking page title to `Investors & Inventors`
+- added `.life-page-dots` WebKit scrollbar hiding for page indicators
+- completed a bug sweep confirming balanced fragments, wired routes, keyed new UI, and safe-area coverage
+
+## v0.6.0 — Complete UI overhaul
+
+- removed green glow styling from key auth and dashboard CTAs in favor of neutral glass and outline treatments
+- split the Discord networking page from the Investors & Inventors surface and added the account customize page
+- converted settings categories into collapsible sections with toggle animation
+- added horizontal page indicators, a cleaner reading mode, refreshed reader paper styling, and fixed true/false quiz logic
+- upgraded tailor screens, cleaned console form-label issues, and introduced the shared `.life-text-btn` style
+
 ## v0.5.8 — Big Updates
 
 - added interactive landing-page overview overlays for Networking, Secret Knowledge, Tailored Growth, and Structured Path

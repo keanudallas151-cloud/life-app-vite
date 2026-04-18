@@ -701,6 +701,7 @@ export function EbookReader({
   profile,
   /* savedReaderPage – unused; always start on title page */
   onReaderPageSave,
+  onReadingModeChange,
   t: theme,
 }) {
   const t = theme || C;
@@ -723,6 +724,16 @@ export function EbookReader({
     setPageNum(0);
     setAnim(null);
   }, [selKey]);
+
+  useEffect(() => {
+    onReadingModeChange?.(readingMode);
+  }, [onReadingModeChange, readingMode]);
+
+  useEffect(() => {
+    return () => {
+      onReadingModeChange?.(false);
+    };
+  }, [onReadingModeChange]);
 
   const commitPage = (n) => {
     const clamped = Math.max(0, Math.min(n, totalPages - 1));

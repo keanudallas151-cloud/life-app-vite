@@ -22,7 +22,7 @@ export function SecretSiennaPage() {
           margin: 0,
         }}
       >
-        I Will Forever Love You CC - KC
+        I Will Forever Love You CC - K.C
       </p>
     </div>
   );

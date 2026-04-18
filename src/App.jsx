@@ -16,25 +16,24 @@ import {
   MAP,
 } from "./data/content";
 import { Ic } from "./icons/Ic";
-import { getReadingStreak, recordReadingDay } from "./systems/readingStreak";
-import { setResumeTopic } from "./systems/resumeReading";
-import { LS } from "./systems/storage";
-import { C, S, THEME_MODES, useTheme } from "./systems/theme";
-import { useMomentum } from "./systems/useMomentum";
-import { useQuizStats } from "./systems/useQuizStats";
-import { useSound } from "./systems/useSound";
-import { MomentumCard } from "./components/MomentumCard";
 import {
   getAuthRedirectUrl,
   isSupabaseConfigured,
   supabase,
 } from "./supabaseClient";
+import { getReadingStreak, recordReadingDay } from "./systems/readingStreak";
+import { setResumeTopic } from "./systems/resumeReading";
+import { LS } from "./systems/storage";
+import { C, S, useTheme } from "./systems/theme";
+import { useMomentum } from "./systems/useMomentum";
+import { useQuizStats } from "./systems/useQuizStats";
+import { useSound } from "./systems/useSound";
 import { useUserData } from "./systems/useUserData";
 
 import {
   EbookReader,
-  MomentumHubPage,
   IncomeIdeasPage,
+  MomentumHubPage,
   PostItFeed,
   QuizPage,
   RouteFallback,
@@ -44,29 +43,29 @@ import {
   TailorQuestions,
   TailorResult,
 } from "./components/AppShell";
-import { HomePage } from "./components/HomePage";
-import { SidebarSectionPage } from "./components/SidebarSectionPage";
-import { ConnectPage } from "./components/ConnectPage";
-import ProfilePage from "./components/ProfilePage";
-import SettingsPage from "./components/SettingsPage";
-import { WhereToStartPage } from "./components/WhereToStartPage";
-import { HelpPage } from "./components/HelpPage";
-import { ThemePickerPage } from "./components/ThemePickerPage";
+import { BottomNav } from "./components/BottomNav";
+import { CategoriesPage } from "./components/CategoriesPage";
 import { CategoryHubPage } from "./components/CategoryHubPage";
-import { CategoriesPage, CATEGORIES } from "./components/CategoriesPage";
-import { ProgressDashboardPage } from "./components/ProgressDashboardPage";
-import { LeaderboardPage } from "./components/LeaderboardPage";
+import { ConnectPage } from "./components/ConnectPage";
 import { DailyGrowthPage } from "./components/DailyGrowthPage";
 import { GoalSettingPage } from "./components/GoalSettingPage";
+import { HelpPage } from "./components/HelpPage";
+import { HomePage } from "./components/HomePage";
+import { LandingPage } from "./components/LandingPage";
+import { LeaderboardPage } from "./components/LeaderboardPage";
 import { MentorshipPage } from "./components/MentorshipPage";
 import { PremiumPage } from "./components/PremiumPage";
-import { LandingPage } from "./components/LandingPage";
-import { VerifyEmailPage } from "./components/VerifyEmailPage";
-import { ResetPasswordPage } from "./components/ResetPasswordPage";
-import { BottomNav } from "./components/BottomNav";
-import { SignInPage } from "./components/SignInPage";
+import ProfilePage from "./components/ProfilePage";
+import { ProgressDashboardPage } from "./components/ProgressDashboardPage";
 import { RegisterPage } from "./components/RegisterPage";
+import { ResetPasswordPage } from "./components/ResetPasswordPage";
 import { SecretSiennaPage } from "./components/SecretSiennaPage";
+import SettingsPage from "./components/SettingsPage";
+import { SidebarSectionPage } from "./components/SidebarSectionPage";
+import { SignInPage } from "./components/SignInPage";
+import { ThemePickerPage } from "./components/ThemePickerPage";
+import { VerifyEmailPage } from "./components/VerifyEmailPage";
+import { WhereToStartPage } from "./components/WhereToStartPage";
 
 
 const PREF_DEFAULTS = {
@@ -86,6 +85,7 @@ const PREF_DEFAULTS = {
 
 // Swipe left beyond 72px to delete; direction-locked to avoid vertical-scroll conflicts.
 const SWIPE_HORIZONTAL_BIAS = 1.5;
+const SECRET_SIENNA_SEARCH_CODE = "160705kc";
 
 // Maps notification type/activity to an emoji icon
 function notifIcon(n) {
@@ -766,6 +766,8 @@ export default function LifeApp() {
   const [noteSaved, setNoteSaved] = useState(false);
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [readerModeActive, setReaderModeActive] = useState(false);
+  const [secretSiennaUnlocked, setSecretSiennaUnlocked] = useState(false);
   const [isNarrowViewport, setIsNarrowViewport] = useState(false);
   const [sidebarQuery, setSidebarQuery] = useState("");
 
@@ -1009,6 +1011,15 @@ export default function LifeApp() {
   const searchInputRef = useRef(null);
   const mainScrollRef = useRef(null);
 
+  const openSecretSienna = useCallback(() => {
+    setSecretSiennaUnlocked(true);
+    setPage("secret_sienna");
+    setSearch("");
+    setShowSearch(false);
+    setSidebarOpen(false);
+    searchInputRef.current?.blur();
+  }, [setPage]);
+
   useEffect(() => {
     setShowSearch(false);
     setShowNotif(false);
@@ -1021,6 +1032,16 @@ export default function LifeApp() {
 
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [page, screen]);
+
+  useEffect(() => {
+    if (page === "secret_sienna" || !secretSiennaUnlocked) return;
+    setSecretSiennaUnlocked(false);
+  }, [page, secretSiennaUnlocked]);
+
+  useEffect(() => {
+    if (page === "reading" || !readerModeActive) return;
+    setReaderModeActive(false);
+  }, [page, readerModeActive]);
 
   const updateUiPrefs = useCallback((patch) => {
     setUiPrefs((prev) => ({ ...prev, ...patch }));
@@ -2508,10 +2529,8 @@ export default function LifeApp() {
             value={search}
             onChange={(e) => {
               const v = e.target.value;
-              if (v === "/#/#/sienna_nelson") {
-                setPage("secret_sienna");
-                setSearch("");
-                setShowSearch(false);
+              if (v === SECRET_SIENNA_SEARCH_CODE) {
+                openSecretSienna();
                 return;
               }
               setSearch(v);
@@ -3621,7 +3640,9 @@ export default function LifeApp() {
 
             {page === "help" && <HelpPage t={t} />}
 
-            {page === "secret_sienna" && <SecretSiennaPage />}
+            {page === "secret_sienna" && secretSiennaUnlocked && (
+              <SecretSiennaPage />
+            )}
 
             {page === "postit" && (
               <div data-page-tag="#post_it">
@@ -3829,6 +3850,7 @@ export default function LifeApp() {
                   profile={profile}
                   savedReaderPage={readerPages[selKey] ?? 0}
                   onReaderPageSave={saveReaderPage}
+                  onReadingModeChange={setReaderModeActive}
                 />
               </Suspense>
             )}
@@ -3863,19 +3885,21 @@ export default function LifeApp() {
         </svg>
       </button>
 
-      <BottomNav
-        t={t}
-        dark={dark}
-        page={page}
-        play={play}
-        setPage={setPage}
-        onOpenQuiz={openQuizHome}
-        setSidebarOpen={setSidebarOpen}
-        showNotif={showNotif}
-        setShowNotif={setShowNotif}
-        unreadCount={unreadCount}
-        initials={initials}
-      />
+      {!(page === "reading" && readerModeActive) && (
+        <BottomNav
+          t={t}
+          dark={dark}
+          page={page}
+          play={play}
+          setPage={setPage}
+          onOpenQuiz={openQuizHome}
+          setSidebarOpen={setSidebarOpen}
+          showNotif={showNotif}
+          setShowNotif={setShowNotif}
+          unreadCount={unreadCount}
+          initials={initials}
+        />
+      )}
 
       {showA2hs && !isStandalone && (
         <div
