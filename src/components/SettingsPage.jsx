@@ -302,7 +302,7 @@ export default function SettingsPage({
           ))}
           {section.actions && (
             <div className="life-settings-action-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-              {section.actions.map((action) => (
+              {section.actions.filter(Boolean).map((action) => (
                 <button
                   key={action.label}
                   onClick={action.onClick}
