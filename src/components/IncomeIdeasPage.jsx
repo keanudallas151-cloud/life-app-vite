@@ -182,18 +182,6 @@ export function IncomeIdeasPage({ t }) {
           boxShadow: "0 18px 40px rgba(61,90,76,0.08)",
         }}
       >
-        <p
-          style={{
-            margin: "0 0 10px",
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: "0.22em",
-            textTransform: "uppercase",
-            color: t.green,
-          }}
-        >
-          #dashboard_income_ideas
-        </p>
         <h2
           style={{
             margin: "0 0 12px",

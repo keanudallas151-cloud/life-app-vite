@@ -299,6 +299,7 @@ export function SignInPage({
           {/* P9a: Forgot Password */}
           <button
             type="button"
+            className="life-text-btn"
             onClick={() => {
               play("tap");
               setForgotMode(true);
@@ -309,6 +310,7 @@ export function SignInPage({
             style={{
               background: "none",
               border: "none",
+              outline: "none",
               color: C.gold,
               fontSize: 12,
               cursor: "pointer",
@@ -419,6 +421,7 @@ export function SignInPage({
 
           <button
             type="button"
+            className="life-text-btn"
             onClick={() => {
               play("tap");
               setScreen("landing");
@@ -430,6 +433,7 @@ export function SignInPage({
             style={{
               background: "none",
               border: "none",
+              outline: "none",
               color: C.muted,
               fontSize: 13,
               cursor: "pointer",
@@ -475,6 +479,7 @@ export function SignInPage({
             No account?{" "}
             <button
               type="button"
+              className="life-text-btn"
               onClick={() => {
                 play("tap");
                 setScreen("register");
@@ -484,6 +489,7 @@ export function SignInPage({
               style={{
                 background: "none",
                 border: "none",
+                outline: "none",
                 color: C.green,
                 fontSize: 13,
                 cursor: "pointer",

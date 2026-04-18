@@ -96,7 +96,7 @@ export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSig
         alignItems: "center",
         justifyContent: "center",
         fontFamily: "Georgia,serif",
-        padding: "40px 24px calc(44px + env(safe-area-inset-bottom))",
+        padding: "40px 24px calc(72px + env(safe-area-inset-bottom))",
         position: "relative",
       }}
     >
@@ -345,18 +345,6 @@ export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSig
               }}
             >
               <div>
-                <p
-                  style={{
-                    margin: "0 0 10px",
-                    color: "rgba(255,255,255,0.42)",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: "0.24em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  #landing_homepage
-                </p>
                 <h2
                   id="landing-value-prop-title"
                   style={{
@@ -526,8 +514,8 @@ export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSig
             setScreen("register");
           }}
           style={{
-            background: "linear-gradient(135deg, #3d5a4c 0%, #5a7d6a 100%)",
-            border: "1px solid rgba(255,255,255,0.15)",
+            background: "rgba(255,255,255,0.06)",
+            border: "1.5px solid rgba(255,255,255,0.28)",
             borderRadius: 14,
             padding: "18px 20px",
             color: "#fff",
@@ -535,7 +523,7 @@ export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSig
             fontWeight: 700,
             cursor: "pointer",
             fontFamily: "Georgia,serif",
-            boxShadow: "0 8px 24px rgba(61,90,76,0.4), 0 2px 8px rgba(61,90,76,0.25), inset 0 1px 0 rgba(255,255,255,0.15)",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.12)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

@@ -217,17 +217,16 @@ export function HomePage({
                 gap: 10,
                 width: "100%",
                 padding: "16px 32px",
-                background: `linear-gradient(135deg, ${t.green}, ${t.greenAlt})`,
-                color: t.white,
-                border: "none",
+                background: "transparent",
+                color: t.ink,
+                border: `1.5px solid ${t.green}`,
                 borderRadius: 999,
                 fontSize: 16,
                 fontWeight: 700,
                 letterSpacing: 0.3,
                 fontFamily: "Georgia,serif",
                 cursor: "pointer",
-                boxShadow:
-                  "0 10px 28px rgba(61,90,76,0.35), 0 2px 6px rgba(61,90,76,0.2)",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
                 minHeight: 52,
                 minWidth: 220,
               }}
@@ -238,7 +237,7 @@ export function HomePage({
                 height="18"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke={t.white}
+                stroke={t.ink}
                 strokeWidth="2.4"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -259,17 +258,16 @@ export function HomePage({
                 gap: 10,
                 width: "100%",
                 padding: "16px 32px",
-                background: `linear-gradient(135deg, ${t.green}, ${t.greenAlt})`,
-                color: t.white,
-                border: "none",
+                background: "transparent",
+                color: t.ink,
+                border: `1.5px solid ${t.green}`,
                 borderRadius: 999,
                 fontSize: 16,
                 fontWeight: 700,
                 letterSpacing: 0.3,
                 fontFamily: "Georgia,serif",
                 cursor: "pointer",
-                boxShadow:
-                  "0 10px 28px rgba(61,90,76,0.35), 0 2px 6px rgba(61,90,76,0.2)",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
                 minHeight: 52,
                 minWidth: 220,
               }}
@@ -280,7 +278,7 @@ export function HomePage({
                 height="18"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke={t.white}
+                stroke={t.ink}
                 strokeWidth="2.4"
                 strokeLinecap="round"
                 strokeLinejoin="round"

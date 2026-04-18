@@ -3695,3 +3695,15 @@ button:active .life-card-inner,
 .life-cert-badge {
   box-shadow: 0 0 0 3px rgba(208,174,108,0.2), 0 4px 16px rgba(208,174,108,0.25);
 }
+
+
+/* ─── Text-link buttons: no border, no outline ring ─────────────────── */
+.life-text-btn {
+  background: none !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+.life-text-btn:focus-visible {
+  outline: none !important;
+}

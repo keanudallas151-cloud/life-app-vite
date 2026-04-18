@@ -2383,7 +2383,7 @@ export default function LifeApp() {
           style={{
             display: "flex",
             alignItems: "center",  /* vertically centers hamburger with logo + search */
-            gap: 10,
+            gap: 14,
             flexShrink: 0,
             height: "100%",
           }}
@@ -2435,19 +2435,24 @@ export default function LifeApp() {
               border: "none",
               cursor: "pointer",
               padding: 0,
+              marginLeft: 6,
             }}
           >
             <div
               style={{
-                width: 34,
-                height: 34,
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: "linear-gradient(145deg, #2d2d2d, #404040)",
+                border: "1px solid rgba(255,255,255,0.12)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
                 transition: "transform 0.2s ease",
               }}
               onMouseEnter={(e) =>
-                (e.currentTarget.style.transform = "scale(1.05)")
+                (e.currentTarget.style.transform = "scale(1.08)")
               }
               onMouseLeave={(e) =>
                 (e.currentTarget.style.transform = "scale(1)")
@@ -2456,10 +2461,11 @@ export default function LifeApp() {
               <span
                 style={{
                   color: "#fff",
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: 800,
                   fontFamily: "Georgia,serif",
                   letterSpacing: "-0.5px",
+                  lineHeight: 1,
                 }}
               >
                 l.
