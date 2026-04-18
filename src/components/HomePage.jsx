@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { S } from "../systems/theme";
-import { getResumeTopic, clearResumeTopic } from "../systems/resumeReading";
 import { MAP } from "../data/content";
+import { clearResumeTopic, getResumeTopic } from "../systems/resumeReading";
+import { S } from "../systems/theme";
 
 export function HomePage({
   t,
@@ -91,10 +91,21 @@ export function HomePage({
               fontFamily: "Nunito, sans-serif",
               letterSpacing: "-0.04em",
               lineHeight: 0.92,
-              WebkitTextSizeAdjust: "100%",
+              WebkitTextSizeAdjust: "250%",
             }}
           >
-            Life.
+            Life
+            <span
+              style={{
+                display: "inline-block",
+                width: "0.5em",
+                height: "0.5em",
+                background: t.ink,
+                borderRadius: "50%",
+                marginLeft: "0.02em",
+                verticalAlign: "0.08em",
+              }}
+            />
           </h1>
           <p
             style={{
