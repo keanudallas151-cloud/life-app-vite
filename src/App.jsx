@@ -65,6 +65,7 @@ import { ResetPasswordPage } from "./components/ResetPasswordPage";
 import { BottomNav } from "./components/BottomNav";
 import { SignInPage } from "./components/SignInPage";
 import { RegisterPage } from "./components/RegisterPage";
+import { SecretSiennaPage } from "./components/SecretSiennaPage";
 
 
 const PREF_DEFAULTS = {
@@ -678,27 +679,23 @@ export default function LifeApp() {
     (activity = "quiz") => {
       setQuizContext({ topic: "communication", activity });
       setPage("quiz");
-      setSidebarOpen(false);
     },
     [setPage, setQuizContext],
   );
   const openQuizHome = useCallback(() => {
     setQuizContext({ topic: "finance", activity: "quiz" });
     setPage("quiz");
-    setSidebarOpen(false);
   }, [setPage, setQuizContext]);
 
   const openMomentumHub = useCallback(() => {
     play("tap");
     setPage("momentum_hub");
-    setSidebarOpen(false);
   }, [play, setPage]);
 
   const openSidebarSectionPage = useCallback(
     (sectionPage, setSectionOpen) => {
       play("tap");
       setPage(sectionPage);
-      setSidebarOpen(false);
       if (typeof setSectionOpen === "function") setSectionOpen(true);
     },
     [play, setPage],
@@ -2442,12 +2439,9 @@ export default function LifeApp() {
               style={{
                 width: 34,
                 height: 34,
-                borderRadius: "22%",
-                background: "linear-gradient(145deg, #2d2d2d, #3a3a3a)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.06)",
                 transition: "transform 0.2s ease",
               }}
               onMouseEnter={(e) =>
@@ -2460,9 +2454,10 @@ export default function LifeApp() {
               <span
                 style={{
                   color: "#fff",
-                  fontSize: 14,
+                  fontSize: 18,
                   fontWeight: 800,
                   fontFamily: "Georgia,serif",
+                  letterSpacing: "-0.5px",
                 }}
               >
                 l.
@@ -2502,7 +2497,14 @@ export default function LifeApp() {
             type="text"
             value={search}
             onChange={(e) => {
-              setSearch(e.target.value);
+              const v = e.target.value;
+              if (v === "/#/#/sienna_nelson") {
+                setPage("secret_sienna");
+                setSearch("");
+                setShowSearch(false);
+                return;
+              }
+              setSearch(v);
               setShowSearch(true);
             }}
             onFocus={() => setShowSearch(true)}
@@ -2655,7 +2657,6 @@ export default function LifeApp() {
           onClick={() => {
             play("tap");
             setPage("profile");
-            setSidebarOpen(false);
           }}
           style={{
             width: 36,
@@ -2889,7 +2890,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("progress_dashboard");
-                setSidebarOpen(false);
               }}
             >
               <div
@@ -2978,7 +2978,6 @@ export default function LifeApp() {
                     onClick={() => {
                       play("tap");
                       setPage(target);
-                      setSidebarOpen(false);
                     }}
                     style={{
                       minHeight: 32,
@@ -3044,7 +3043,6 @@ export default function LifeApp() {
                       onClick={() => {
                         play("open");
                         handleSelect(item.key, item.node);
-                        setSidebarOpen(false);
                       }}
                       style={{
                         width: "100%",
@@ -3084,7 +3082,6 @@ export default function LifeApp() {
             onClick={() => {
               play("tap");
               setPage("home");
-              setSidebarOpen(false);
             }}
             active={page === "home"}
           />
@@ -3105,7 +3102,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("where_to_start");
-                setSidebarOpen(false);
               }}
               active={page === "where_to_start"}
             />
@@ -3123,7 +3119,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("daily_growth");
-                setSidebarOpen(false);
               }}
               active={page === "daily_growth"}
             />
@@ -3143,7 +3138,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("goal_setting");
-                setSidebarOpen(false);
               }}
               active={page === "goal_setting"}
             />
@@ -3154,7 +3148,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("help");
-                setSidebarOpen(false);
               }}
               active={page === "help"}
             />
@@ -3268,7 +3261,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("postit");
-                setSidebarOpen(false);
               }}
               active={page === "postit"}
             />
@@ -3279,7 +3271,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("networking");
-                setSidebarOpen(false);
               }}
               active={page === "networking"}
             />
@@ -3290,7 +3281,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("leaderboard");
-                setSidebarOpen(false);
               }}
               active={page === "leaderboard"}
             />
@@ -3356,7 +3346,6 @@ export default function LifeApp() {
                     icon={item.node.icon}
                     onClick={() => {
                       handleSelect(item.key, item.node);
-                      setSidebarOpen(false);
                     }}
                     active={false}
                   />
@@ -3383,7 +3372,6 @@ export default function LifeApp() {
                 play("tap");
                 setExperienceTopic("visualization");
                 setPage("daily_growth");
-                setSidebarOpen(false);
               }}
               active={page === "daily_growth" && experienceTopic === "visualization"}
             />
@@ -3395,7 +3383,6 @@ export default function LifeApp() {
                 play("tap");
                 setExperienceTopic("mobile_integration");
                 setPage("help");
-                setSidebarOpen(false);
               }}
               active={page === "help" && experienceTopic === "mobile_integration"}
             />
@@ -3566,7 +3553,6 @@ export default function LifeApp() {
                     } else {
                       setPage(target);
                     }
-                    setSidebarOpen(false);
                   }}
                   onQuickEvent={(event) => {
                     if (!event?.type) return;
@@ -3577,6 +3563,8 @@ export default function LifeApp() {
             )}
 
             {page === "help" && <HelpPage t={t} />}
+
+            {page === "secret_sienna" && <SecretSiennaPage />}
 
             {page === "postit" && (
               <div data-page-tag="#post_it">

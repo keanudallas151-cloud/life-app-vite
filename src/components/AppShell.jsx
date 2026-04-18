@@ -27,7 +27,7 @@ export const TailorResult = lazy(() =>
   import("./Tailor").then((m) => ({ default: m.TailorResult })),
 );
 export const MomentumHubPage = lazy(() =>
-  import("./MomentumHub").then((m) => ({ default: m.MomentumHubPage })),
+  import("./MomentumHub").then((m) => ({ default: m.MomentumHub })),
 );
 
 export function RouteFallback() {
