@@ -247,7 +247,7 @@ export function NotesTab({
           <button
             onClick={saveNote}
             style={{
-              background: "#6FBE77",
+              background: t.green,
               border: "none",
               borderRadius: 10,
               padding: "12px 26px",
@@ -363,7 +363,7 @@ export function NotesTab({
                       <line x1="12" y1="2" x2="12" y2="15" />
                     </svg>
                   ),
-                  bg: "#eaf3ec",
+                  bg: t.greenLt,
                 },
                 {
                   id: "postit",
@@ -374,7 +374,7 @@ export function NotesTab({
                       height="26"
                       viewBox="0 0 24 24"
                       fill="none"
-                      stroke="#4a8c5c"
+                      stroke={t.green}
                       strokeWidth="1.8"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -383,7 +383,7 @@ export function NotesTab({
                       <circle cx="12" cy="10" r="3" />
                     </svg>
                   ),
-                  bg: "#eaf3ec",
+                  bg: t.greenLt,
                 },
                 {
                   id: "whatsapp",
@@ -695,7 +695,7 @@ export function EbookReader({
   bookmarks,
   allContent,
   profile,
-  savedReaderPage = 0,
+  /* savedReaderPage – unused; always start on title page */
   onReaderPageSave,
   t: theme,
 }) {
@@ -714,10 +714,10 @@ export function EbookReader({
   const sx = useRef(null);
 
   useEffect(() => {
-    const contentPage = Math.max(0, Math.min(savedReaderPage ?? 0, contentPages - 1));
-    setPageNum(showTitlePage ? contentPage + 1 : contentPage);
+    // Always open on the title page (page 0) when a topic is selected
+    setPageNum(0);
     setAnim(null);
-  }, [contentPages, savedReaderPage, selKey, showTitlePage]);
+  }, [selKey]);
 
   const commitPage = (n) => {
     const clamped = Math.max(0, Math.min(n, totalPages - 1));
@@ -910,10 +910,10 @@ export function EbookReader({
                 style={{
                   height: "100%",
                   width: `${((pageNum + 1) / totalPages) * 100}%`,
-                  background: `linear-gradient(90deg,${t.green},#6FBE77)`,
+                  background: `linear-gradient(90deg,${t.green},${t.greenAlt})`,
                   borderRadius: 99,
                   transition: "width 0.45s cubic-bezier(0.22,1,0.36,1)",
-                  boxShadow: "0 0 12px rgba(74,140,92,0.35)",
+                  boxShadow: `0 0 12px ${t.green}44`,
                 }}
               />
             </div>
@@ -1044,7 +1044,7 @@ export function EbookReader({
                               background: t.greenLt,
                               padding: "5px 10px",
                               borderRadius: 20,
-                              border: `1px solid rgba(74,140,92,0.35)`,
+                              border: `1px solid rgba(61,90,76,0.35)`,
                             }}
                           >
                             {selContent.level}
@@ -1056,7 +1056,7 @@ export function EbookReader({
                           const score = computeEssentialScore(selKey, profile);
                           if (score === null) return null;
                           const pct = Math.round(score * 100);
-                          const col = pct >= 70 ? "#6FBE77" : pct >= 40 ? t.gold : t.muted;
+                          const col = pct >= 70 ? t.greenAlt : pct >= 40 ? t.gold : t.muted;
                           return (
                             <div
                               style={{
@@ -1188,7 +1188,7 @@ export function EbookReader({
 
                     {isLast && (
                       <>
-                        <AudioPlayer title={selContent.title} playSound={play} />
+                        <AudioPlayer title={selContent.title} playSound={play} t={t} />
                         {FINANCE_KEYS.includes(selKey) && <FinanceDisclaimer t={t} />}
                       </>
                     )}
@@ -1214,11 +1214,11 @@ export function EbookReader({
                     alignItems: "center",
                     gap: 8,
                     background: "none",
-                    border: `1px solid ${pageNum === 0 ? t.light : "#6FBE77"}`,
+                    border: `1px solid ${pageNum === 0 ? t.light : t.greenAlt}`,
                     borderRadius: 10,
                     padding: "12px 20px",
                     cursor: pageNum === 0 ? "default" : "pointer",
-                    color: pageNum === 0 ? t.light : "#4a8c5c",
+                    color: pageNum === 0 ? t.light : t.green,
                     fontSize: 13,
                     fontFamily: "Georgia,serif",
                   }}
@@ -1266,8 +1266,8 @@ export function EbookReader({
                     display: "flex",
                     alignItems: "center",
                     gap: 8,
-                    background: isLast ? "none" : "#6FBE77",
-                    border: `1px solid ${isLast ? t.light : "#6FBE77"}`,
+                    background: isLast ? "none" : t.greenAlt,
+                    border: `1px solid ${isLast ? t.light : t.greenAlt}`,
                     borderRadius: 10,
                     padding: "12px 20px",
                     cursor: isLast ? "default" : "pointer",
@@ -1374,8 +1374,8 @@ export function EbookReader({
                   }}
                 >
                   {Ic[item.node.icon]
-                    ? Ic[item.node.icon]("none", "#4a8c5c", 20)
-                    : Ic.book("none", "#4a8c5c", 20)}
+                    ? Ic[item.node.icon]("none", t.green, 20)
+                    : Ic.book("none", t.green, 20)}
                 </div>
                 <div style={{ flex: 1, fontSize: 15, fontWeight: 600, color: t.ink }}>
                   {item.node.label}
@@ -1455,8 +1455,8 @@ export function EbookReader({
                         }}
                       >
                         {Ic[item.node.icon]
-                          ? Ic[item.node.icon]("none", "#4a8c5c", 20)
-                          : Ic.book("none", "#4a8c5c", 20)}
+                          ? Ic[item.node.icon]("none", t.green, 20)
+                          : Ic.book("none", t.green, 20)}
                       </div>
                       <div style={{ flex: 1, fontSize: 15, fontWeight: 600, color: t.ink }}>
                         {item.node.label}

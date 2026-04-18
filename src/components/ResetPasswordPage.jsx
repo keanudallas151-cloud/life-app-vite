@@ -25,7 +25,7 @@ export function ResetPasswordPage({
     "Strong",
     "Very strong",
   ];
-  const passwordStrengthColors = [C.red, C.red, "#e6a23c", C.gold, C.green];
+  const passwordStrengthColors = [C.red, C.red, C.orange, C.gold, C.green];
 
   const resetPasswordHasMinLength = rpPass.length >= 8;
   const resetPasswordHasUpper = /[A-Z]/.test(rpPass);
@@ -45,6 +45,8 @@ export function ResetPasswordPage({
       : rpPass.length > 0 && !resetPasswordHasSpecial
         ? "Add a symbol like !@#$ for extra security"
       : "";
+  // Clamp to valid array index (0..4) since strength counts 5 booleans (0..5)
+  const clampedStrength = Math.min(resetPasswordStrength, passwordStrengthLabels.length - 1);
   const resetConfirmMismatch = rpPass2.length > 0 && rpPass !== rpPass2;
 
   return (
@@ -52,8 +54,7 @@ export function ResetPasswordPage({
       data-page-tag="#reset_password_page"
       className="life-grain life-auth-shell"
       style={{
-        minHeight: "100svh",
-        background: `linear-gradient(165deg, ${C.skin} 0%, #ebe4d6 50%, ${C.skin} 100%)`,
+        background: `linear-gradient(165deg, ${C.skin} 0%, #111111 50%, ${C.skin} 100%)`,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -61,7 +62,6 @@ export function ResetPasswordPage({
         fontFamily: "Georgia,serif",
         padding: "40px 24px calc(40px + env(safe-area-inset-bottom))",
         position: "relative",
-        overflowX: "hidden",
       }}
     >
       <div
@@ -202,8 +202,8 @@ export function ResetPasswordPage({
                       height: 3,
                       borderRadius: 2,
                       background:
-                        i < resetPasswordStrength
-                          ? passwordStrengthColors[resetPasswordStrength]
+                        i < clampedStrength
+                          ? passwordStrengthColors[clampedStrength]
                           : C.light,
                       transition: "background 0.2s",
                     }}
@@ -214,11 +214,11 @@ export function ResetPasswordPage({
                 style={{
                   margin: 0,
                   fontSize: 11,
-                  color: passwordStrengthColors[resetPasswordStrength],
+                  color: passwordStrengthColors[clampedStrength],
                   fontStyle: "italic",
                 }}
               >
-                {passwordStrengthLabels[resetPasswordStrength]}
+                {passwordStrengthLabels[clampedStrength]}
               </p>
               {resetPasswordHint && (
                 <p

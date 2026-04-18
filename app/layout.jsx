@@ -1,6 +1,15 @@
 import '../src/index.css'
 
+// Next.js needs an absolute base to resolve social-card image URLs.
+// Prefer the prod URL but fall back to whatever Vercel assigns the build,
+// and finally localhost for dev.
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+  'http://localhost:3000';
+
 export const metadata = {
+  metadataBase: new URL(siteUrl),
   title: 'Life. — Build Wealth. Learn Everything. Connect.',
   description: 'Life. helps you make money, learn anything, and connect with investors and creators. Finance, psychology, philosophy — everything you need to build the life you want.',
   appleWebApp: {
@@ -12,12 +21,14 @@ export const metadata = {
   openGraph: {
     title: 'Life. — Build Wealth. Learn Everything. Connect.',
     description: 'Make money, learn anything, and connect with investors and creators. The first million is the hardest — the second is imminent.',
-    type: 'website'
+    type: 'website',
+    images: [{ url: '/favicon.svg', width: 512, height: 512, alt: 'Life. logo' }],
   },
   twitter: {
     card: 'summary',
     title: 'Life. — Build Wealth. Learn Everything. Connect.',
-    description: 'Make money, learn anything, and connect with investors and creators.'
+    description: 'Make money, learn anything, and connect with investors and creators.',
+    images: ['/favicon.svg'],
   }
 }
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Ic } from "../icons/Ic";
 import { LS } from "../systems/storage";
+import { localDateStr } from "../systems/readingStreak";
 
 const GROWTH_ITEMS = [
   {
@@ -63,14 +64,25 @@ const GROWTH_ITEMS = [
 
 export function DailyGrowthPage({ t, play, setPage, onMomentumEvent }) {
   const [activeItem, setActiveItem] = useState(null);
-  const today = new Date().toISOString().slice(0, 10);
+  // Use local timezone date string to avoid UTC midnight-crossing bug
+  const today = (() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  })();
   const [completed, setCompleted] = useState(() =>
     LS.get(`daily_growth_${today}`, []),
   );
   const weeklyHistory = Array.from({ length: 7 }, (_, index) => {
     const date = new Date();
     date.setDate(date.getDate() - (6 - index));
-    const key = date.toISOString().slice(0, 10);
+    // Use local date to be consistent
+    const ky = date.getFullYear();
+    const km = String(date.getMonth() + 1).padStart(2, "0");
+    const kd = String(date.getDate()).padStart(2, "0");
+    const key = `${ky}-${km}-${kd}`;
     const entries = LS.get(`daily_growth_${key}`, []);
     return {
       key,
@@ -84,7 +96,7 @@ export function DailyGrowthPage({ t, play, setPage, onMomentumEvent }) {
     let streak = 0;
     const cursor = new Date();
     while (true) {
-      const key = cursor.toISOString().slice(0, 10);
+      const key = localDateStr(cursor);
       const entries = LS.get(`daily_growth_${key}`, []);
       if (!entries.length) break;
       streak += 1;
@@ -228,7 +240,7 @@ export function DailyGrowthPage({ t, play, setPage, onMomentumEvent }) {
           marginBottom: 22,
           padding: "10px 14px",
           background: t.greenLt,
-          border: `1px solid rgba(74,140,92,0.3)`,
+          border: `1px solid rgba(61,90,76,0.3)`,
           borderRadius: 12,
         }}
       >
@@ -245,7 +257,7 @@ export function DailyGrowthPage({ t, play, setPage, onMomentumEvent }) {
             style={{
               width: `${(completed.length / GROWTH_ITEMS.length) * 100}%`,
               height: "100%",
-              background: `linear-gradient(90deg, ${t.green}, #6FBE77)`,
+              background: `linear-gradient(90deg, ${t.green}, ${t.greenAlt})`,
               transition: "width 0.4s ease",
             }}
           />
@@ -558,7 +570,7 @@ function DailyGrowthModal({ item, t, play, onClose, onComplete }) {
 }
 
 function JournalTool({ item, t, play, onComplete }) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   const [text, setText] = useState(() =>
     LS.get(`dg_journal_${item.key}_${today}`, ""),
   );
@@ -726,7 +738,7 @@ function TimerTool({ item, t, play, onComplete }) {
 }
 
 function ChecklistTool({ item, t, play, onComplete }) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   const [checked, setChecked] = useState(() =>
     LS.get(`dg_check_${item.key}_${today}`, []),
   );

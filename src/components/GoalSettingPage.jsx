@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { LS } from "../systems/storage";
+import { localDateStr } from "../systems/readingStreak";
 
 const GOAL_KEY = "life_personal_goals";
 
@@ -16,7 +17,7 @@ export function GoalSettingPage({ t, play }) {
   const [target, setTarget] = useState("");
   const [deadline, setDeadline] = useState("");
   const [deadlineError, setDeadlineError] = useState("");
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
 
   useEffect(() => {
     LS.set(GOAL_KEY, goals);

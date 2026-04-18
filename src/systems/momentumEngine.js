@@ -27,7 +27,8 @@ function isMomentumType(value) {
 }
 
 function scoreToLevel(score = 0) {
-  return Math.max(1, Math.floor(Number(score || 0) / 100) + 1);
+  const safe = isNaN(score) ? 0 : Math.max(0, Math.floor(Number(score)));
+  return Math.max(1, Math.floor(safe / 100) + 1);
 }
 
 function coerceProgress(progressCount = 0, targetCount = 1) {
@@ -168,8 +169,15 @@ export function rolloverMomentumState(state, dateKey = getDateKey()) {
   let streakDays = current.streakDays;
   if (current.lastActiveAt) {
     const lastKey = getDateKey(current.lastActiveAt);
-    if (lastKey === previousDateKey(dateKey)) streakDays += 1;
-    else if (lastKey !== dateKey) streakDays = 1;
+    if (lastKey === previousDateKey(dateKey)) {
+      // Active yesterday — increment streak
+      streakDays += 1;
+    } else if (lastKey === dateKey) {
+      // Active today — keep streak unchanged
+    } else {
+      // Gap of 2+ days — reset streak
+      streakDays = 1;
+    }
   }
 
   const next = {

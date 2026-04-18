@@ -5,8 +5,7 @@ export function VerifyEmailPage({ C, play, setScreen, verifyTargetEmail, supabas
       data-page-tag="#verify_email_page"
       className="life-grain life-auth-shell"
       style={{
-        minHeight: "100svh",
-        background: `linear-gradient(165deg, ${C.skin} 0%, #ebe4d6 50%, ${C.skin} 100%)`,
+        background: `linear-gradient(165deg, ${C.skin} 0%, #111111 50%, ${C.skin} 100%)`,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -14,7 +13,6 @@ export function VerifyEmailPage({ C, play, setScreen, verifyTargetEmail, supabas
         fontFamily: "Georgia,serif",
         padding: "40px 24px calc(40px + env(safe-area-inset-bottom))",
         position: "relative",
-        overflowX: "hidden",
       }}
     >
       <div

@@ -133,7 +133,7 @@ export function ProgressDashboardPage({
               width: `${progressPercent}%`,
               height: "100%",
               borderRadius: 10,
-              background: `linear-gradient(90deg, ${t.green}, #6FBE77)`,
+              background: `linear-gradient(90deg, ${t.green}, ${t.greenAlt})`,
               transition: "width 0.6s",
             }}
           />

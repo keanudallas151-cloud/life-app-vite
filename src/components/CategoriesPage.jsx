@@ -189,12 +189,12 @@ export function CategoriesPage({ t, play, catStep, setCatStep, setPage, userName
               width: 90,
               height: 90,
               borderRadius: "50%",
-              background: `linear-gradient(135deg, ${t.green}, #6FBE77)`,
+              background: `linear-gradient(135deg, ${t.green}, ${t.greenAlt})`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               margin: "0 auto 24px",
-              boxShadow: "0 8px 32px rgba(74,140,92,0.35)",
+              boxShadow: "0 8px 32px rgba(61,90,76,0.35)",
             }}
           >
             <span style={{ fontSize: 40 }}>🏆</span>

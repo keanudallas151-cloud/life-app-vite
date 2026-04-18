@@ -65,6 +65,7 @@ import { ResetPasswordPage } from "./components/ResetPasswordPage";
 import { BottomNav } from "./components/BottomNav";
 import { SignInPage } from "./components/SignInPage";
 import { RegisterPage } from "./components/RegisterPage";
+import { SecretSiennaPage } from "./components/SecretSiennaPage";
 
 
 const PREF_DEFAULTS = {
@@ -82,130 +83,186 @@ const PREF_DEFAULTS = {
   sidebarSpeed: 62,
 };
 
-// Swipe left beyond 80px to delete a notification; taps still navigate.
-// Horizontal movement must exceed vertical by this factor to trigger swipe-to-delete
-// (prevents accidental swipes while scrolling the notification list)
+// Swipe left beyond 72px to delete; direction-locked to avoid vertical-scroll conflicts.
 const SWIPE_HORIZONTAL_BIAS = 1.5;
 
-function SwipeableNotification({ n, theme, onTap, onDelete }) {
+// Maps notification type/activity to an emoji icon
+function notifIcon(n) {
+  if (n.activity === "audio") return "🎙️";
+  if (n.targetPage === "home") return "👋";
+  if (n.targetPage === "where_to_start") return "📚";
+  if (n.targetPage === "daily_growth") return "🌱";
+  if (n.targetPage === "quiz") return "🧠";
+  if (n.targetPage === "leaderboard") return "🏆";
+  if (n.targetPage === "profile") return "👤";
+  return "✨";
+}
+
+function SwipeableNotification({ n, theme, dark, onTap, onDelete }) {
   const [offset, setOffset] = useState(0);
-  const [dragging, setDragging] = useState(false);
+  const [exiting, setExiting] = useState(false);
+  const dragging = useRef(false);
   const startX = useRef(0);
   const startY = useRef(0);
   const currentX = useRef(0);
   const didDrag = useRef(false);
-  const directionLocked = useRef(null); // "horizontal" | "vertical" | null
+  const directionLocked = useRef(null);
+
+  const revealRatio = Math.min(1, Math.abs(offset) / 72);
 
   const onStart = (clientX, clientY) => {
+    if (exiting) return;
     startX.current = clientX;
     startY.current = clientY;
     currentX.current = clientX;
     didDrag.current = false;
     directionLocked.current = null;
-    setDragging(true);
+    dragging.current = true;
   };
+
   const onMove = (clientX, clientY) => {
-    if (!dragging) return;
+    if (!dragging.current || exiting) return;
     const dx = clientX - startX.current;
     const dy = clientY - startY.current;
-
-    // Lock direction on first significant movement
-    if (directionLocked.current === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
-      directionLocked.current = Math.abs(dx) > Math.abs(dy) * SWIPE_HORIZONTAL_BIAS ? "horizontal" : "vertical";
+    if (directionLocked.current === null && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+      directionLocked.current =
+        Math.abs(dx) > Math.abs(dy) * SWIPE_HORIZONTAL_BIAS ? "horizontal" : "vertical";
     }
-
-    // If vertical scroll wins, ignore horizontal swipe
     if (directionLocked.current === "vertical") return;
-
     currentX.current = clientX;
-    if (Math.abs(dx) > 6) didDrag.current = true;
-    // Only allow swipe LEFT
+    if (Math.abs(dx) > 5) didDrag.current = true;
     setOffset(Math.min(0, dx));
   };
+
   const onEnd = () => {
-    if (!dragging) return;
-    setDragging(false);
+    if (!dragging.current) return;
+    dragging.current = false; // release drag lock FIRST so transition is active
     const delta = currentX.current - startX.current;
-    if (delta < -80) {
-      // Animate out fully then delete
-      setOffset(-400);
-      setTimeout(() => onDelete?.(), 180);
+    if (delta < -72) {
+      // Transition is now active (dragging.current = false) — fly card out smoothly
+      setExiting(true);
+      setOffset(-440);
+      setTimeout(() => onDelete?.(), 320);
     } else {
+      // Spring snap back
       setOffset(0);
     }
   };
 
   return (
-    <div style={{ position: "relative", overflow: "hidden", borderBottom: `1px solid ${theme.light}` }}>
-      {/* Delete backdrop — shows through as user swipes */}
+    <div
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"}`,
+        maxHeight: exiting ? 0 : 120,
+        opacity: exiting ? 0 : 1,
+        transition: exiting
+          ? "max-height 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.22s ease"
+          : "none",
+      }}
+    >
+      {/* Red delete reveal layer */}
       <div
+        aria-hidden
         style={{
           position: "absolute",
           inset: 0,
-          background: theme.red || "#d25545",
+          background: "linear-gradient(90deg, #e85555 0%, #c0392b 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-end",
           paddingRight: 20,
-          color: "#fff",
-          fontSize: 12,
-          fontWeight: 700,
-          letterSpacing: 1,
-          textTransform: "uppercase",
+          gap: 6,
+          opacity: revealRatio,
+          transition: dragging.current ? "none" : "opacity 0.2s ease",
         }}
       >
-        Delete
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+        <span style={{ color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: 0.5 }}>Delete</span>
       </div>
-      {/* Foreground tappable content — slides with swipe */}
+
+      {/* Foreground card */}
       <div
         role="button"
         tabIndex={0}
-        onClick={() => {
-          if (!didDrag.current) onTap?.();
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") onTap?.();
-        }}
+        onClick={() => { if (!didDrag.current) onTap?.(); }}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onTap?.(); }}
         onTouchStart={(e) => onStart(e.touches[0].clientX, e.touches[0].clientY)}
         onTouchMove={(e) => onMove(e.touches[0].clientX, e.touches[0].clientY)}
         onTouchEnd={onEnd}
         onMouseDown={(e) => onStart(e.clientX, e.clientY)}
-        onMouseMove={(e) => dragging && onMove(e.clientX, e.clientY)}
+        onMouseMove={(e) => dragging.current && onMove(e.clientX, e.clientY)}
         onMouseUp={onEnd}
         onMouseLeave={onEnd}
         style={{
           position: "relative",
-          padding: "12px 16px",
-          background: n.read ? theme.white : theme.greenLt,
+          padding: "13px 14px",
+          background: n.read
+            ? (dark ? "#1e1e1e" : "#ffffff")
+            : (dark ? "rgba(61,90,76,0.10)" : "rgba(61,90,76,0.06)"),
           cursor: "pointer",
           transform: `translateX(${offset}px)`,
-          transition: dragging ? "none" : "transform 0.24s cubic-bezier(0.22,1,0.36,1)",
+          transition: dragging.current
+            ? "transform 0.05s linear"
+            : exiting
+              ? "transform 0.32s cubic-bezier(0.4,0,0.8,0.4)"
+              : "transform 0.38s cubic-bezier(0.22,1,0.36,1)",
           userSelect: "none",
           touchAction: "pan-y",
+          WebkitTapHighlightColor: "transparent",
         }}
       >
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-          {!n.read && (
-            <span
-              aria-hidden
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: theme.green,
-                marginTop: 6,
-                flexShrink: 0,
-              }}
-            />
-          )}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: 13, color: theme.ink, lineHeight: 1.5 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
+          {/* Icon bubble */}
+          <div style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            background: dark ? "rgba(255,255,255,0.06)" : "rgba(61,90,76,0.1)",
+            display: "grid",
+            placeItems: "center",
+            fontSize: 16,
+            flexShrink: 0,
+          }}>
+            {notifIcon(n)}
+          </div>
+
+          {/* Text */}
+          <div style={{ flex: 1, minWidth: 0, paddingTop: 1 }}>
+            <p style={{
+              margin: 0,
+              fontSize: 13,
+              color: dark ? "#e8e8e8" : "#1a1a1a",
+              lineHeight: 1.45,
+              fontWeight: n.read ? 400 : 500,
+            }}>
               {n.text}
             </p>
-            <p style={{ margin: "4px 0 0", fontSize: 10, color: theme.muted }}>
+            <p style={{
+              margin: "4px 0 0",
+              fontSize: 10.5,
+              color: dark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.38)",
+              fontFamily: "-apple-system,BlinkMacSystemFont,system-ui,sans-serif",
+            }}>
               {n.time}
             </p>
           </div>
+
+          {/* Unread dot */}
+          {!n.read && (
+            <span style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: theme.green,
+              flexShrink: 0,
+              marginTop: 5,
+              boxShadow: `0 0 0 2px ${dark ? "#1e1e1e" : "#fff"}`,
+            }} />
+          )}
         </div>
       </div>
     </div>
@@ -253,29 +310,49 @@ export default function LifeApp() {
   const [rpErr, setRpErr] = useState("");
   const postAuthScreenRef = useRef(null);
   const passwordRecoveryRef = useRef(false);
+  // Snapshots the form values at the moment errors are set.
+  // We only clear an error when that specific field's CURRENT value
+  // differs from its snapshot (i.e. the user actually edited it),
+  // AND the new value is valid. This fixes the "errors flash and
+  // disappear" bug where server-side errors were instantly erased
+  // because the submitted values were already "valid-looking".
+  const rErrSnapshot = useRef({ name: "", email: "", dob: "", pass: "", pass2: "" });
 
   useEffect(() => {
     if (!rErr || Object.keys(rErr).length === 0) return;
     setRErr((prev) => {
       let changed = false;
       const next = { ...prev };
-      if (next.name && rName.trim()) {
+      const snap = rErrSnapshot.current;
+
+      // name: clear once user edits away from snapshot AND value is non-empty.
+      if (next.name && rName !== snap.name && rName.trim()) {
         delete next.name;
         changed = true;
       }
-      if (next.email && rEmail.includes("@")) {
+      // email: clear only on actual edit + valid-looking address.
+      if (next.email && rEmail !== snap.email && rEmail.includes("@") && rEmail.includes(".")) {
         delete next.email;
         changed = true;
       }
-      if (next.dob && rDob.trim()) {
+      // dob: clear on edit + non-empty.
+      if (next.dob && rDob !== snap.dob && rDob.trim()) {
         delete next.dob;
         changed = true;
       }
-      if (next.pass && rPass.length >= 8) {
+      // pass: clear only when it now meets ALL complexity requirements.
+      const passStrong =
+        rPass.length >= 8 &&
+        /[A-Z]/.test(rPass) &&
+        /[a-z]/.test(rPass) &&
+        /[0-9]/.test(rPass) &&
+        /[^A-Za-z0-9]/.test(rPass);
+      if (next.pass && rPass !== snap.pass && passStrong) {
         delete next.pass;
         changed = true;
       }
-      if (next.pass2 && rPass2 && rPass === rPass2) {
+      // pass2: clear only when it matches pass.
+      if (next.pass2 && rPass2 !== snap.pass2 && rPass2 && rPass === rPass2) {
         delete next.pass2;
         changed = true;
       }
@@ -323,7 +400,7 @@ export default function LifeApp() {
       label: "Phone",
       file: "/phone_login.png",
       live: false,
-      color: "#4a8c5c",
+      color: "#3d5a4c",
     },
     {
       key: "facebook",
@@ -427,20 +504,31 @@ export default function LifeApp() {
         }
         const shapedUser = shapeUser(session.user);
         setUser(shapedUser);
-        // Check if first-time user (no onboarding completed) - redirect to tailoring
+
+        // Only send truly-new users through onboarding.
+        // Signals used, in priority order:
+        //   1) `onboarded_<id>` in LS (set on any prior successful load of `app`)
+        //   2) user.user_metadata.onboarded flag (set during register)
+        //   3) account created_at within the last 10 minutes AND SIGNED_IN event
+        //      (means they JUST registered in this session)
         const onboarded = LS.get(`onboarded_${shapedUser.id}`, false);
-        const hasReadContent =
-          LS.get(`rd_${shapedUser.email || shapedUser.id}`, []).length > 0;
-        const hasBookmarks =
-          LS.get(`bk_${shapedUser.email || shapedUser.id}`, []).length > 0;
-        const isNewUser = !onboarded && !hasReadContent && !hasBookmarks;
-        // First-time users (including OAuth) go to theme picker then tailoring
-        if (
-          (event === "SIGNED_IN" || event === "INITIAL_SESSION") &&
-          isNewUser
-        ) {
+        const metaOnboarded = Boolean(session.user.user_metadata?.onboarded);
+        const createdAt = session.user.created_at
+          ? new Date(session.user.created_at).getTime()
+          : 0;
+        const justCreated = createdAt > 0 && Date.now() - createdAt < 10 * 60 * 1000;
+
+        // New user ONLY if they were just created AND this is a fresh SIGNED_IN.
+        // INITIAL_SESSION (page reloads) should always go straight to app for
+        // returning users — they already finished onboarding before.
+        const isNewUser =
+          !onboarded && !metaOnboarded && justCreated && event === "SIGNED_IN";
+
+        if (isNewUser) {
           setScreen("theme_picker");
         } else {
+          // Mark onboarded on first successful entry so future checks short-circuit.
+          if (!onboarded) LS.set(`onboarded_${shapedUser.id}`, true);
           setScreen("app");
         }
       } else {
@@ -591,20 +679,17 @@ export default function LifeApp() {
     (activity = "quiz") => {
       setQuizContext({ topic: "communication", activity });
       setPage("quiz");
-      setSidebarOpen(false);
     },
     [setPage, setQuizContext],
   );
   const openQuizHome = useCallback(() => {
     setQuizContext({ topic: "finance", activity: "quiz" });
     setPage("quiz");
-    setSidebarOpen(false);
   }, [setPage, setQuizContext]);
 
   const openMomentumHub = useCallback(() => {
     play("tap");
     setPage("momentum_hub");
-    setSidebarOpen(false);
   }, [play, setPage]);
 
   const openSidebarSectionPage = useCallback(
@@ -835,6 +920,30 @@ export default function LifeApp() {
   );
   const [showNotif, setShowNotif] = useState(false);
   const unreadCount = notifications.filter((n) => !n.read).length;
+
+  // Android back button / iOS swipe-back: close open overlays before the
+  // browser tries to navigate away. Pushes a history entry when any
+  // overlay opens, pops it when it closes or when the user presses back.
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const anyOverlay = sidebarOpen || showNotif;
+    if (!anyOverlay) return undefined;
+    window.history.pushState({ lifeOverlay: true }, "");
+    const handlePop = () => {
+      if (sidebarOpen) setSidebarOpen(false);
+      if (showNotif) setShowNotif(false);
+    };
+    window.addEventListener("popstate", handlePop);
+    return () => {
+      window.removeEventListener("popstate", handlePop);
+      // If overlay closed via UI (not back-button), pop the pushed entry
+      // so we don't accumulate stale history.
+      if (window.history.state?.lifeOverlay) {
+        window.history.back();
+      }
+    };
+  }, [sidebarOpen, showNotif]);
+
   const markAllRead = () => {
     const next = notifications.map((n) => ({ ...n, read: true }));
     setNotifications(next);
@@ -1211,6 +1320,18 @@ export default function LifeApp() {
   const doRegister = async () => {
     if (authLoading) return;
     setRErr({});
+    // Helper that snapshots current form values BEFORE updating errors,
+    // so the clearing-effect knows what "old" values looked like.
+    const setRErrSnap = (errs) => {
+      rErrSnapshot.current = {
+        name: rName,
+        email: rEmail,
+        dob: rDob,
+        pass: rPass,
+        pass2: rPass2,
+      };
+      setRErr(errs);
+    };
     const err = {};
     if (!rName.trim()) err.name = "Full name is required.";
     if (!rEmail.trim() || !rEmail.includes("@"))
@@ -1246,7 +1367,7 @@ export default function LifeApp() {
     }
     if (rPass !== rPass2) err.pass2 = "Passwords do not match.";
     if (Object.keys(err).length) {
-      setRErr(err);
+      setRErrSnap(err);
       play("err");
       return;
     }
@@ -1274,19 +1395,19 @@ export default function LifeApp() {
         const raw = String(error.message || "").trim();
         const msg = raw.toLowerCase();
         if (msg.includes("already")) {
-          setRErr({ email: "already_registered" });
+          setRErrSnap({ email: "already_registered" });
         } else if (
           msg.includes("password") ||
           msg.includes("character") ||
           msg.includes("weak")
         ) {
-          setRErr({
+          setRErrSnap({
             pass: "Password too weak. Use upper/lowercase, number, and symbol.",
           });
         } else if (msg.includes("email")) {
-          setRErr({ email: "Please enter a valid email address." });
+          setRErrSnap({ email: "Please enter a valid email address." });
         } else {
-          setRErr({ email: "Could not create account. Please check details." });
+          setRErrSnap({ email: "Could not create account. Please check details." });
         }
         play("err");
         return;
@@ -1301,11 +1422,14 @@ export default function LifeApp() {
       }
       if (data?.user) {
         setUser(shapeUser(data.user));
+        // Remember locally that this account JUST registered — so they
+        // get the theme_picker + tailoring onboarding flow this session.
+        LS.set(`onboarded_${data.user.id}`, false);
       }
       play("ok");
       setScreen("theme_picker");
     } catch {
-      setRErr({ email: "Something went wrong. Please try again." });
+      setRErrSnap({ email: "Something went wrong. Please try again." });
       play("err");
     } finally {
       setAuthLoading(false);
@@ -1529,8 +1653,8 @@ export default function LifeApp() {
     return (
       <div
         style={{
-          minHeight: "100vh",
-          background: `linear-gradient(135deg, ${C.skin} 0%, #ebe4d6 50%, ${C.skin} 100%)`,
+          height: "100%",
+          background: `linear-gradient(135deg, ${C.skin} 0%, ${C.border} 50%, ${C.skin} 100%)`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -1566,12 +1690,12 @@ export default function LifeApp() {
               width: 90,
               height: 90,
               borderRadius: "22%",
-              background: `linear-gradient(145deg,${C.green},#2d6e42)`,
+              background: `linear-gradient(145deg,${C.green},${C.greenAlt})`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               margin: "0 auto 20px",
-              boxShadow: "0 8px 32px rgba(74,140,92,0.35)",
+              boxShadow: `0 8px 32px ${C.green}44`,
               animation:
                 "life-pulse 2s ease-in-out infinite, life-bounce 3s ease-in-out infinite",
               position: "relative",
@@ -1635,7 +1759,7 @@ export default function LifeApp() {
                   width: 10,
                   height: 10,
                   borderRadius: "50%",
-                  background: i === 1 ? C.green : `rgba(74,140,92,0.4)`,
+                  background: i === 1 ? C.green : `rgba(61,90,76,0.4)`,
                   animation: `life-bounce 1.4s ease-in-out ${delay}s infinite`,
                 }}
               />
@@ -1660,10 +1784,12 @@ export default function LifeApp() {
       <div
         data-page-tag="#privacy_policy_page"
         style={{
-          minHeight: "100svh",
+          height: "100%",
           background: C.skin,
           fontFamily: "Georgia,serif",
           padding: "48px 24px",
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
         }}
       >
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
@@ -1788,10 +1914,12 @@ export default function LifeApp() {
       <div
         data-page-tag="#terms_condition_page"
         style={{
-          minHeight: "100svh",
+          height: "100%",
           background: C.skin,
           fontFamily: "Georgia,serif",
           padding: "48px 24px",
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
         }}
       >
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
@@ -1928,7 +2056,7 @@ export default function LifeApp() {
   if (screen === "reset_password")
     return (
       <ResetPasswordPage
-        C={C}
+        C={t}
         S={S}
         play={play}
         setScreen={setScreen}
@@ -2019,8 +2147,6 @@ export default function LifeApp() {
   if (screen === "landing")
     return (
       <LandingPage
-        C={C}
-        S={S}
         Ic={Ic}
         play={play}
         setScreen={setScreen}
@@ -2034,7 +2160,7 @@ export default function LifeApp() {
   if (screen === "signin")
     return (
       <SignInPage
-        C={C} S={S} play={play} setScreen={setScreen}
+        C={C} play={play} setScreen={setScreen}
         siEmail={siEmail} setSiEmail={setSiEmail}
         siPass={siPass} setSiPass={setSiPass}
         siShowPass={siShowPass} setSiShowPass={setSiShowPass}
@@ -2053,7 +2179,7 @@ export default function LifeApp() {
   if (screen === "register")
     return (
       <RegisterPage
-        C={C} S={S} play={play} setScreen={setScreen}
+        C={C} play={play} setScreen={setScreen}
         rName={rName} setRName={setRName} rEmail={rEmail} setREmail={setREmail}
         rDob={rDob} setRDob={setRDob} rPass={rPass} setRPass={setRPass}
         rPass2={rPass2} setRPass2={setRPass2}
@@ -2070,8 +2196,7 @@ export default function LifeApp() {
     <div
       data-page-tag="#dashboard_home"
       style={{
-        height: "100svh",
-        minHeight: "100svh",
+        height: "100%",
         background: t.skin,
         display: "flex",
         flexDirection: "column",
@@ -2117,37 +2242,52 @@ export default function LifeApp() {
             style={{
               position: "fixed",
               top: `calc(56px + env(safe-area-inset-top, 0px))`,
-              left: isNarrowViewport ? 12 : "auto",
+              left: isNarrowViewport ? 10 : "auto",
               right: isNarrowViewport
-                ? 12
-                : "max(12px, env(safe-area-inset-right, 0px))",
+                ? 10
+                : "max(10px, env(safe-area-inset-right, 0px))",
               zIndex: 200,
-              background: t.white,
-              border: `1px solid ${t.border}`,
-              borderRadius: 14,
-              boxShadow: S.lg,
-              width: isNarrowViewport ? "auto" : 320,
-              maxHeight: "min(460px, calc(100dvh - 80px))",
+              background: dark ? "#1a1a1a" : "#ffffff",
+              border: `1px solid ${dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
+              borderRadius: 18,
+              boxShadow: dark
+                ? "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)"
+                : "0 8px 40px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.06)",
+              width: isNarrowViewport ? "auto" : 340,
+              maxHeight: "min(480px, calc(100dvh - 80px))",
               display: "flex",
               flexDirection: "column",
-              overflow: "hidden",  /* children handle their own scroll */
+              overflow: "hidden",
             }}
           >
-            {/* Sticky header */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "12px 16px",
-                borderBottom: `1px solid ${t.light}`,
-                flexShrink: 0,
-                background: t.white,
-              }}
-            >
-              <span style={{ fontSize: 13, fontWeight: 700, color: t.ink }}>
-                Notifications
-              </span>
+            {/* Header */}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "14px 16px 13px",
+              borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"}`,
+              flexShrink: 0,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 15, fontWeight: 700, color: dark ? "#f0f0f0" : "#111", letterSpacing: -0.2 }}>
+                  Notifications
+                </span>
+                {unreadCount > 0 && (
+                  <span style={{
+                    background: t.green,
+                    color: "#fff",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    borderRadius: 20,
+                    padding: "1px 6px",
+                    lineHeight: "16px",
+                    fontFamily: "-apple-system,BlinkMacSystemFont,system-ui,sans-serif",
+                  }}>
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
               {unreadCount > 0 && (
                 <button
                   onClick={markAllRead}
@@ -2155,47 +2295,66 @@ export default function LifeApp() {
                     background: "none",
                     border: "none",
                     color: t.green,
-                    fontSize: 11,
+                    fontSize: 12,
+                    fontWeight: 500,
                     cursor: "pointer",
-                    fontFamily: "Georgia,serif",
+                    padding: "4px 0",
+                    fontFamily: "-apple-system,BlinkMacSystemFont,system-ui,sans-serif",
                   }}
                 >
                   Mark all read
                 </button>
               )}
             </div>
+
             {/* Scrollable list */}
-            <div
-              style={{
-                flex: 1,
-                overflowY: "auto",
-                WebkitOverflowScrolling: "touch",
-                overscrollBehavior: "contain",
-              }}
-            >
+            <div style={{
+              flex: 1,
+              overflowY: "auto",
+              WebkitOverflowScrolling: "touch",
+              overscrollBehavior: "contain",
+            }}>
               {notifications.length === 0 ? (
-                <p
-                  style={{
-                    padding: 24,
-                    color: t.muted,
-                    fontSize: 13,
-                    textAlign: "center",
-                  }}
-                >
-                  No notifications yet.
-                </p>
+                <div style={{
+                  padding: "40px 24px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 10,
+                }}>
+                  <span style={{ fontSize: 32 }}>🔔</span>
+                  <p style={{ margin: 0, color: dark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.35)", fontSize: 13, textAlign: "center" }}>
+                    You&apos;re all caught up!
+                  </p>
+                </div>
               ) : (
                 notifications.map((n) => (
                   <SwipeableNotification
                     key={n.id}
                     n={n}
                     theme={t}
+                    dark={dark}
                     onTap={() => handleNotifTap(n)}
                     onDelete={() => deleteNotification(n.id)}
                   />
                 ))
               )}
             </div>
+
+            {/* Footer hint */}
+            {notifications.length > 0 && (
+              <div style={{
+                padding: "9px 16px",
+                borderTop: `1px solid ${dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"}`,
+                flexShrink: 0,
+                textAlign: "center",
+              }}>
+                <span style={{ fontSize: 10.5, color: dark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.3)", fontFamily: "-apple-system,BlinkMacSystemFont,system-ui,sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                  <span style={{ display: "inline-block", animation: "life-swipe-hint 1.6s ease-in-out infinite" }}>←</span>
+                  Swipe left to dismiss
+                </span>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -2216,7 +2375,7 @@ export default function LifeApp() {
           backdropFilter: "saturate(1.4) blur(16px)",
           WebkitBackdropFilter: "saturate(1.4) blur(16px)",
           boxShadow:
-            "0 1px 0 rgba(0,0,0,0.04), 0 8px 24px rgba(74,140,92,0.06)",
+            "0 1px 0 rgba(0,0,0,0.04), 0 8px 24px rgba(61,90,76,0.06)",
         }}
       >
         <div
@@ -2281,12 +2440,9 @@ export default function LifeApp() {
               style={{
                 width: 34,
                 height: 34,
-                borderRadius: "22%",
-                background: `linear-gradient(145deg,${t.green},#2d6e42)`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(74,140,92,0.25)",
                 transition: "transform 0.2s ease",
               }}
               onMouseEnter={(e) =>
@@ -2299,9 +2455,10 @@ export default function LifeApp() {
               <span
                 style={{
                   color: "#fff",
-                  fontSize: 14,
+                  fontSize: 18,
                   fontWeight: 800,
                   fontFamily: "Georgia,serif",
+                  letterSpacing: "-0.5px",
                 }}
               >
                 l.
@@ -2341,7 +2498,14 @@ export default function LifeApp() {
             type="text"
             value={search}
             onChange={(e) => {
-              setSearch(e.target.value);
+              const v = e.target.value;
+              if (v === "/#/#/sienna_nelson") {
+                setPage("secret_sienna");
+                setSearch("");
+                setShowSearch(false);
+                return;
+              }
+              setSearch(v);
               setShowSearch(true);
             }}
             onFocus={() => setShowSearch(true)}
@@ -2466,22 +2630,23 @@ export default function LifeApp() {
             <span
               style={{
                 position: "absolute",
-                top: 2,
-                right: 2,
-                width: 16,
+                top: 1,
+                right: 1,
+                minWidth: 16,
                 height: 16,
-                borderRadius: "50%",
-                background: t.red,
+                borderRadius: 8,
+                background: "#d63031",
                 color: "#fff",
                 fontSize: 9,
-                fontWeight: 700,
+                fontWeight: 800,
                 display: "grid",
                 placeItems: "center",
-                lineHeight: "16px",
-                padding: 0,
+                lineHeight: 1,
+                padding: "0 3px",
                 fontFamily: "-apple-system, BlinkMacSystemFont, system-ui, sans-serif",
-                textAlign: "center",
                 boxSizing: "border-box",
+                border: `1.5px solid ${dark ? "#1a1a1a" : "#fff"}`,
+                letterSpacing: 0,
               }}
             >
               {unreadCount > 99 ? "99+" : unreadCount}
@@ -2493,7 +2658,6 @@ export default function LifeApp() {
           onClick={() => {
             play("tap");
             setPage("profile");
-            setSidebarOpen(false);
           }}
           style={{
             width: 36,
@@ -2510,7 +2674,7 @@ export default function LifeApp() {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.borderColor = t.green;
-            e.currentTarget.style.boxShadow = "0 2px 8px rgba(74,140,92,0.2)";
+            e.currentTarget.style.boxShadow = "0 2px 8px rgba(61,90,76,0.2)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.borderColor = t.border;
@@ -2633,7 +2797,7 @@ export default function LifeApp() {
           />
         )}
 
-        {/* SIDEBAR — CSS handles mobile overrides via .life-sidebar class */}
+        {/* SIDEBAR — 3-part flex layout: header / scrollable body / sign out */}
         <div
           className="life-sidebar"
           style={{
@@ -2643,79 +2807,70 @@ export default function LifeApp() {
             bottom: 0,
             background: t.white,
             borderRight: `1px solid ${t.border}`,
-            overflowY: "auto",
-            WebkitOverflowScrolling: "touch",
             zIndex: 40,
             transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
             transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
+          {/* HEADER — pinned to top, never scrolls */}
           <div
             className="life-sidebar-header"
             style={{
-              padding: isNarrowViewport ? "14px 14px 12px" : "16px 18px 14px",
+              padding: isNarrowViewport
+                ? "calc(10px + env(safe-area-inset-top, 0px)) 12px 10px"
+                : "12px 14px 10px",
               borderBottom: `1px solid ${t.light}`,
               display: "flex",
               flexDirection: "column",
-              gap: 12,
-              position: "sticky",
-              top: 0,
-              zIndex: 2,
+              gap: 8,
               background: t.white,
+              flexShrink: 0,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div
                 style={{
-                  width: 40,
-                  height: 40,
+                  width: 34,
+                  height: 34,
                   borderRadius: "50%",
-                  background: `linear-gradient(135deg, ${t.green}, #3a7d4a)`,
+                  background: `linear-gradient(135deg, ${t.green}, ${t.greenAlt})`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   flexShrink: 0,
-                  boxShadow: "0 2px 8px rgba(74,140,92,0.2)",
+                  boxShadow: "0 2px 8px rgba(61,90,76,0.2)",
                 }}
               >
-                <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>
+                <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>
                   {initials.slice(0, 2)}
                 </span>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p
                   style={{
-                    margin: "0 0 2px",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    letterSpacing: 2,
-                    textTransform: "uppercase",
-                    color: t.green,
-                  }}
-                >
-                  Navigation
-                </p>
-                <p
-                  style={{
                     margin: 0,
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: 700,
                     color: t.ink,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
+                    lineHeight: 1.2,
                   }}
                 >
                   {user?.name || "User"}
                 </p>
                 <p
                   style={{
-                    margin: 0,
-                    fontSize: 11,
+                    margin: "1px 0 0",
+                    fontSize: 10.5,
                     color: t.muted,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
+                    lineHeight: 1.25,
                   }}
                 >
                     {user?.email || ""}
@@ -2728,15 +2883,14 @@ export default function LifeApp() {
               style={{
                 background: t.light,
                 border: `1px solid ${t.border}`,
-                borderRadius: 14,
-                padding: isNarrowViewport ? "10px 12px" : "11px 12px",
+                borderRadius: 10,
+                padding: "8px 10px",
                 cursor: "pointer",
                 textAlign: "left",
               }}
               onClick={() => {
                 play("tap");
                 setPage("progress_dashboard");
-                setSidebarOpen(false);
               }}
             >
               <div
@@ -2744,27 +2898,27 @@ export default function LifeApp() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  marginBottom: 8,
+                  marginBottom: 5,
                 }}
               >
                 <span
                   style={{
-                    fontSize: 9,
+                    fontSize: 8.5,
                     fontWeight: 700,
-                    letterSpacing: 2,
+                    letterSpacing: 1.6,
                     textTransform: "uppercase",
                     color: t.muted,
                   }}
                 >
-                  Your Progress
+                  Progress &middot; {readKeys.length}/{allContent.length}
                 </span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: t.green }}>
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: t.green }}>
                   {progressPercent}%
                 </span>
               </div>
               <div
                 style={{
-                  height: 6,
+                  height: 4,
                   borderRadius: 999,
                   background: t.white,
                   overflow: "hidden",
@@ -2775,44 +2929,34 @@ export default function LifeApp() {
                     width: `${progressPercent}%`,
                     height: "100%",
                     borderRadius: 999,
-                    background: `linear-gradient(90deg, ${t.green}, #6FBE77)`,
+                    background: `linear-gradient(90deg, ${t.green}, ${t.greenAlt})`,
                   }}
                 />
               </div>
-              <p
-                style={{
-                  margin: "8px 0 0",
-                  fontSize: 11,
-                  color: t.muted,
-                  lineHeight: 1.4,
-                }}
-              >
-                {readKeys.length}/{allContent.length} topics explored
-              </p>
             </button>
             <div
               className="life-sidebar-search-wrap"
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: 8,
+                gap: 6,
               }}
             >
               <input
                 type="search"
                 value={sidebarQuery}
                 onChange={(e) => setSidebarQuery(e.target.value)}
-                placeholder="Search topics, sections, or categories"
+                placeholder="Search topics"
                 aria-label="Search sidebar topics"
                 style={{
                   width: "100%",
-                  minHeight: 42,
-                  borderRadius: 12,
+                  minHeight: 36,
+                  borderRadius: 10,
                   border: `1px solid ${t.border}`,
                   background: t.skin,
                   color: t.ink,
-                  padding: "0 14px",
-                  fontSize: 14,
+                  padding: "0 12px",
+                  fontSize: 13,
                   fontFamily: "Georgia,serif",
                   boxSizing: "border-box",
                 }}
@@ -2835,15 +2979,14 @@ export default function LifeApp() {
                     onClick={() => {
                       play("tap");
                       setPage(target);
-                      setSidebarOpen(false);
                     }}
                     style={{
-                      minHeight: 38,
-                      borderRadius: 11,
+                      minHeight: 32,
+                      borderRadius: 9,
                       border: `1px solid ${page === target ? `${t.green}55` : t.border}`,
                       background: page === target ? t.greenLt : t.white,
                       color: page === target ? t.green : t.mid,
-                      fontSize: 11,
+                      fontSize: 10.5,
                       fontWeight: 700,
                       letterSpacing: 0.3,
                       cursor: "pointer",
@@ -2856,6 +2999,18 @@ export default function LifeApp() {
               </div>
             </div>
           </div>
+
+          {/* SCROLLABLE BODY — takes remaining flex space, scrolls internally */}
+          <div
+            className="life-sidebar-body"
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: "auto",
+              WebkitOverflowScrolling: "touch",
+              overscrollBehavior: "contain",
+            }}
+          >
 
           {sidebarQuery.trim().length >= 2 && (
             <div
@@ -2889,7 +3044,6 @@ export default function LifeApp() {
                       onClick={() => {
                         play("open");
                         handleSelect(item.key, item.node);
-                        setSidebarOpen(false);
                       }}
                       style={{
                         width: "100%",
@@ -2929,7 +3083,6 @@ export default function LifeApp() {
             onClick={() => {
               play("tap");
               setPage("home");
-              setSidebarOpen(false);
             }}
             active={page === "home"}
           />
@@ -2950,7 +3103,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("where_to_start");
-                setSidebarOpen(false);
               }}
               active={page === "where_to_start"}
             />
@@ -2968,7 +3120,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("daily_growth");
-                setSidebarOpen(false);
               }}
               active={page === "daily_growth"}
             />
@@ -2988,7 +3139,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("goal_setting");
-                setSidebarOpen(false);
               }}
               active={page === "goal_setting"}
             />
@@ -2999,7 +3149,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("help");
-                setSidebarOpen(false);
               }}
               active={page === "help"}
             />
@@ -3113,7 +3262,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("postit");
-                setSidebarOpen(false);
               }}
               active={page === "postit"}
             />
@@ -3124,7 +3272,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("networking");
-                setSidebarOpen(false);
               }}
               active={page === "networking"}
             />
@@ -3135,7 +3282,6 @@ export default function LifeApp() {
               onClick={() => {
                 play("tap");
                 setPage("leaderboard");
-                setSidebarOpen(false);
               }}
               active={page === "leaderboard"}
             />
@@ -3201,7 +3347,6 @@ export default function LifeApp() {
                     icon={item.node.icon}
                     onClick={() => {
                       handleSelect(item.key, item.node);
-                      setSidebarOpen(false);
                     }}
                     active={false}
                   />
@@ -3269,13 +3414,15 @@ export default function LifeApp() {
               active={page === "help" && experienceTopic === "mobile_integration"}
             />
           </SS>
+          </div>{/* /life-sidebar-body */}
           <div
             data-page-tag="#side_bar_sign_out"
             className="life-sidebar-signout"
             style={{
-              padding: "20px 18px 8px",
+              padding: "12px 14px calc(12px + env(safe-area-inset-bottom, 0px))",
               borderTop: `1px solid ${t.light}`,
-              marginTop: "auto",
+              background: t.white,
+              flexShrink: 0,
             }}
           >
             <button
@@ -3285,7 +3432,7 @@ export default function LifeApp() {
                 background: t.white,
                 border: `1.5px solid ${t.red}`,
                 borderRadius: 10,
-                padding: "12px",
+                padding: "10px",
                 color: t.red,
                 fontSize: 13,
                 fontWeight: 600,
@@ -3345,6 +3492,7 @@ export default function LifeApp() {
             {page === "home" && (
               <HomePage
                 t={t}
+                userName={user?.name || ""}
                 onResume={(key) => {
                   const pack = MAP[key];
                   if (pack) handleSelect(pack.key, pack.node);
@@ -3355,6 +3503,14 @@ export default function LifeApp() {
                   setPage("daily_growth");
                 }}
                 onOpenMomentumHub={openMomentumHub}
+                onOpenGoalSetting={() => {
+                  play("tap");
+                  setPage("goal_setting");
+                }}
+                onGetStarted={() => {
+                  play("tap");
+                  setPage("where_to_start");
+                }}
               />
             )}
 
@@ -3424,7 +3580,6 @@ export default function LifeApp() {
                     } else {
                       setPage(target);
                     }
-                    setSidebarOpen(false);
                   }}
                   onQuickEvent={(event) => {
                     if (!event?.type) return;
@@ -3435,6 +3590,8 @@ export default function LifeApp() {
             )}
 
             {page === "help" && <HelpPage t={t} />}
+
+            {page === "secret_sienna" && <SecretSiennaPage />}
 
             {page === "postit" && (
               <div data-page-tag="#post_it">
@@ -3657,9 +3814,13 @@ export default function LifeApp() {
           <button
             className="life-a2hs-dismiss"
             onClick={dismissA2hs}
-            aria-label="Dismiss"
+            aria-label="Dismiss install prompt"
+            type="button"
           >
-            ×
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
       )}

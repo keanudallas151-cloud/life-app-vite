@@ -5,7 +5,7 @@ const KEY = "life_resume_topic";
 /** @returns {{ key: string, at: number } | null} */
 export function getResumeTopic() {
   const v = LS.get(KEY, null);
-  if (!v || typeof v.key !== "string") return null;
+  if (!v || typeof v.key !== "string" || typeof v.at !== "number") return null;
   return v;
 }
 
@@ -14,9 +14,5 @@ export function setResumeTopic(contentKey) {
 }
 
 export function clearResumeTopic() {
-  try {
-    localStorage.removeItem(KEY);
-  } catch {
-    /* ignore */
-  }
+  LS.del(KEY);
 }

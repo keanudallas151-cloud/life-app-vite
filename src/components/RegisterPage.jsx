@@ -1,7 +1,6 @@
 "use client";
 export function RegisterPage({
   C,
-  S,
   play,
   setScreen,
   rName,
@@ -45,21 +44,32 @@ export function RegisterPage({
     "Strong",
   ];
   const passwordStrengthColors = [C.red, C.red, "#e6a23c", C.gold, C.green];
-  const passwordHint =
-    rPass.length > 0 && !passwordHasLower
-      ? "Tip: add a lowercase letter to match the password rules."
-      : rPass.length > 0 && !passwordHasSpecial
-        ? "Tip: add a special character for a stronger password."
-      : "";
+  // Clamp to valid array index (0..4) since strength counts 5 booleans (0..5)
+  const clampedStrength = Math.min(passwordStrength, passwordStrengthLabels.length - 1);
   const confirmMismatch = rPass2.length > 0 && rPass !== rPass2;
+
+  // Live age check: user must be 13+ (born 2013 or earlier)
+  const dobUnderAge = (() => {
+    const digits = rDob.replace(/\D/g, "");
+    if (digits.length < 8) return false;
+    const day = parseInt(digits.slice(0, 2), 10);
+    const month = parseInt(digits.slice(2, 4), 10);
+    const year = parseInt(digits.slice(4, 8), 10);
+    if (!year || !month || !day || month < 1 || month > 12 || day < 1 || day > 31) return false;
+    const today = new Date();
+    const dob = new Date(year, month - 1, day);
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
+    return age < 13;
+  })();
 
   return (
     <div
       data-page-tag="#register_page"
       className="life-grain life-auth-shell"
       style={{
-        minHeight: "100svh",
-        background: `linear-gradient(165deg, ${C.skin} 0%, #ebe4d6 50%, ${C.skin} 100%)`,
+        background: `linear-gradient(165deg, ${C.skin} 0%, #111111 50%, ${C.skin} 100%)`,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -67,7 +77,6 @@ export function RegisterPage({
         fontFamily: "Georgia,serif",
         padding: "48px 24px calc(40px + env(safe-area-inset-bottom))",
         position: "relative",
-        overflowX: "hidden",
       }}
     >
       <div
@@ -111,12 +120,12 @@ export function RegisterPage({
           width: 70,
           height: 70,
           borderRadius: "20%",
-          background: `linear-gradient(145deg,${C.green},#2d6e42)`,
+          background: "linear-gradient(145deg, #2d2d2d, #3a3a3a)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           marginBottom: 20,
-          boxShadow: S.md,
+          boxShadow: "0 4px 16px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.06)",
           animation: "life-logo-float 4s ease-in-out infinite",
         }}
       >
@@ -183,6 +192,9 @@ export function RegisterPage({
             }}
             placeholder="Your full name"
             autoComplete="name"
+            inputMode="text"
+            enterKeyHint="next"
+            autoCapitalize="words"
             style={{
               background: C.skin,
               border: `1.5px solid ${rErr.name ? C.red : C.border}`,
@@ -239,6 +251,11 @@ export function RegisterPage({
             }}
             placeholder="you@example.com"
             autoComplete="email"
+            inputMode="email"
+            enterKeyHint="next"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
             style={{
               background: C.skin,
               border: `1.5px solid ${rErr.email ? C.red : C.border}`,
@@ -269,11 +286,11 @@ export function RegisterPage({
                 lineHeight: 1.6,
                 background:
                   rErr.email === "already_registered"
-                    ? "#fff8e1"
+                    ? "rgba(215,180,120,0.12)"
                     : "transparent",
                 border:
                   rErr.email === "already_registered"
-                    ? "1px solid #f0c040"
+                    ? "1px solid rgba(215,180,120,0.45)"
                     : "none",
                 borderRadius: rErr.email === "already_registered" ? 8 : 0,
                 padding: rErr.email === "already_registered" ? "8px 12px" : 0,
@@ -362,6 +379,19 @@ export function RegisterPage({
               {rErr.dob}
             </p>
           )}
+          {dobUnderAge && !rErr.dob && (
+            <p
+              style={{
+                margin: 0,
+                fontSize: 12,
+                color: C.red,
+                fontWeight: 600,
+                fontStyle: "italic",
+              }}
+            >
+              You must be 13 or older to use Life.
+            </p>
+          )}
         </div>
 
         {/* Password */}
@@ -387,6 +417,7 @@ export function RegisterPage({
               }}
               placeholder="Use 8+ characters"
               autoComplete="new-password"
+              enterKeyHint="next"
               style={{
                 background: C.skin,
                 border: `1.5px solid ${rErr.pass ? C.red : C.border}`,
@@ -431,7 +462,7 @@ export function RegisterPage({
                       borderRadius: 2,
                       background:
                         i < passwordStrength
-                          ? passwordStrengthColors[passwordStrength]
+                          ? passwordStrengthColors[clampedStrength]
                           : C.light,
                       transition: "background 0.2s",
                     }}
@@ -442,24 +473,64 @@ export function RegisterPage({
                 style={{
                   margin: 0,
                   fontSize: 11,
-                  color: passwordStrengthColors[passwordStrength],
+                  color: passwordStrengthColors[clampedStrength],
                   fontStyle: "italic",
                 }}
               >
-                {passwordStrengthLabels[passwordStrength]}
+                {passwordStrengthLabels[clampedStrength]}
               </p>
-              {passwordHint && (
-                <p
-                  style={{
-                    margin: "4px 0 0",
-                    fontSize: 11,
-                    color: C.muted,
-                    fontStyle: "italic",
-                  }}
-                >
-                  {passwordHint}
-                </p>
-              )}
+              {/* Requirement checklist — shows the user EXACTLY what's
+                  needed. Green tick for met, gray for missing. */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: "2px 10px",
+                  marginTop: 6,
+                }}
+              >
+                {[
+                  { met: passwordHasMinLength, label: "8+ characters" },
+                  { met: passwordHasUpper,     label: "Uppercase (A–Z)" },
+                  { met: passwordHasLower,     label: "Lowercase (a–z)" },
+                  { met: passwordHasNumber,    label: "Number (0–9)" },
+                  { met: passwordHasSpecial,   label: "Symbol (!@#$…)" },
+                ].map((req) => (
+                  <div
+                    key={req.label}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      fontSize: 11,
+                      color: req.met ? C.green : C.muted,
+                      fontStyle: req.met ? "normal" : "italic",
+                      transition: "color 0.18s ease",
+                    }}
+                  >
+                    <span
+                      aria-hidden
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 13,
+                        height: 13,
+                        borderRadius: "50%",
+                        background: req.met ? C.green : "transparent",
+                        border: req.met ? "none" : `1px solid ${C.muted}66`,
+                        color: "#fff",
+                        fontSize: 9,
+                        fontWeight: 800,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {req.met ? "✓" : ""}
+                    </span>
+                    {req.label}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           {rErr.pass && (
@@ -499,6 +570,7 @@ export function RegisterPage({
               }}
               placeholder="Repeat password"
               autoComplete="new-password"
+              enterKeyHint="done"
               style={{
                 background: C.skin,
                 border: `1.5px solid ${rErr.pass2 || confirmMismatch ? C.red : C.border}`,
@@ -561,20 +633,20 @@ export function RegisterPage({
 
         <button
           onClick={doRegister}
-          disabled={authLoading}
+          disabled={authLoading || dobUnderAge}
           style={{
-            background: `linear-gradient(135deg, ${C.green}, #3a7d4a)`,
+            background: dobUnderAge ? C.light : `linear-gradient(135deg, ${C.green}, #3a7d4a)`,
             border: "none",
             borderRadius: 12,
             padding: "17px",
-            color: "#fff",
+            color: dobUnderAge ? C.muted : "#fff",
             fontSize: 16,
             fontWeight: 700,
-            cursor: authLoading ? "default" : "pointer",
+            cursor: authLoading || dobUnderAge ? "default" : "pointer",
             fontFamily: "Georgia,serif",
             marginTop: 4,
             opacity: authLoading ? 0.7 : 1,
-            boxShadow: "0 4px 16px rgba(74,140,92,0.35)",
+            boxShadow: dobUnderAge ? "none" : "0 4px 16px rgba(74,140,92,0.35)",
             transition: "all 0.2s ease",
           }}
           onMouseEnter={(e) => {
