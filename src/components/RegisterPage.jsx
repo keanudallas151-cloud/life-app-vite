@@ -173,7 +173,7 @@ export function RegisterPage({
       >
         {/* Full Name */}
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <label
+          <label htmlFor="register-name"
             style={{
               fontSize: 10,
               fontWeight: 700,
@@ -191,7 +191,7 @@ export function RegisterPage({
               setRErr((p) => ({ ...p, name: null }));
             }}
             placeholder="Your full name"
-            autoComplete="name"
+            id="register-name" name="name" autoComplete="name"
             inputMode="text"
             enterKeyHint="next"
             autoCapitalize="words"
@@ -231,7 +231,7 @@ export function RegisterPage({
 
         {/* Email */}
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <label
+          <label htmlFor="register-email"
             style={{
               fontSize: 10,
               fontWeight: 700,
@@ -244,6 +244,8 @@ export function RegisterPage({
           </label>
           <input
             type="email"
+            id="register-email"
+            name="email"
             value={rEmail}
             onChange={(e) => {
               setREmail(e.target.value);
@@ -410,6 +412,8 @@ export function RegisterPage({
           <div className="life-password-field">
             <input
               type={rShowPass ? "text" : "password"}
+              id="register-password"
+              name="password"
               value={rPass}
               onChange={(e) => {
                 setRPass(e.target.value);
@@ -563,6 +567,8 @@ export function RegisterPage({
           <div className="life-password-field">
             <input
               type={rShowPass2 ? "text" : "password"}
+              id="register-password-confirm"
+              name="password-confirm"
               value={rPass2}
               onChange={(e) => {
                 setRPass2(e.target.value);
@@ -646,20 +652,20 @@ export function RegisterPage({
             fontFamily: "Georgia,serif",
             marginTop: 4,
             opacity: authLoading ? 0.7 : 1,
-            boxShadow: dobUnderAge ? "none" : "0 4px 16px rgba(74,140,92,0.35)",
+            boxShadow: dobUnderAge ? "none" : "0 4px 16px rgba(255,255,255,0.15)",
             transition: "all 0.2s ease",
           }}
           onMouseEnter={(e) => {
             if (!authLoading) {
               e.currentTarget.style.transform = "translateY(-1px)";
               e.currentTarget.style.boxShadow =
-                "0 6px 20px rgba(74,140,92,0.4)";
+                "0 6px 20px rgba(255,255,255,0.18)";
             }
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = "translateY(0)";
             e.currentTarget.style.boxShadow =
-              "0 4px 16px rgba(74,140,92,0.35)";
+              "0 4px 16px rgba(255,255,255,0.15)";
           }}
         >
           {authLoading ? "Creating account…" : "Create Account"}

@@ -6,7 +6,11 @@ import { CONTENT } from "../data/content";
 export function TailorIntro({userName,onExplore,onTailor,t:theme}){
   const t = theme || C;
   return(
-    <div style={{height:"100%",paddingBottom:"env(safe-area-inset-bottom, 0px)",background:t.skin,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+    <div style={{height:"100%",paddingBottom:"env(safe-area-inset-bottom, 0px)",background:`linear-gradient(165deg, ${t.skin} 0%, ${t.light} 35%, ${t.skin} 70%, ${t.light} 100%)`,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif",overflowY:"auto",WebkitOverflowScrolling:"touch",position:"relative"}}>
+      {/* Decorative background circles */}
+      <div aria-hidden style={{position:"absolute",top:-60,right:-40,width:200,height:200,borderRadius:"50%",border:`1.5px solid ${t.green}12`,pointerEvents:"none"}}/>
+      <div aria-hidden style={{position:"absolute",bottom:"20%",left:-30,width:140,height:140,borderRadius:"50%",background:`${t.green}08`,pointerEvents:"none"}}/>
+      <div aria-hidden style={{position:"absolute",top:"40%",right:"8%",width:80,height:80,borderRadius:"50%",background:`radial-gradient(circle, ${t.green}0a 0%, transparent 70%)`,pointerEvents:"none"}}/>
       <div style={{padding:"52px 32px 0",textAlign:"center"}}>
         <p style={{margin:"0 0 8px",fontSize:10,fontWeight:700,letterSpacing:3.5,textTransform:"uppercase",color:t.muted}}>Welcome{userName?`, ${userName.split(" ")[0]}`:""}</p>
         <h1 style={{margin:"0 0 0",fontSize:26,fontWeight:800,color:t.ink,lineHeight:1.2,letterSpacing:-0.5}}>Tailored Self-Development</h1>
@@ -122,7 +126,7 @@ export function TailorQuestions({onComplete,onBack,t:theme}){
   const pct=Math.round(((step+1)/total)*100);
 
   return(
-    <div data-page-tag="#tailor_questions" style={{height:"100%",paddingBottom:"env(safe-area-inset-bottom, 0px)",background:t.skin,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+    <div data-page-tag="#tailor_questions" style={{height:"100%",paddingBottom:"env(safe-area-inset-bottom, 0px)",background:`linear-gradient(180deg, ${t.skin} 0%, ${t.light} 100%)`,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
       {/* Header bar */}
       <div style={{background:t.white,borderBottom:`1px solid ${t.border}`,padding:"16px 20px"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
@@ -159,7 +163,7 @@ export function TailorQuestions({onComplete,onBack,t:theme}){
               <input type="range" min="0" max="100" value={answers.time}
                 onChange={e=>setAnswers(a=>({...a,time:Number(e.target.value)}))}
                 style={{position:"absolute",left:0,right:0,width:"100%",opacity:0,height:44,cursor:"pointer",zIndex:2}}/>
-              <div style={{position:"absolute",left:`calc(${answers.time}% - 14px)`,width:28,height:28,borderRadius:"50%",background:t.green,boxShadow:`0 2px 10px rgba(61,90,76,0.45)`,border:`3px solid ${t.white}`,pointerEvents:"none",transition:"left 0.05s"}}/>
+              <div style={{position:"absolute",left:`calc(${answers.time}% - 14px)`,width:28,height:28,borderRadius:"50%",background:t.green,boxShadow:`0 2px 10px rgba(255,255,255,0.2)`,border:`3px solid ${t.white}`,pointerEvents:"none",transition:"left 0.05s"}}/>
             </div>
             <p style={{marginTop:16,textAlign:"center",fontSize:14,fontWeight:700,color:t.green,fontFamily:"Georgia,serif"}}>{getNearestLabel(answers.time)}</p>
           </div>

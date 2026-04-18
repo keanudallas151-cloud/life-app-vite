@@ -122,7 +122,7 @@ export function SignInPage({
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label
+            <label htmlFor="signin-email"
               style={{
                 fontSize: 10,
                 fontWeight: 700,
@@ -135,7 +135,7 @@ export function SignInPage({
             </label>
             <input
               type="email"
-              value={siEmail}
+              id="signin-email" name="email" value={siEmail}
               onChange={(e) => {
                 setSiEmail(e.target.value);
                 setSiErr("");
@@ -171,7 +171,7 @@ export function SignInPage({
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label
+            <label htmlFor="signin-password"
               style={{
                 fontSize: 10,
                 fontWeight: 700,
@@ -185,6 +185,8 @@ export function SignInPage({
             <div className="life-password-field">
               <input
                 type={siShowPass ? "text" : "password"}
+                id="signin-password"
+                name="password"
                 value={siPass}
                 onChange={(e) => {
                   setSiPass(e.target.value);
@@ -277,20 +279,20 @@ export function SignInPage({
               fontFamily: "Georgia,serif",
               opacity: authLoading ? 0.7 : 1,
               marginTop: 2,
-              boxShadow: "0 4px 16px rgba(74,140,92,0.35)",
+              boxShadow: "0 4px 16px rgba(255,255,255,0.15)",
               transition: "all 0.2s ease",
             }}
             onMouseEnter={(e) => {
               if (!authLoading) {
                 e.currentTarget.style.transform = "translateY(-1px)";
                 e.currentTarget.style.boxShadow =
-                  "0 6px 20px rgba(74,140,92,0.4)";
+                  "0 6px 20px rgba(255,255,255,0.18)";
               }
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateY(0)";
               e.currentTarget.style.boxShadow =
-                "0 4px 16px rgba(74,140,92,0.35)";
+                "0 4px 16px rgba(255,255,255,0.15)";
             }}
           >
             {authLoading ? "Signing in…" : "Sign In"}

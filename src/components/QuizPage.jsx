@@ -1215,7 +1215,7 @@ export function QuizPage({
              <button onClick={startQuiz}
                style={{ width:"100%", background:t.green, border:"none", borderRadius:14, padding:"18px", color:"#fff",
                  fontSize:16, fontWeight:700, cursor:"pointer", fontFamily:"Georgia,serif",
-                 boxShadow:"0 6px 20px rgba(61,90,76,0.30)" }}>
+                 boxShadow:"0 6px 20px rgba(255,255,255,0.12)" }}>
               {topic === "communication" && communicationActivity !== "quiz"
                 ? `Start ${COMMUNICATION_ACTIVITIES[communicationActivity].label} →`
                 : fmt==="daily" ? "Start Daily Challenge 📅" : "Start Quiz →"}
@@ -1317,8 +1317,28 @@ export function QuizPage({
 
   const q         = qs[idx];
   if (!q) return null;
+
+  // True/False mode: turn the MCQ into a statement.
+  // We show the question paired with one answer and ask if it's correct.
+  // Use a seeded approach (question index) so the T/F direction is stable per question.
+  const tfShowCorrect = fmt==="truefalse" ? (idx % 3 !== 0) : false; // ~66% True, ~33% False
+  const tfStatement = fmt==="truefalse"
+    ? (() => {
+        const correctOpt = q.opts[q.a];
+        if (tfShowCorrect) {
+          // Show the correct answer → answer is True (index 0)
+          return `${q.q.replace(/\?$/, "")} — ${correctOpt}`;
+        } else {
+          // Show a wrong answer → answer is False (index 1)
+          const wrongOpts = q.opts.filter((_, i) => i !== q.a);
+          const wrongOpt = wrongOpts[idx % wrongOpts.length];
+          return `${q.q.replace(/\?$/, "")} — ${wrongOpt}`;
+        }
+      })()
+    : null;
+
   const opts       = fmt==="truefalse" ? ["True","False"] : q.opts;
-  const correctIdx = fmt==="truefalse" ? 0 : q.a;
+  const correctIdx = fmt==="truefalse" ? (tfShowCorrect ? 0 : 1) : q.a;
   const topicMeta  = TOPIC_META[topic];
 
   return (
@@ -1365,7 +1385,7 @@ export function QuizPage({
         <p style={{ margin:"0 0 4px", fontSize:10, fontWeight:700, letterSpacing:2, textTransform:"uppercase", color:t.muted }}>
           Question {idx+1} of {qs.length}
         </p>
-        <p style={{ margin:0, fontSize:17, fontWeight:700, color:t.ink, lineHeight:1.55, fontFamily:"Georgia,serif" }}>{q.q}</p>
+        <p style={{ margin:0, fontSize:17, fontWeight:700, color:t.ink, lineHeight:1.55, fontFamily:"Georgia,serif" }}>{tfStatement || q.q}</p>
       </div>
 
       <div style={{ display:"flex", flexDirection:"column", gap:9 }}>

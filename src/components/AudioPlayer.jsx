@@ -234,7 +234,7 @@ export function AudioPlayer({ title, mp3Url = null, duration: fallbackDuration =
             border: "none",
             display: "flex", alignItems: "center", justifyContent: "center",
             cursor: loading ? "wait" : "pointer",
-            boxShadow: "0 4px 14px rgba(61,90,76,0.3)",
+            boxShadow: "0 4px 14px rgba(255,255,255,0.12)",
           }}
         >
           {loading ? (

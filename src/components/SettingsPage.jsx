@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { THEME_MODES } from "../systems/theme";
 
 const PREF_DEFAULTS = {
@@ -33,6 +34,9 @@ export default function SettingsPage({
   trackMomentumEvent,
   onDeleteAccount,
 }) {
+  const [openSections, setOpenSections] = useState({});
+  const toggleSection = (title) => setOpenSections(s => ({ ...s, [title]: !s[title] }));
+
   return (
     <div
       className="life-settings-page"
@@ -193,20 +197,54 @@ export default function SettingsPage({
             borderRadius: 14,
             padding: "16px 18px",
             marginBottom: 12,
+            boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
           }}
         >
-          <p
+          <button
+            type="button"
+            onClick={() => toggleSection(section.title)}
             style={{
-              margin: "0 0 10px",
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: 2.5,
-              textTransform: "uppercase",
-              color: t.muted,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "0 0 10px",
+              margin: 0,
             }}
           >
-            {section.title}
-          </p>
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: 2.5,
+                textTransform: "uppercase",
+                color: t.muted,
+              }}
+            >
+              {section.title}
+            </span>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              style={{
+                transform: openSections[section.title] ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 0.2s ease",
+                flexShrink: 0,
+              }}
+            >
+              <polyline points="2,4 6,8 10,4" fill="none" stroke={t.muted} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <div style={{
+            maxHeight: openSections[section.title] ? 0 : 1000,
+            opacity: openSections[section.title] ? 0 : 1,
+            overflow: "hidden",
+            transition: "max-height 0.3s ease, opacity 0.2s ease",
+          }}>
           {section.items.filter(Boolean).map((item) => (
             <div
               className="life-settings-row"
@@ -329,6 +367,7 @@ export default function SettingsPage({
               ))}
             </div>
           )}
+          </div>{/* /collapsible */}
         </div>
       ))}
     </div>

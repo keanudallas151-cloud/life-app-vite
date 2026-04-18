@@ -79,8 +79,35 @@ export default function ProfilePage({
                       {user?.email}
                     </p>
                   </div>
-                  {/* P10: Gear icon → setting_preferences — FORCED perfect circle */}
-                  <div style={{ flexShrink: 0 }}>
+                  {/* Account & Settings icons */}
+                  <div style={{ flexShrink: 0, display: "flex", gap: 8 }}>
+                    <button
+                      onClick={() => {
+                        play("tap");
+                        setPage("account_customize");
+                      }}
+                      title="Account"
+                      aria-label="Customize Account"
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        background: t.light,
+                        border: `1px solid ${t.border}`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        padding: 0,
+                        boxSizing: "border-box",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={t.mid} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", flexShrink: 0 }}>
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                      </svg>
+                    </button>
                     <button
                       onClick={() => {
                         play("tap");
@@ -128,6 +155,7 @@ export default function ProfilePage({
                     borderRadius: 14,
                     padding: 24,
                     marginBottom: 20,
+                    boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
                   }}
                 >
                   <p

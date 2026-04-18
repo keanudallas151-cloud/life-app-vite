@@ -107,7 +107,7 @@ export function SS({
             border: "none",
             cursor: "pointer",
             minHeight: 44,
-            padding: 0,
+            padding: "0 0 0 6px",
           }}
         >
           {label}
@@ -122,14 +122,16 @@ export function SS({
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            width: 44,
-            height: 44,
-            minHeight: 44,
+            width: 32,
+            height: 32,
+            minHeight: 32,
             padding: 0,
-            border: "none",
+            border: `1px solid ${th.border}44`,
+            borderRadius: 8,
             background: "transparent",
             cursor: "pointer",
             flexShrink: 0,
+            marginRight: 4,
           }}
           aria-label={open ? `Collapse ${label}` : `Expand ${label}`}
         >

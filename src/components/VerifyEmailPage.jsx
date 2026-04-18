@@ -37,7 +37,7 @@ export function VerifyEmailPage({ C, play, setScreen, verifyTargetEmail, supabas
           alignItems: "center",
           justifyContent: "center",
           marginBottom: 24,
-          boxShadow: "0 8px 32px rgba(74,140,92,0.35)",
+          boxShadow: "0 8px 32px rgba(255,255,255,0.15)",
         }}
       >
         <span style={{ color: "#fff", fontSize: 28, fontWeight: 800 }}>

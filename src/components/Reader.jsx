@@ -515,17 +515,21 @@ export function NotesTab({
 function getParchmentBackground(t) {
   const base =
     t.ink === C.ink
-      ? "linear-gradient(180deg, #fbf5ea 0%, #f3ead8 100%)"
+      ? "linear-gradient(180deg, #fefcf8 0%, #f9f5ee 40%, #f4efe5 100%)"
       : "linear-gradient(180deg, #3b3128 0%, #2a221c 100%)";
   const glow =
     t.ink === C.ink
-      ? "radial-gradient(circle at 18% 14%, rgba(255,255,255,0.35) 0, rgba(255,255,255,0) 40%)"
+      ? "radial-gradient(circle at 18% 14%, rgba(255,255,255,0.5) 0, rgba(255,255,255,0) 50%)"
       : "radial-gradient(circle at 18% 14%, rgba(255,231,205,0.08) 0, rgba(255,231,205,0) 40%)";
   const fibers =
     t.ink === C.ink
-      ? "repeating-linear-gradient(125deg, rgba(120,89,56,0.035) 0 2px, rgba(255,255,255,0) 2px 10px)"
+      ? "repeating-linear-gradient(125deg, rgba(120,89,56,0.03) 0 1px, rgba(255,255,255,0) 1px 8px)"
       : "repeating-linear-gradient(125deg, rgba(246,214,187,0.03) 0 2px, rgba(0,0,0,0) 2px 10px)";
-  return `${glow}, ${fibers}, ${base}`;
+  const roughGrain =
+    t.ink === C.ink
+      ? "repeating-linear-gradient(45deg, rgba(180,160,130,0.015) 0 1px, transparent 1px 6px)"
+      : "none";
+  return `${glow}, ${roughGrain}, ${fibers}, ${base}`;
 }
 
 const INLINE_VISUAL_PATTERN = /\{\{(?:chart|visual):([^}]+)\}\}/g;
@@ -709,6 +713,7 @@ export function EbookReader({
   const contentPages = Math.max(1, Math.ceil(paragraphs.length / PARAS));
   const totalPages = contentPages + (showTitlePage ? 1 : 0);
   const [pageNum, setPageNum] = useState(0);
+  const [readingMode, setReadingMode] = useState(false);
   const [anim, setAnim] = useState(null);
   const pageRef = useRef(null);
   const sx = useRef(null);
@@ -798,6 +803,11 @@ export function EbookReader({
           flexShrink: 0,
           alignItems: "center",
           gap: 4,
+          transform: readingMode ? "translateY(-100%)" : "translateY(0)",
+          maxHeight: readingMode ? 0 : 60,
+          opacity: readingMode ? 0 : 1,
+          transition: "transform 0.3s ease, max-height 0.3s ease, opacity 0.2s ease",
+          overflow: "hidden",
         }}
       >
         {[
@@ -839,6 +849,31 @@ export function EbookReader({
           }}
         >
           <button
+            type="button"
+            onClick={() => setReadingMode(r => !r)}
+            aria-label={readingMode ? "Exit reading mode" : "Enter reading mode"}
+            title={readingMode ? "Exit reading mode" : "Enter reading mode"}
+            style={{
+              background: readingMode ? `${t.green}18` : "none",
+              border: readingMode ? `1px solid ${t.green}44` : "1px solid transparent",
+              borderRadius: 8,
+              cursor: "pointer",
+              padding: 0,
+              width: 36,
+              height: 36,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              transition: "all 0.2s ease",
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={readingMode ? t.green : t.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+            </svg>
+          </button>
+          <button
             className="life-reader-star-btn"
             type="button"
             onClick={toggleBk}
@@ -874,6 +909,10 @@ export function EbookReader({
               width: "100%",
               padding: "14px 20px 0",
               boxSizing: "border-box",
+              maxHeight: readingMode ? 0 : 200,
+              opacity: readingMode ? 0 : 1,
+              overflow: "hidden",
+              transition: "max-height 0.3s ease, opacity 0.2s ease",
             }}
           >
             <div
@@ -949,7 +988,7 @@ export function EbookReader({
               style={{
                 overflowY: "auto",
                 padding:
-                  "40px max(16px, env(safe-area-inset-right, 0px)) max(28px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))",
+                  "48px max(24px, env(safe-area-inset-right, 0px)) max(36px, env(safe-area-inset-bottom, 0px)) max(24px, env(safe-area-inset-left, 0px))",
                 boxSizing: "border-box",
                 background: getParchmentBackground(t),
                 border: `1px solid ${t.border}`,
@@ -1204,6 +1243,10 @@ export function EbookReader({
                   marginTop: 48,
                   paddingTop: 24,
                   borderTop: `1px solid ${t.light}`,
+                  maxHeight: readingMode ? 0 : 200,
+                  opacity: readingMode ? 0 : 1,
+                  overflow: "hidden",
+                  transition: "max-height 0.3s ease, opacity 0.2s ease",
                 }}
               >
                 <button
@@ -1235,7 +1278,10 @@ export function EbookReader({
                   </svg>
                   Previous
                 </button>
-                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <div style={{ position: "relative", maxWidth: 180, overflow: "hidden" }}>
+                  {totalPages > 12 && <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 20, background: "linear-gradient(90deg, rgba(255,255,255,0.95), transparent)", zIndex: 1, pointerEvents: "none" }} />}
+                  {totalPages > 12 && <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 20, background: "linear-gradient(270deg, rgba(255,255,255,0.95), transparent)", zIndex: 1, pointerEvents: "none" }} />}
+                  <div style={{ display: "flex", gap: 5, alignItems: "center", overflowX: "auto", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", padding: "4px 2px", msOverflowStyle: "none" }}>
                   {Array.from({ length: totalPages }).map((_, i) => (
                     <button
                       key={i}
@@ -1258,6 +1304,7 @@ export function EbookReader({
                       }}
                     />
                   ))}
+                </div>
                 </div>
                 <button
                   onClick={() => turn(1)}

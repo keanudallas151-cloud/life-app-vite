@@ -336,7 +336,7 @@ export function ResetPasswordPage({
             fontFamily: "Georgia,serif",
             opacity: authLoading ? 0.7 : 1,
             marginTop: 2,
-            boxShadow: "0 4px 16px rgba(74,140,92,0.35)",
+            boxShadow: "0 4px 16px rgba(255,255,255,0.15)",
             transition: "all 0.2s ease",
           }}
         >

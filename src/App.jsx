@@ -2681,7 +2681,7 @@ export default function LifeApp() {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.borderColor = t.green;
-            e.currentTarget.style.boxShadow = "0 2px 8px rgba(61,90,76,0.2)";
+            e.currentTarget.style.boxShadow = "0 2px 8px rgba(255,255,255,0.12)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.borderColor = t.border;
@@ -2814,9 +2814,10 @@ export default function LifeApp() {
             bottom: 0,
             background: t.white,
             borderRight: `1px solid ${t.border}`,
+            boxShadow: sidebarOpen ? "4px 0 24px rgba(0,0,0,0.08)" : "none",
             zIndex: 40,
             transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
-            transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)",
+            transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s ease",
             display: "flex",
             flexDirection: "column",
           }}
@@ -2847,7 +2848,7 @@ export default function LifeApp() {
                   alignItems: "center",
                   justifyContent: "center",
                   flexShrink: 0,
-                  boxShadow: "0 2px 8px rgba(61,90,76,0.2)",
+                  boxShadow: "0 2px 8px rgba(255,255,255,0.12)",
                 }}
               >
                 <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>
@@ -3278,6 +3279,16 @@ export default function LifeApp() {
               icon="users"
               onClick={() => {
                 play("tap");
+                setPage("discord_networking");
+              }}
+              active={page === "discord_networking"}
+            />
+            <SL
+              theme={t}
+              label="Investors & Inventors"
+              icon="bolt"
+              onClick={() => {
+                play("tap");
                 setPage("networking");
               }}
               active={page === "networking"}
@@ -3625,6 +3636,42 @@ export default function LifeApp() {
               </div>
             )}
 
+            {page === "discord_networking" && (
+              <div style={{ padding: "36px 24px", maxWidth: 480, margin: "0 auto" }}>
+                <p style={{ margin: "0 0 4px", fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", color: t.green }}>Community</p>
+                <h2 style={{ margin: "0 0 12px", fontSize: 26, fontWeight: 800, color: t.ink, fontFamily: "Georgia,serif" }}>Networking Group</h2>
+                <p style={{ margin: "0 0 24px", fontSize: 14, color: t.mid, lineHeight: 1.75, fontFamily: "Georgia,serif" }}>
+                  Connect with other Life. members on Discord. Share wins, ask questions, find accountability partners, and network with people who are building, investing, and growing.
+                </p>
+                <a
+                  href="https://discord.gg/d3uFqUxB"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                    width: "100%", padding: "16px 24px",
+                    background: "#5865F2", color: "#fff", border: "none", borderRadius: 14,
+                    fontSize: 16, fontWeight: 700, fontFamily: "Georgia,serif",
+                    textDecoration: "none", cursor: "pointer",
+                    boxShadow: "0 4px 16px rgba(88,101,242,0.35)",
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
+                  Join the Discord
+                </a>
+                <div style={{ marginTop: 28, background: t.white, border: `1px solid ${t.border}`, borderRadius: 16, padding: "20px 18px" }}>
+                  <p style={{ margin: "0 0 12px", fontSize: 10, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase", color: t.muted }}>What you'll find</p>
+                  {["Share wins and progress with the community", "Find accountability partners", "Ask questions and get real answers", "Network with investors, builders, and creators"].map(item => (
+                    <div key={item} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", borderBottom: `1px solid ${t.light}` }}>
+                      <span style={{ color: t.green, fontSize: 14, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>✓</span>
+                      <span style={{ fontSize: 13, color: t.mid, lineHeight: 1.6 }}>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {page === "networking" && (
               <ConnectPage t={t} user={user} play={play} />
             )}
@@ -3723,6 +3770,37 @@ export default function LifeApp() {
                 initials={initials}
                 doSignOut={doSignOut}
               />
+            )}
+
+            {page === "account_customize" && (
+              <div style={{ padding: "32px 20px", maxWidth: 520, margin: "0 auto" }}>
+                <button onClick={() => { play("back"); setPage("profile"); }} style={{ background: "none", border: "none", color: t.muted, fontSize: 13, cursor: "pointer", fontFamily: "Georgia,serif", marginBottom: 16, display: "flex", alignItems: "center", gap: 6, padding: 0 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  Back to Profile
+                </button>
+                <h2 style={{ fontSize: 22, fontWeight: 700, color: t.ink, margin: "0 0 20px" }}>Account</h2>
+                <div style={{ background: t.white, border: `1px solid ${t.border}`, borderRadius: 14, padding: "20px 18px", marginBottom: 12 }}>
+                  <p style={{ margin: "0 0 14px", fontSize: 10, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase", color: t.muted }}>Profile Information</p>
+                  {[
+                    { label: "Display Name", value: user?.name || "Not set" },
+                    { label: "Email", value: user?.email || "Not set" },
+                  ].map(row => (
+                    <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${t.light}` }}>
+                      <span style={{ fontSize: 14, color: t.mid, fontFamily: "Georgia,serif" }}>{row.label}</span>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: t.ink, fontFamily: "Georgia,serif" }}>{row.value}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ background: t.white, border: `1px solid ${t.border}`, borderRadius: 14, padding: "20px 18px" }}>
+                  <p style={{ margin: "0 0 14px", fontSize: 10, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase", color: t.muted }}>Profile Picture</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ width: 64, height: 64, borderRadius: "50%", background: `linear-gradient(135deg, ${t.green}, ${t.greenAlt})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <span style={{ fontSize: 22, fontWeight: 800, color: "#fff" }}>{initials}</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: 13, color: t.muted, lineHeight: 1.6, fontStyle: "italic" }}>Profile picture customisation coming soon. Your initials are shown for now.</p>
+                  </div>
+                </div>
+              </div>
             )}
 
             {page === "reading" && selContent && (
