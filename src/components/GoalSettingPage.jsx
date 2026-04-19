@@ -74,10 +74,11 @@ export function GoalSettingPage({ t, play }) {
     <div
       data-page-tag="#goal_setting"
       style={{
-        padding: "48px 28px",
+        padding: "32px 20px calc(96px + env(safe-area-inset-bottom, 0px)) 20px",
         maxWidth: 560,
         margin: "0 auto",
         fontFamily: "Georgia,serif",
+        boxSizing: "border-box",
       }}
     >
       <h2 style={{ fontSize: 26, fontWeight: 700, color: t.ink, margin: "0 0 8px" }}>

@@ -52,10 +52,11 @@ export function BottomNav({
 
       {/* Library / Reading */}
       <button
-        className={`life-bottom-nav-item${page === "reading" || page === "where_to_start" ? " life-bottom-nav-item--active" : ""}`}
+        className={`life-bottom-nav-item${page === "reading" || page === "where_to_start" || page === "categories" || page === "category_hub" ? " life-bottom-nav-item--active" : ""}`}
         onClick={() => {
           play("tap");
-          setSidebarOpen(true);
+          setPage("where_to_start");
+          setSidebarOpen(false);
         }}
         aria-label="Library"
       >
@@ -65,12 +66,12 @@ export function BottomNav({
           viewBox="0 0 24 24"
           fill="none"
           stroke={
-            page === "reading" || page === "where_to_start"
+            page === "reading" || page === "where_to_start" || page === "categories" || page === "category_hub"
               ? t.green
               : t.muted
           }
           strokeWidth={
-            page === "reading" || page === "where_to_start" ? 2.5 : 1.8
+            page === "reading" || page === "where_to_start" || page === "categories" || page === "category_hub" ? 2.5 : 1.8
           }
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -82,7 +83,7 @@ export function BottomNav({
           className="life-bottom-nav-label"
           style={{
             color:
-              page === "reading" || page === "where_to_start"
+              page === "reading" || page === "where_to_start" || page === "categories" || page === "category_hub"
                 ? t.green
                 : t.muted,
           }}

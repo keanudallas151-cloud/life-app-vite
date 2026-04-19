@@ -46,6 +46,7 @@ import {
 import { BottomNav } from "./components/BottomNav";
 import { CategoriesPage } from "./components/CategoriesPage";
 import { CategoryHubPage } from "./components/CategoryHubPage";
+import { AccountCustomizePage } from "./components/AccountCustomizePage";
 import { ConnectPage } from "./components/ConnectPage";
 import { DailyGrowthPage } from "./components/DailyGrowthPage";
 import { GoalSettingPage } from "./components/GoalSettingPage";
@@ -3790,38 +3791,20 @@ export default function LifeApp() {
                 setPage={setPage}
                 initials={initials}
                 doSignOut={doSignOut}
+                readKeys={readKeys}
+                bookmarks={bookmarks}
+                totalTopics={allContent.length}
               />
             )}
 
             {page === "account_customize" && (
-              <div style={{ padding: "32px 20px", maxWidth: 520, margin: "0 auto" }}>
-                <button onClick={() => { play("back"); setPage("profile"); }} style={{ background: "none", border: "none", color: t.muted, fontSize: 13, cursor: "pointer", fontFamily: "Georgia,serif", marginBottom: 16, display: "flex", alignItems: "center", gap: 6, padding: 0 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                  Back to Profile
-                </button>
-                <h2 style={{ fontSize: 22, fontWeight: 700, color: t.ink, margin: "0 0 20px" }}>Account</h2>
-                <div style={{ background: t.white, border: `1px solid ${t.border}`, borderRadius: 14, padding: "20px 18px", marginBottom: 12 }}>
-                  <p style={{ margin: "0 0 14px", fontSize: 10, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase", color: t.muted }}>Profile Information</p>
-                  {[
-                    { label: "Display Name", value: user?.name || "Not set" },
-                    { label: "Email", value: user?.email || "Not set" },
-                  ].map(row => (
-                    <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${t.light}` }}>
-                      <span style={{ fontSize: 14, color: t.mid, fontFamily: "Georgia,serif" }}>{row.label}</span>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: t.ink, fontFamily: "Georgia,serif" }}>{row.value}</span>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ background: t.white, border: `1px solid ${t.border}`, borderRadius: 14, padding: "20px 18px" }}>
-                  <p style={{ margin: "0 0 14px", fontSize: 10, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase", color: t.muted }}>Profile Picture</p>
-                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                    <div style={{ width: 64, height: 64, borderRadius: "50%", background: `linear-gradient(135deg, ${t.green}, ${t.greenAlt})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <span style={{ fontSize: 22, fontWeight: 800, color: "#fff" }}>{initials}</span>
-                    </div>
-                    <p style={{ margin: 0, fontSize: 13, color: t.muted, lineHeight: 1.6, fontStyle: "italic" }}>Profile picture customisation coming soon. Your initials are shown for now.</p>
-                  </div>
-                </div>
-              </div>
+              <AccountCustomizePage
+                t={t}
+                user={user}
+                play={play}
+                setPage={setPage}
+                initials={initials}
+              />
             )}
 
             {page === "reading" && selContent && (
