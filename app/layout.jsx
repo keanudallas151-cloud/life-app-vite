@@ -35,6 +35,8 @@ export const metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: 'cover',
   themeColor: '#50c878'
 }
@@ -46,6 +48,14 @@ export default function RootLayout({ children }) {
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        {/* iOS standalone PWA — hides Safari UI when launched from home screen */}
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Life." />
+        {/* Capacitor / WKWebView compatibility — format-detection prevents iOS
+            from auto-linking phone numbers and addresses in content */}
+        <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
       </head>
       <body>
         {children}

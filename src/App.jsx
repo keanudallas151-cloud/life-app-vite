@@ -1757,7 +1757,18 @@ export default function LifeApp() {
               fontFamily: "Georgia,serif",
             }}
           >
-            Life.
+            Life
+            <span
+              style={{
+                display: "inline-block",
+                width: "0.4em",
+                height: "0.4em",
+                background: C.ink,
+                borderRadius: "50%",
+                marginLeft: "0.02em",
+                verticalAlign: "0.08em",
+              }}
+            />
           </h1>
           <p
             style={{

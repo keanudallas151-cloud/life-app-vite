@@ -53,6 +53,7 @@ function DiscoverCard({
       <div style={{ position: "relative", minHeight: 560 }}>
         {profile.hero_image_url || profile.avatar_url ? (
           <div style={{ width: "100%", aspectRatio: "1.1 / 1", overflow: "hidden", background: t.skin }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={profile.hero_image_url || profile.avatar_url}
               alt={profile.full_name}
@@ -101,6 +102,7 @@ function DiscoverCard({
           </div>
 
           <div
+            className="ii-metrics-grid"
             style={{
               marginTop: 16,
               display: "grid",

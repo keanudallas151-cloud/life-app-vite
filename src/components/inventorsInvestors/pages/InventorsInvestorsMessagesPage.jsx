@@ -187,6 +187,7 @@ export function InventorsInvestorsMessagesPage({
         />
       ) : (
         <div
+          className="ii-messages-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "minmax(0, 280px) minmax(0, 1fr)",

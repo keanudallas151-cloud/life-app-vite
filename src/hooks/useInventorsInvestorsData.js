@@ -249,7 +249,7 @@ export function useInventorsInvestorsData(user) {
 
   const uploadFile = useCallback(async (file, folder) => {
     const extension = (file.name.split(".").pop() || "jpg").toLowerCase();
-    const safeFileName = `${folder}/${crypto.randomUUID()}.${extension}`;
+    const safeFileName = `${folder}/${window.crypto.randomUUID()}.${extension}`;
     const { error } = await supabase.storage
       .from(STORAGE_BUCKET)
       .upload(safeFileName, file, { upsert: true, cacheControl: "3600" });

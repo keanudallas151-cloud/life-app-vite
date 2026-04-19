@@ -103,7 +103,7 @@ export function InventorsInvestors({ t, user, play }) {
 
   useEffect(() => {
     if (!userId || userId === "guest") return;
-    setRoleChoice(selectedRole || roleChoice);
+    if (selectedRole) setRoleChoice(selectedRole);
   }, [selectedRole, userId]);
 
   useEffect(() => {

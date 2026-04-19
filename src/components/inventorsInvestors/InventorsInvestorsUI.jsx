@@ -68,9 +68,10 @@ export function FeatureFrame({ t, eyebrow, title, subtitle, actions, children })
   );
 }
 
-export function SurfaceCard({ t, children, padded = true, style = {} }) {
+export function SurfaceCard({ t, children, padded = true, style = {}, className }) {
   return (
     <div
+      className={className}
       style={{
         background: t.white,
         border: `1px solid ${t.border}`,
@@ -423,6 +424,7 @@ export function ImagePicker({
                 background: t.skin,
               }}
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={preview}
                 alt="Preview"
@@ -543,6 +545,7 @@ export function SwipeGestureCard({
     <SurfaceCard
       t={t}
       padded={false}
+      className="ii-swipe-card"
       style={{
         overflow: "hidden",
         maxWidth: 520,
@@ -559,6 +562,7 @@ export function SwipeGestureCard({
 export function Avatar({ src, name, size = 56, t }) {
   if (src) {
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={src}
         alt={name || "Avatar"}

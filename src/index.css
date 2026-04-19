@@ -3712,3 +3712,274 @@ button:active .life-card-inner,
 .life-page-dots::-webkit-scrollbar {
   display: none;
 }
+
+
+/* ==========================================================================
+   v0.6.6 — iOS & Mobile Polish
+   Top 20 global devices covered:
+     iPhone 16 Pro Max / 15 Pro Max (430×932)  — iPhone 16 / 15 (393×852)
+     iPhone 14 Pro / 13 / 12 (390×844)         — iPhone SE 3rd gen (375×667)
+     Samsung Galaxy S24 Ultra / S24+ (412×915) — Galaxy S24 (360×780)
+     Galaxy A55 / A35 / A15 (360×800–780)      — Xiaomi 14 / Redmi Note 13 (393×852)
+     OPPO A58 / Vivo Y100 / Realme C65 (360×780–800)
+     OnePlus 12 (412×917)                       — Google Pixel 8 (412×892)
+   ========================================================================== */
+
+/* ── 1. Global iOS base improvements ─────────────────────────────────────── */
+
+/* Remove tap flash on ALL interactive elements (iOS Safari default is grey) */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent callout (copy/define popover) on long-press images & cards */
+img,
+.life-card-press,
+.life-bottom-nav-item,
+button {
+  -webkit-touch-callout: none;
+}
+
+/* Momentum scrolling on every scroll container */
+.life-main-scroll,
+.life-sidebar,
+[data-scroll],
+.life-reader-body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Prevent rubber-band on fixed overlays */
+.life-sidebar,
+.life-sidebar-backdrop {
+  overscroll-behavior: none;
+}
+
+/* iOS: remove default appearance from inputs / buttons */
+input,
+textarea,
+select,
+button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* ── 2. 360 px — Galaxy S24, A55, A35, A15, OPPO, Vivo, Realme ───────────── */
+@media (max-width: 390px) {
+  /* Tighten horizontal padding on the hero and cards on very narrow screens */
+  .life-home-hero {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  /* Shrink the bottom-nav labels slightly so 5 items fit comfortably */
+  .life-bottom-nav-label {
+    font-size: 9px !important;
+    letter-spacing: 0 !important;
+  }
+
+  /* Make bottom-nav icons slightly smaller on narrow screens */
+  .life-bottom-nav-item svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  /* Sidebar slightly narrower */
+  .life-sidebar {
+    width: 92vw !important;
+    max-width: 310px !important;
+  }
+
+  /* Reduce reader toolbar font size so items don't wrap */
+  .life-reader-toolbar-chapter {
+    font-size: 11px !important;
+    max-width: 130px !important;
+  }
+
+  /* Tighten card padding */
+  .life-section-card {
+    padding: 14px 12px !important;
+  }
+}
+
+/* ── 3. 375 px — iPhone SE 3rd gen ───────────────────────────────────────── */
+@media (max-width: 390px) and (min-width: 370px) {
+  .life-home-hero {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .life-bottom-nav-label {
+    font-size: 9.5px !important;
+  }
+}
+
+/* ── 4. 390–393 px — iPhone 12 / 13 / 14 / 15, Xiaomi 14 ───────────────── */
+@media (max-width: 430px) and (min-width: 390px) {
+  .life-home-hero {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  .life-bottom-nav-label {
+    font-size: 10px !important;
+  }
+}
+
+/* ── 5. 412 px — Galaxy S24 Ultra, OnePlus 12, Pixel 8 ─────────────────── */
+@media (max-width: 430px) and (min-width: 410px) {
+  .life-sidebar {
+    width: 86vw !important;
+    max-width: 355px !important;
+  }
+}
+
+/* ── 6. 430 px — iPhone 16 Pro Max / 15 Pro Max ─────────────────────────── */
+/* Already handled in existing 430px rule above; this extends it */
+@media (min-width: 430px) and (max-width: 640px) {
+  .life-home-hero {
+    padding-left: 22px !important;
+    padding-right: 22px !important;
+  }
+}
+
+/* ── 7. iPhone Dynamic Island / notch safe-area guard ────────────────────── */
+/* iPhone 14 Pro+ Dynamic Island lives in the top safe area.
+   Ensure no fixed UI element clips under it. */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .life-reader-toolbar,
+  .life-toast-container {
+    padding-top: max(8px, env(safe-area-inset-top));
+  }
+
+  /* On iPhone with home indicator, add extra clearance above nav */
+  .life-bottom-nav {
+    padding-bottom: max(var(--safe-bottom, 0px), 12px);
+  }
+}
+
+/* ── 8. PWA / Home screen standalone improvements ────────────────────────── */
+@media (display-mode: standalone) {
+  /* Remove address bar gap — the full viewport is the app */
+  html, body {
+    height: 100dvh;
+  }
+
+  /* Extra top padding for status bar when running standalone on iOS */
+  .life-reader-toolbar {
+    padding-top: max(12px, env(safe-area-inset-top, 12px));
+  }
+
+  /* Ensure the bottom nav clears the home indicator on all iPhones */
+  .life-bottom-nav {
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
+  }
+
+  /* Hide browser-style scrollbars in standalone mode */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ── 9. Touch target minimums (Apple HIG: 44×44pt) ──────────────────────── */
+@media (max-width: 640px) {
+  /* Ensure all interactive buttons have at minimum 44px touch height */
+  .life-bottom-nav-item {
+    min-height: 44px !important;
+  }
+
+  /* Reader prev/next page buttons */
+  .life-reader-turn-btn {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  /* Dismiss/close buttons */
+  button[aria-label*="Dismiss"],
+  button[aria-label*="Close"],
+  button[aria-label*="close"],
+  button[aria-label*="dismiss"] {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+}
+
+/* ── 10. Scroll container momentum & over-scroll polish ─────────────────── */
+@media (max-width: 640px) {
+  .life-main-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    overscroll-behavior-y: contain;
+  }
+
+  /* Prevent the sidebar scroll from propagating to the page */
+  .life-sidebar {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+}
+
+/* ── 11. iOS font rendering & text legibility ────────────────────────────── */
+@media (max-width: 640px) {
+  body {
+    /* Stronger subpixel rendering hint for retina displays */
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Prevent double-tap zoom on buttons and links */
+  button, a {
+    touch-action: manipulation;
+  }
+
+  /* Prevent iOS from enlarging small text in landscape */
+  p, span, div, li, td {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+}
+
+/* ── 12. Inventors & Investors mobile layout fixes ───────────────────────── */
+@media (max-width: 640px) {
+  /* Two-column message layout collapses to single column */
+  .ii-messages-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Swipe card full width on mobile */
+  .ii-swipe-card {
+    max-width: 100% !important;
+    border-radius: 18px !important;
+  }
+
+  /* Metric chips: 2 per row on narrow screens */
+  .ii-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* ── 13. Landscape phone support ─────────────────────────────────────────── */
+@media (max-height: 500px) and (orientation: landscape) and (max-width: 900px) {
+  /* In landscape, the bottom nav wastes too much vertical space — keep it slim */
+  .life-bottom-nav {
+    min-height: 44px !important;
+    padding-top: 4px !important;
+  }
+
+  .life-bottom-nav-label {
+    display: none !important;
+  }
+
+  /* Reader gets more vertical room in landscape */
+  .life-reader-body {
+    padding-bottom: 52px !important;
+  }
+}
+
+/* ── 14. High-DPI / Retina sharpness ────────────────────────────────────── */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Borders look crisper at 0.5px on retina */
+  .life-bottom-nav {
+    border-top-width: 0.5px;
+  }
+}

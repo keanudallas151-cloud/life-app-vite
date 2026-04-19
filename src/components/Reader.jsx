@@ -874,30 +874,34 @@ export function EbookReader({
           {showFocusHint && !readingMode && (
             <div
               role="note"
+              aria-label="Reading mode tip"
               style={{
                 position: "absolute",
-                right: -2,
-                top: -62,
-                maxWidth: 220,
-                padding: "10px 12px",
-                borderRadius: 12,
+                right: -4,
+                top: -76,
+                width: 210,
+                padding: "11px 14px 11px 12px",
+                borderRadius: 14,
                 background: t.ink,
                 color: t.skin,
-                boxShadow: "0 10px 24px rgba(0,0,0,0.18)",
-                zIndex: 3,
+                boxShadow: "0 8px 28px rgba(0,0,0,0.22)",
+                zIndex: 10,
+                WebkitTouchCallout: "none",
+                userSelect: "none",
               }}
             >
+              {/* Dismiss — 44×44 touch target (Apple HIG) */}
               <button
                 type="button"
-                aria-label="Dismiss focus mode tip"
+                aria-label="Dismiss reading mode tip"
                 onClick={dismissFocusHint}
                 style={{
                   position: "absolute",
-                  top: 6,
-                  right: 6,
-                  width: 20,
-                  height: 20,
-                  borderRadius: "50%",
+                  top: 0,
+                  right: 0,
+                  width: 44,
+                  height: 44,
+                  borderRadius: "0 14px 0 14px",
                   border: "none",
                   background: "transparent",
                   color: t.skin,
@@ -907,34 +911,51 @@ export function EbookReader({
                   justifyContent: "center",
                   padding: 0,
                   lineHeight: 1,
-                  fontSize: 14,
+                  fontSize: 16,
+                  opacity: 0.7,
+                  WebkitTapHighlightColor: "transparent",
                 }}
               >
                 ×
               </button>
               <p
                 style={{
-                  margin: 0,
-                  paddingRight: 18,
+                  margin: "0 0 3px",
+                  paddingRight: 28,
                   fontSize: 12,
-                  fontWeight: 700,
-                  lineHeight: 1.45,
-                  fontFamily: "Georgia,serif",
+                  fontWeight: 800,
+                  lineHeight: 1.3,
+                  letterSpacing: 0.1,
+                  color: t.skin,
                 }}
               >
-                Toggle Focus Mode
+                Reading Mode
               </p>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 11,
+                  fontWeight: 500,
+                  lineHeight: 1.5,
+                  color: t.skin,
+                  opacity: 0.78,
+                  paddingRight: 12,
+                }}
+              >
+                Tap to hide UI and focus on the text.
+              </p>
+              {/* Caret pointing down to the button */}
               <div
                 aria-hidden
                 style={{
                   position: "absolute",
-                  right: 16,
-                  bottom: -8,
+                  right: 12,
+                  bottom: -7,
                   width: 14,
                   height: 14,
                   background: t.ink,
                   transform: "rotate(45deg)",
-                  borderRadius: 2,
+                  borderRadius: "0 0 3px 0",
                 }}
               />
             </div>
