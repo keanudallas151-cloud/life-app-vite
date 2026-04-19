@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.6.9 — Auth and backend status hardening
+- Added clear setup/status notices across landing, sign-in, register, verify-email, and reset-password screens when Supabase auth is unavailable or needs redirect configuration.
+- Blocked auth actions with direct user-facing messages when `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are missing instead of failing ambiguously.
+- Fixed verify-email resend to carry the app redirect URL so local and preview verification flows return to the correct origin.
+- Surfaced cloud sync trouble in-app for profile and quiz data instead of leaving those failures only in the console.
+- Added a reusable status notice component and matching app banner styling for backend health messaging.
+
 ## v0.6.8 — Security, config, and core Supabase hardening
 - Removed the tracked local `.env` file from git and expanded ignore rules for local AI/editor noise.
 - Standardized the app on canonical `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` env names.

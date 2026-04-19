@@ -1,4 +1,5 @@
 "use client";
+import { SystemStatusNotice } from "./SystemStatusNotice";
 export function RegisterPage({
   C,
   play,
@@ -22,6 +23,7 @@ export function RegisterPage({
   authLoading,
   doRegister,
   setSiEmail,
+  systemNotice,
 }) {
   // Password strength computation
   const passwordHasMinLength = rPass.length >= 8;
@@ -154,6 +156,8 @@ export function RegisterPage({
       >
         Welcome To Life
       </p>
+
+      <SystemStatusNotice notice={systemNotice} style={{ maxWidth: 320, marginBottom: 18 }} />
 
       <div
         className="life-auth-card"

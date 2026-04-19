@@ -45,13 +45,19 @@ function toDB(stats, userId) {
 export function useQuizStats(userId) {
   const [stats,   setStatsState] = useState({ ...DEFAULT_STATS });
   const [loading, setLoading]    = useState(false);
+  const [error,   setError]      = useState("");
 
   const isGuest = !userId || userId === "_" || !isSupabaseConfigured;
 
   useEffect(() => {
-    if (isGuest) { setStatsState({ ...DEFAULT_STATS }); return; }
+    if (isGuest) {
+      setStatsState({ ...DEFAULT_STATS });
+      setError("");
+      return;
+    }
     let cancelled = false;
     setLoading(true);
+    setError("");
     supabase
       .from("quiz_stats")
       .select("*")
@@ -59,7 +65,10 @@ export function useQuizStats(userId) {
       .maybeSingle()
       .then(({ data, error }) => {
         if (cancelled) return;
-        if (error) console.error("useQuizStats fetch:", error.message);
+        if (error) {
+          console.error("useQuizStats fetch:", error.message);
+          setError("Quiz stats are unavailable right now. You can still play, but cloud stats may not update until the connection recovers.");
+        }
         setStatsState(fromDB(data));
         setLoading(false);
       });
@@ -72,8 +81,13 @@ export function useQuizStats(userId) {
     const { error } = await supabase
       .from("quiz_stats")
       .upsert(toDB(next, userId), { onConflict: "user_id" });
-    if (error) console.error("useQuizStats save:", error.message);
+    if (error) {
+      console.error("useQuizStats save:", error.message);
+      setError("Quiz stats are unavailable right now. You can still play, but cloud stats may not update until the connection recovers.");
+      return;
+    }
+    setError("");
   }, [userId, isGuest]);
 
-  return { stats, saveStats, loading };
+  return { stats, saveStats, loading, error };
 }

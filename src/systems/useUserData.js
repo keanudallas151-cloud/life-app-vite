@@ -9,6 +9,7 @@ export function useUserData(userId) {
   const [tsdProfile,  setTsdProfileState] = useState(null);
   const [momentumState, setMomentumStateRaw] = useState(null);
   const [loading,     setLoading]         = useState(false);
+  const [error,       setError]           = useState("");
 
   const isGuest = !userId || userId === "_";
   const persistTimerRef = useRef(null);
@@ -51,7 +52,10 @@ export function useUserData(userId) {
           .from("user_data")
           .upsert(payload, { onConflict: "user_id" });
 
-        if (!error) continue;
+        if (!error) {
+          setError("");
+          continue;
+        }
 
         if (
           Object.prototype.hasOwnProperty.call(patch, "highlights") &&
@@ -73,11 +77,13 @@ export function useUserData(userId) {
 
           if (fallbackError) {
             console.error("useUserData persist fallback:", fallbackError.message);
+            setError("Profile sync is temporarily unavailable. Your latest changes may stay local until the connection recovers.");
           }
           continue;
         }
 
         console.error("useUserData persist:", error.message);
+        setError("Profile sync is temporarily unavailable. Your latest changes may stay local until the connection recovers.");
       }
     } finally {
       persistInFlightRef.current = false;
@@ -110,11 +116,13 @@ export function useUserData(userId) {
       setHighlightsState([]);
       setTsdProfileState(null);
       setMomentumStateRaw(null);
+      setError("");
       return;
     }
 
     let cancelled = false;
     setLoading(true);
+    setError("");
     supabase
       .from("user_data")
       .select("bookmarks, notes, read_keys, highlights, tsd_profile, momentum_state")
@@ -130,6 +138,7 @@ export function useUserData(userId) {
 
         if (!String(error.message || "").toLowerCase().includes("highlights")) {
           console.error("useUserData fetch:", error.message);
+          setError("Profile sync is unavailable right now. Cached data will still work until Supabase responds again.");
           setLoading(false);
           return;
         }
@@ -144,6 +153,7 @@ export function useUserData(userId) {
             if (cancelled) return;
             if (fallbackError) {
               console.error("useUserData fallback fetch:", fallbackError.message);
+              setError("Profile sync is unavailable right now. Cached data will still work until Supabase responds again.");
               setLoading(false);
               return;
             }
@@ -153,6 +163,7 @@ export function useUserData(userId) {
           .catch(() => {
             if (cancelled) return;
             console.error("useUserData fallback query failed");
+            setError("Profile sync is unavailable right now. Cached data will still work until Supabase responds again.");
             setLoading(false);
           });
       });
@@ -215,5 +226,6 @@ export function useUserData(userId) {
     momentumState, setMomentumState,
     replaceAllData,
     loading,
+    error,
   };
 }

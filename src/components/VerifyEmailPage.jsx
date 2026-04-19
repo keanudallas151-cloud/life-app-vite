@@ -1,5 +1,15 @@
 "use client";
-export function VerifyEmailPage({ C, play, setScreen, verifyTargetEmail, supabase }) {
+import { SystemStatusNotice } from "./SystemStatusNotice";
+
+export function VerifyEmailPage({
+  C,
+  play,
+  setScreen,
+  verifyTargetEmail,
+  supabase,
+  emailRedirectTo,
+  systemNotice,
+}) {
   return (
     <div
       data-page-tag="#verify_email_page"
@@ -100,6 +110,8 @@ export function VerifyEmailPage({ C, play, setScreen, verifyTargetEmail, supabas
         Click it to verify your account.
       </p>
 
+      <SystemStatusNotice notice={systemNotice} style={{ maxWidth: 320, marginBottom: 20 }} />
+
       <div
         style={{
           display: "flex",
@@ -117,6 +129,7 @@ export function VerifyEmailPage({ C, play, setScreen, verifyTargetEmail, supabas
               await supabase.auth.resend({
                 type: "signup",
                 email: verifyTargetEmail.toLowerCase().trim(),
+                options: emailRedirectTo ? { emailRedirectTo } : undefined,
               });
               play("ok");
             } catch {
@@ -144,6 +157,18 @@ export function VerifyEmailPage({ C, play, setScreen, verifyTargetEmail, supabas
         >
           Resend Email
         </button>
+
+        <p
+          style={{
+            margin: "-2px 0 0",
+            fontSize: 11,
+            color: C.muted,
+            lineHeight: 1.6,
+            textAlign: "center",
+          }}
+        >
+          Verification emails will return to this app when the redirect URL is configured correctly.
+        </p>
 
         {/* Back to sign in */}
         <button

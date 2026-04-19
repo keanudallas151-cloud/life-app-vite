@@ -1186,6 +1186,13 @@ export default function LifeApp() {
     if (authLoading) return;
     play("tap");
     setSiSocialErr("");
+    if (!isSupabaseConfigured) {
+      setSiSocialErr(
+        "Sign in is unavailable until NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are configured.",
+      );
+      play("err");
+      return;
+    }
     setAuthLoading(true);
     await new Promise((r) => setTimeout(r, 3000));
     try {
@@ -1225,6 +1232,13 @@ export default function LifeApp() {
     if (authLoading) return;
     setSiErr("");
     setSiSocialErr("");
+    if (!isSupabaseConfigured) {
+      setSiErr(
+        "Sign in is unavailable until NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are configured.",
+      );
+      play("err");
+      return;
+    }
     if (!siEmail.trim()) {
       setSiErr("Please enter your email.");
       play("err");
@@ -1266,6 +1280,13 @@ export default function LifeApp() {
     if (authLoading) return;
     setFpErr("");
     setFpMsg("");
+    if (!isSupabaseConfigured) {
+      setFpErr(
+        "Password reset is unavailable until NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are configured.",
+      );
+      play("err");
+      return;
+    }
     if (!fpEmail.trim() || !fpEmail.includes("@")) {
       setFpErr("Please enter a valid email.");
       play("err");
@@ -1297,6 +1318,13 @@ export default function LifeApp() {
   const doResetPassword = async () => {
     if (authLoading) return;
     setRpErr("");
+    if (!isSupabaseConfigured) {
+      setRpErr(
+        "Password recovery is unavailable until NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are configured.",
+      );
+      play("err");
+      return;
+    }
 
     if (rpPass.length < 8) {
       setRpErr("Password must be at least 8 characters.");
@@ -1348,6 +1376,14 @@ export default function LifeApp() {
   const doRegister = async () => {
     if (authLoading) return;
     setRErr({});
+    if (!isSupabaseConfigured) {
+      setRErr({
+        email:
+          "Account creation is unavailable until NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are configured.",
+      });
+      play("err");
+      return;
+    }
     // Helper that snapshots current form values BEFORE updating errors,
     // so the clearing-effect knows what "old" values looked like.
     const setRErrSnap = (errs) => {
@@ -2089,6 +2125,13 @@ export default function LifeApp() {
         setScreen={setScreen}
         verifyTargetEmail={verifyTargetEmail}
         supabase={supabase}
+        emailRedirectTo={getAuthRedirectUrl()}
+        systemNotice={{
+          tone: "info",
+          title: "Verification link returns here",
+          body:
+            "If verification opens the wrong site, update NEXT_PUBLIC_SITE_URL and your Supabase redirect URLs to match this app.",
+        }}
       />
     );
 
@@ -2112,6 +2155,16 @@ export default function LifeApp() {
         authLoading={authLoading}
         doResetPassword={doResetPassword}
         passwordRecoveryRef={passwordRecoveryRef}
+        systemNotice={
+          !isSupabaseConfigured
+            ? {
+                tone: "warning",
+                title: "Cloud auth is not configured yet",
+                body:
+                  "Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY to enable password recovery and account access.",
+              }
+            : null
+        }
       />
     );
 
@@ -2192,6 +2245,16 @@ export default function LifeApp() {
         AUTH_PROVIDERS={AUTH_PROVIDERS}
         doProviderSignIn={doProviderSignIn}
         siSocialErr={siSocialErr}
+        systemNotice={
+          !isSupabaseConfigured
+            ? {
+                tone: "warning",
+                title: "Cloud auth and sync are offline",
+                body:
+                  "This build is missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, so sign-in, registration, and community features are disabled until they are configured.",
+              }
+            : null
+        }
       />
     );
 
@@ -2211,6 +2274,16 @@ export default function LifeApp() {
         fpMsg={fpMsg} setFpMsg={setFpMsg}
         doForgotPassword={doForgotPassword}
         setSiSocialErr={setSiSocialErr}
+        systemNotice={
+          !isSupabaseConfigured
+            ? {
+                tone: "warning",
+                title: "Cloud auth is not configured yet",
+                body:
+                  "Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY to enable sign-in, password reset, and synced account data.",
+              }
+            : null
+        }
       />
     );
 
@@ -2227,6 +2300,16 @@ export default function LifeApp() {
         rErr={rErr} setRErr={setRErr}
         authLoading={authLoading} doRegister={doRegister}
         setSiEmail={setSiEmail}
+        systemNotice={
+          !isSupabaseConfigured
+            ? {
+                tone: "warning",
+                title: "Account creation is unavailable",
+                body:
+                  "Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY to enable registration, email verification, and cloud sync.",
+              }
+            : null
+        }
       />
     );
 
@@ -3824,6 +3907,12 @@ export default function LifeApp() {
           </div>
         </div>
       </div>
+
+      {!isOffline && (cloud.error || quizStatsState.error) && (
+        <div className="life-cloud-banner" role="status" aria-live="polite">
+          {cloud.error || quizStatsState.error}
+        </div>
+      )}
 
       {isOffline && (
         <div className="life-offline-banner" role="status" aria-live="polite">

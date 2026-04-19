@@ -1,4 +1,5 @@
 "use client";
+import { SystemStatusNotice } from "./SystemStatusNotice";
 export function SignInPage({
   C, play, setScreen,
   siEmail, setSiEmail, siPass, setSiPass,
@@ -7,6 +8,7 @@ export function SignInPage({
   forgotMode, setForgotMode,
   fpEmail, setFpEmail, fpErr, setFpErr, fpMsg, setFpMsg,
   doForgotPassword, setSiSocialErr,
+  systemNotice,
 }) {
   return (
       <div
@@ -100,6 +102,8 @@ export function SignInPage({
         >
           Welcome Back
         </p>
+
+        <SystemStatusNotice notice={systemNotice} style={{ maxWidth: 320, marginBottom: 18 }} />
 
         <form
           className="life-auth-card"

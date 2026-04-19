@@ -1,4 +1,5 @@
 "use client";
+import { SystemStatusNotice } from "./SystemStatusNotice";
 export function ResetPasswordPage({
   C,
   S,
@@ -17,6 +18,7 @@ export function ResetPasswordPage({
   authLoading,
   doResetPassword,
   passwordRecoveryRef,
+  systemNotice,
 }) {
   const passwordStrengthLabels = [
     "Too weak",
@@ -119,6 +121,8 @@ export function ResetPasswordPage({
       >
         Choose a strong password to finish recovering your account.
       </p>
+
+      <SystemStatusNotice notice={systemNotice} style={{ maxWidth: 320, marginBottom: 18 }} />
 
       <div
         className="life-auth-card"

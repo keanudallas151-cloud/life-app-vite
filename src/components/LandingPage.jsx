@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SystemStatusNotice } from "./SystemStatusNotice";
 
 const PROVIDER_ICONS = {
   google: (
@@ -80,7 +81,15 @@ const VALUE_PROPS = [
   },
 ];
 
-export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSignIn, siSocialErr }) {
+export function LandingPage({
+  Ic,
+  play,
+  setScreen,
+  AUTH_PROVIDERS,
+  doProviderSignIn,
+  siSocialErr,
+  systemNotice,
+}) {
   const [activeValueProp, setActiveValueProp] = useState(null);
   const activeValuePropData =
     VALUE_PROPS.find((item) => item.label === activeValueProp) || null;
@@ -233,6 +242,8 @@ export function LandingPage({ Ic, play, setScreen, AUTH_PROVIDERS, doProviderSig
           Knowledge, Growth, Community
         </p>
       </div>
+
+      <SystemStatusNotice notice={systemNotice} dark />
 
       {/* Value Proposition */}
       <div style={{ width: "100%", maxWidth: 360, marginBottom: 28 }}>
