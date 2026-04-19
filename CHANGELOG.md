@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.6.10 — Mobile geometry and alignment polish
+- Locked key icon controls to square bounds so circular buttons stay circular instead of stretching on mobile.
+- Normalized top-bar logo, profile, and search-clear sizing to keep controls evenly aligned on narrow screens.
+- Fixed uneven auth action layouts by making secondary/back actions match the primary button stack width.
+- Balanced the reset-password modal action row so paired buttons sit evenly instead of sizing by text length.
+
 ## v0.6.9 — Auth and backend status hardening
 - Added clear setup/status notices across landing, sign-in, register, verify-email, and reset-password screens when Supabase auth is unavailable or needs redirect configuration.
 - Blocked auth actions with direct user-facing messages when `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are missing instead of failing ambiguously.

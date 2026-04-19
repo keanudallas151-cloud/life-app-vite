@@ -2663,6 +2663,7 @@ export default function LifeApp() {
           />
           {search && (
             <button
+              className="life-search-clear"
               onClick={() => {
                 setSearch("");
                 setShowSearch(false);
@@ -2677,8 +2678,8 @@ export default function LifeApp() {
                 cursor: "pointer",
                 color: t.muted,
                 fontSize: 18,
-                width: 24,
-                height: 24,
+                width: 36,
+                height: 36,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

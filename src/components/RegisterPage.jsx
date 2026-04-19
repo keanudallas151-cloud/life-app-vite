@@ -689,6 +689,8 @@ export function RegisterPage({
             cursor: "pointer",
             fontFamily: "Georgia,serif",
             fontStyle: "italic",
+            width: "100%",
+            padding: "12px 14px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

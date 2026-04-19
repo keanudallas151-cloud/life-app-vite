@@ -825,6 +825,16 @@ canvas {
   flex-shrink: 0;
 }
 
+.life-topbar .logo-btn,
+.life-topbar .profile-btn,
+.life-topbar .life-topbar-bell,
+.life-topbar .life-topbar-dark,
+.life-topbar .life-search-clear {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  line-height: 1;
+}
+
 .life-topbar input[type="text"] {
   width: 100%;
   max-width: 100%;
@@ -1516,7 +1526,7 @@ select:focus-visible {
 
   /* Mobile button sizing — iOS touch target (44px minimum)
      Exclude password-toggle buttons which sit inside an input row */
-  button:not(.life-password-toggle):not([data-password-toggle]),
+  button:not(.life-password-toggle):not([data-password-toggle]):not(.logo-btn):not(.profile-btn):not(.life-topbar-bell):not(.life-topbar-dark):not(.life-search-clear),
   [role="button"] {
     min-height: 44px;
   }
@@ -2135,9 +2145,26 @@ button,
 
 .life-topbar .logo-btn {
   gap: 0 !important;
+  inline-size: 40px !important;
+  block-size: 40px !important;
+  min-inline-size: 40px !important;
+  min-block-size: 40px !important;
+  aspect-ratio: 1 / 1 !important;
+  border-radius: 999px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 @media (max-width: 640px) {
+  .life-topbar .logo-btn {
+    inline-size: 36px !important;
+    block-size: 36px !important;
+    min-inline-size: 36px !important;
+    min-block-size: 36px !important;
+  }
+
   .life-topbar .logo-btn > div {
     inline-size: 34px !important;
     block-size: 34px !important;
@@ -2431,11 +2458,26 @@ button:active:not(:disabled),
 
 @media (max-width: 640px) {
   .life-topbar .profile-btn {
-    inline-size: 34px !important;
-    block-size: 34px !important;
-    min-inline-size: 34px !important;
-    min-block-size: 34px !important;
+    inline-size: 36px !important;
+    block-size: 36px !important;
+    min-inline-size: 36px !important;
+    min-block-size: 36px !important;
   }
+}
+
+.life-topbar .life-topbar-bell,
+.life-topbar .life-topbar-dark,
+.life-topbar .life-search-clear {
+  inline-size: 36px !important;
+  block-size: 36px !important;
+  min-inline-size: 36px !important;
+  min-block-size: 36px !important;
+  aspect-ratio: 1 / 1 !important;
+  border-radius: 999px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 /* Add glow/light behind homepage primary action */

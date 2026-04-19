@@ -409,10 +409,11 @@ export function SignInPage({
                   type="button"
                   onClick={() => setForgotMode(false)}
                   style={{
+                    flex: 1,
                     background: C.light,
                     border: `1px solid ${C.border}`,
                     borderRadius: 10,
-                    padding: "10px 14px",
+                    padding: "10px",
                     color: C.mid,
                     fontSize: 13,
                     cursor: "pointer",
@@ -446,6 +447,8 @@ export function SignInPage({
               fontFamily: "Georgia,serif",
               fontStyle: "italic",
               marginTop: 2,
+              width: "100%",
+              padding: "12px 14px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
