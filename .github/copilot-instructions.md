@@ -24,7 +24,6 @@
   - `src/data/quiz.js`, `src/data/posts.js`, and `src/data/tailoring.js` back the quiz, community, and onboarding flows.
 - Supabase is the backend boundary:
   - `src/supabaseClient.js` creates the client and uses `NEXT_PUBLIC_SUPABASE_URL` plus `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` as the canonical env vars.
-  - Legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `VITE_*` public names are still supported as migration fallbacks.
   - `src/systems/useUserData.js`, `useQuizStats.js`, and `usePostIt.js` are the main cloud-sync hooks for profile/library state, quiz stats, and the Post-It feed.
 - The repo still contains legacy Vite-era files (`src/main.jsx`, `index.html`, `vite.config.js`), but `npm run dev` / `npm run build` use Next.js.
 - `app/layout.jsx` injects global CSS plus additional public asset files such as `password-toggle-fix.*` and `home-hero-polish.*`, so auth and home-page polish sometimes spans both React code and `public/` assets.

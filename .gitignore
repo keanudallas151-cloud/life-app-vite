@@ -15,6 +15,12 @@ dist
 .env.local
 .env.*.local
 
+# Local AI/editor tooling noise
+.history/
+.roo/
+.copilot/
+.cursor/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -4,9 +4,9 @@ Life is still in prototype phase. The project uses semantic versioning with a `v
 
 ## Canonical format
 
-- Git tag: `v0.6.7`
-- GitHub release title: `v0.6.7 - Navigation + settings + Gemini guide`
-- `package.json` version: `0.6.7`
+- Git tag: `v0.6.8`
+- GitHub release title: `v0.6.8 - Security, config, and core Supabase hardening`
+- `package.json` version: `0.6.8`
 
 ## Prototype bump rules
 
@@ -17,7 +17,7 @@ Life is still in prototype phase. The project uses semantic versioning with a `v
 
 ## Release naming rules
 
-- Keep tags exact: `v0.6.7`
+- Keep tags exact: `v0.6.8`
 - Keep release titles short and readable.
 - Keep `package.json` aligned with the same numeric version, without the `v`
 - Avoid tiny release commits; prefer one commit per meaningful completed project batch.
@@ -38,7 +38,8 @@ Life is still in prototype phase. The project uses semantic versioning with a `v
 - `v0.6.1`: Bug sweep fixes
 - `v0.6.2`: Small update
 - `v0.6.7`: Navigation + settings + Gemini guide
+- `v0.6.8`: Security, config, and core Supabase hardening
 
 ## Current target
 
-The current `main` branch should be treated as the `v0.6.7` prototype baseline, with `main_backup` kept aligned as the backup branch.
+The current `main` branch should be treated as the `v0.6.8` prototype baseline, with `main_backup` kept aligned as the backup branch.

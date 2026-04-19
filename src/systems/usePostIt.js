@@ -72,19 +72,22 @@ export function usePostIt(user) {
 
     if (pErr) { setError(pErr.message); setLoading(false); return; }
 
-    // Fetch comments for those posts
     const postIds = postRows.map(p => p.id);
+
+    if (postIds.length === 0) {
+      votesRef.current = {};
+      myVotesRef.current = {};
+      setMyVotes({});
+      setPosts([]);
+      setLoading(false);
+      return;
+    }
+
     const { data: commentRows } = await supabase
       .from("comments")
       .select("*")
       .in("post_id", postIds)
       .order("created_at", { ascending: true });
-
-    // Fetch vote totals (per-post sum from post_votes)
-    const { data: voteRows } = await supabase
-      .from("post_votes")
-      .select("post_id, dir")
-      .in("post_id", postIds);
 
     // Build maps
     const commentsMap = {};
@@ -94,18 +97,9 @@ export function usePostIt(user) {
       commentsMap[c.post_id].push(c);
     });
 
-    // Use summed post_votes when any votes exist for a post.
-    // Only fall back to the seed (posts.votes) when zero rows were found in post_votes.
     const votesMap = {};
-    const postsWithVoteRows = new Set();
-    (voteRows || []).forEach(v => {
-      postsWithVoteRows.add(v.post_id);
-      votesMap[v.post_id] = (votesMap[v.post_id] || 0) + v.dir;
-    });
-    postRows.forEach(p => {
-      if (!postsWithVoteRows.has(p.id) && (p.votes || 0) !== 0) {
-        votesMap[p.id] = p.votes;
-      }
+    postRows.forEach((p) => {
+      votesMap[p.id] = Number(p.votes || 0);
     });
     votesRef.current = votesMap;
 

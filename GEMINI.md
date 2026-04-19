@@ -121,9 +121,6 @@ Make **targeted edits**, not broad rewrites.
 - Canonical env vars:
   - `NEXT_PUBLIC_SUPABASE_URL`
   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-- Legacy fallback still supported:
-  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-
 Expected backend tables include:
 
 - `user_data`

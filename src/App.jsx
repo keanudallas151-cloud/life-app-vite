@@ -1128,7 +1128,9 @@ export default function LifeApp() {
       (cloud.bookmarks?.length ?? 0) > 0 ||
       Object.keys(cloud.notes || {}).some((k) => cloud.notes[k]) ||
       (cloud.readKeys?.length ?? 0) > 0 ||
-      cloud.tsdProfile != null;
+      (cloud.highlights?.length ?? 0) > 0 ||
+      cloud.tsdProfile != null ||
+      cloud.momentumState != null;
     if (hasCloud) {
       migratedRef.current = true;
       return;

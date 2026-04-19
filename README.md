@@ -6,13 +6,13 @@ A production-minded web app for curated reading on money, psychology, and philos
 
 ```bash
 npm install
-cp .env.example .env
+cp .env.example .env.local
 # Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 # from your Supabase project (Settings -> API Keys)
 npm run dev
 ```
 
-Without env vars the shell still runs, but auth, cloud-synced library data, quiz stats, and Post-It stay offline. If you still have the repo's older `VITE_*` env names locally, `next.config.mjs` maps them into the new `NEXT_PUBLIC_*` runtime names during the migration.
+Without env vars the shell still runs, but auth, cloud-synced library data, quiz stats, and Post-It stay offline.
 
 ## Vercel + Supabase + GitHub setup
 
@@ -29,7 +29,7 @@ Without env vars the shell still runs, but auth, cloud-synced library data, quiz
 
 ## Supabase schema (expected)
 
-The app assumes tables such as `user_data`, `quiz_stats`, `posts`, `comments`, and `post_votes` with RLS appropriate for your security model. The `user_data` record is expected to hold fields like bookmarks, notes, read progress, momentum state, and saved reader highlights. If a table or newer field is missing, the UI degrades as safely as possible (console errors; Post-It shows a clear message when the feed cannot load).
+The app assumes tables such as `user_data`, `quiz_stats`, `posts`, `comments`, and `post_votes` with RLS appropriate for your security model. The `user_data` record is expected to hold fields like bookmarks, notes, read progress, momentum state, and saved reader highlights. The repo now includes additive Supabase migrations for those core tables.
 
 ## Scripts
 

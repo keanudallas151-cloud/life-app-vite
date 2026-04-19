@@ -1,10 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || "";
-const SUPABASE_KEY =
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
-  "";
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() || "";
 
 const FALLBACK_SUPABASE_URL = "https://example.supabase.co";
 const FALLBACK_SUPABASE_KEY = "sb_publishable_placeholder";

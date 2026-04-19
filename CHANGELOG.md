@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.6.8 — Security, config, and core Supabase hardening
+- Removed the tracked local `.env` file from git and expanded ignore rules for local AI/editor noise.
+- Standardized the app on canonical `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` env names.
+- Removed stale Netlify deployment config and aligned deployment/docs around Vercel.
+- Added a core Supabase migration for `user_data`, `quiz_stats`, `posts`, `comments`, and `post_votes` with indexes, defaults, triggers, and RLS.
+- Hardened Post-It empty-feed loading and cloud-data migration detection without changing the guest/offline app flow.
+
 ## v0.6.7 — Navigation, avatars, settings, and Gemini guide
 - Added profile picture upload to the account profile page — tap the avatar circle to choose a photo.
 - Profile photo uploads to a dedicated Supabase storage bucket (profile-avatars), separate from Inventors & Investors media.
