@@ -34,6 +34,17 @@ Use `npm run lint` and `npm run build` before considering a change done.
 
 If you only open one file, open **`src/App.jsx`**.
 
+## Nested Gemini files
+
+This repo also uses folder-scoped `GEMINI.md` files for tighter local guidance.
+
+- `app/GEMINI.md` for the thin Next.js entry shell
+- `src/components/GEMINI.md` for UI surface and page-component conventions
+- `src/systems/GEMINI.md` for theme, storage, and cloud/local persistence rules
+- `src/data/GEMINI.md` for static content, quiz, tailoring, and seeded-post data
+
+When working inside one of those folders, prefer the local `GEMINI.md` over generic assumptions.
+
 ## Core architecture
 
 ### Routing model
