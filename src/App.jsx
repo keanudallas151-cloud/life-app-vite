@@ -47,7 +47,7 @@ import { BottomNav } from "./components/BottomNav";
 import { CategoriesPage } from "./components/CategoriesPage";
 import { CategoryHubPage } from "./components/CategoryHubPage";
 import { AccountCustomizePage } from "./components/AccountCustomizePage";
-import { ConnectPage } from "./components/ConnectPage";
+import { InventorsInvestors } from "./components/InventorsInvestors";
 import { DailyGrowthPage } from "./components/DailyGrowthPage";
 import { GoalSettingPage } from "./components/GoalSettingPage";
 import { HelpPage } from "./components/HelpPage";
@@ -3701,7 +3701,7 @@ export default function LifeApp() {
             )}
 
             {page === "networking" && (
-              <ConnectPage t={t} user={user} play={play} />
+              <InventorsInvestors t={t} user={user} play={play} />
             )}
 
             {/* P7: Categories flow */}
