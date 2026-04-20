@@ -99,6 +99,7 @@ export function InventorsInvestors({ t, user, play }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [investorForm, setInvestorForm] = useState(() => mapInvestorForm(null, null, userId));
   const [inventorForm, setInventorForm] = useState(() => mapInventorForm(null, null, userId));
+  const [roleSubmitting, setRoleSubmitting] = useState(false);
 
   useEffect(() => {
     if (!userId || userId === "guest") return;
@@ -130,23 +131,28 @@ export function InventorsInvestors({ t, user, play }) {
     if (loading) return;
     if (!user?.id) return;
 
-    if (!profile?.role) {
-      if (!["landing", "messages"].includes(view)) {
+    const effectiveRole = profile?.role || selectedRole || roleChoice;
+
+    if (!effectiveRole) {
+      if (!["landing", "messages", "role_selection"].includes(view)) {
         setView("landing");
       }
       return;
     }
 
-    if (!profile.profile_completed) {
-      if (profile.role === "investor") setView("investor_setup");
-      if (profile.role === "inventor") setView("inventor_setup");
+    if (!profile?.profile_completed) {
+      const setupView = effectiveRole === "investor" ? "investor_setup" : "inventor_setup";
+      if (view !== setupView) {
+        setView(setupView);
+      }
       return;
     }
 
-    if (!loadFeatureView(user.id) || loadFeatureView(user.id) === "landing") {
+    const storedView = loadFeatureView(user.id);
+    if (!storedView || storedView === "landing" || view === "landing") {
       setView("swipe");
     }
-  }, [loading, profile, user?.id, view]);
+  }, [loading, profile, roleChoice, selectedRole, user?.id, view]);
 
   const filteredProfiles = useMemo(
     () => discoveryProfiles.filter((item) => matchesSearch(item, searchTerm)),
@@ -186,11 +192,18 @@ export function InventorsInvestors({ t, user, play }) {
   };
 
   const handleRoleContinue = async (nextRole = roleChoice) => {
-    if (!nextRole) return;
+    if (!nextRole || roleSubmitting) return;
     play?.("tap");
+    setRoleSubmitting(true);
     setRoleChoice(nextRole);
-    await chooseRole(nextRole);
     setView(nextRole === "investor" ? "investor_setup" : "inventor_setup");
+    try {
+      await chooseRole(nextRole);
+    } catch (error) {
+      console.error("Failed to choose role", error);
+    } finally {
+      setRoleSubmitting(false);
+    }
   };
 
   const handleInvestorSubmit = async () => {
