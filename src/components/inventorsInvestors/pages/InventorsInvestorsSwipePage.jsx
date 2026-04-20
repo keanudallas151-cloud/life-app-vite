@@ -17,22 +17,24 @@ import {
 
 const DECK_SWIPE_TRIGGER = 88;
 
-function MetricChip({ t, label, value }) {
+function MetricChip({ t, label, value, compact = false }) {
   if (!value) return null;
   return (
     <div
       style={{
-        minHeight: 52,
+        minHeight: compact ? 46 : 52,
         borderRadius: 16,
-        border: `1px solid ${t.border}`,
-        background: t.skin,
-        padding: "12px 12px",
+        border: `1px solid ${alpha(t.border, 0.9)}`,
+        background: compact ? alpha(t.skin, 0.92) : t.skin,
+        padding: compact ? "10px 11px" : "12px 12px",
+        backdropFilter: compact ? "blur(8px)" : "none",
+        WebkitBackdropFilter: compact ? "blur(8px)" : "none",
       }}
     >
-      <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1.2, color: t.muted }}>
+      <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1.2, color: t.muted }}>
         {label}
       </div>
-      <div style={{ marginTop: 6, fontSize: 13, fontWeight: 700, color: t.ink, lineHeight: 1.4 }}>
+      <div style={{ marginTop: 5, fontSize: compact ? 12.5 : 13, fontWeight: 700, color: t.ink, lineHeight: 1.35 }}>
         {value}
       </div>
     </div>
@@ -49,6 +51,9 @@ function DeckSwipeCard({ t, onSwipeLeft, onSwipeRight, children }) {
     if (offsetX >= 28) return "right";
     return "";
   }, [offsetX]);
+
+  const leftBadgeOpacity = Math.max(0, Math.min(1, Math.abs(Math.min(offsetX, 0)) / 110));
+  const rightBadgeOpacity = Math.max(0, Math.min(1, Math.max(offsetX, 0) / 110));
 
   const beginDrag = (x, y) => {
     if (animatingOut) return;
@@ -74,14 +79,14 @@ function DeckSwipeCard({ t, onSwipeLeft, onSwipeRight, children }) {
 
     const direction = offsetX < 0 ? -1 : 1;
     setAnimatingOut(true);
-    setOffsetX(direction * 280);
+    setOffsetX(direction * 320);
 
     window.setTimeout(() => {
       if (direction < 0) onSwipeLeft?.();
       if (direction > 0) onSwipeRight?.();
       setAnimatingOut(false);
       setOffsetX(0);
-    }, 180);
+    }, 200);
   };
 
   return (
@@ -96,13 +101,26 @@ function DeckSwipeCard({ t, onSwipeLeft, onSwipeRight, children }) {
         aria-hidden="true"
         style={{
           position: "absolute",
-          inset: "10px 14px auto",
+          inset: "12px 12px auto",
           height: "100%",
-          borderRadius: 24,
-          border: `1px solid ${alpha(t.green, 0.14)}`,
+          borderRadius: 30,
+          border: `1px solid ${alpha(t.green, 0.12)}`,
           background: `linear-gradient(180deg, ${alpha(t.green, 0.05)} 0%, ${t.white} 100%)`,
-          opacity: 0.7,
-          transform: "scale(0.98)",
+          opacity: 0.62,
+          transform: "scale(0.985)",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          inset: "24px 24px auto",
+          height: "100%",
+          borderRadius: 30,
+          border: `1px solid ${alpha(t.green, 0.08)}`,
+          background: `linear-gradient(180deg, ${alpha(t.green, 0.04)} 0%, ${t.white} 100%)`,
+          opacity: 0.38,
+          transform: "scale(0.97)",
         }}
       />
       <div
@@ -126,54 +144,60 @@ function DeckSwipeCard({ t, onSwipeLeft, onSwipeRight, children }) {
           maxWidth: 520,
           margin: "0 auto",
           touchAction: "pan-y",
-          borderRadius: 24,
+          borderRadius: 30,
           border: `1px solid ${t.border}`,
           background: t.white,
-          boxShadow: `0 16px 40px ${alpha(t.ink, 0.06)}`,
-          transform: `translateX(${offsetX}px) rotate(${offsetX / 24}deg)`,
-          opacity: animatingOut ? 0 : 1 - Math.min(Math.abs(offsetX) / 300, 0.18),
+          boxShadow: `0 24px 60px ${alpha(t.ink, 0.1)}`,
+          transform: `translateX(${offsetX}px) rotate(${offsetX / 28}deg)`,
+          opacity: animatingOut ? 0 : 1 - Math.min(Math.abs(offsetX) / 280, 0.16),
           transition: startRef.current.dragging
             ? "none"
-            : "transform 180ms ease, opacity 180ms ease",
+            : "transform 200ms ease, opacity 200ms ease",
         }}
       >
         <div
           style={{
             position: "absolute",
-            top: 18,
-            left: 18,
-            padding: "8px 12px",
+            top: 20,
+            left: 20,
+            padding: "9px 14px",
             borderRadius: 999,
-            background: swipeState === "left" ? alpha(t.green, 0.14) : alpha(t.ink, 0.04),
-            border: `1px solid ${swipeState === "left" ? alpha(t.green, 0.35) : "transparent"}`,
-            color: swipeState === "left" ? t.green : t.mid,
-            fontSize: 11,
-            fontWeight: 800,
-            letterSpacing: 1.2,
+            background: alpha(t.green, 0.18),
+            border: `1px solid ${alpha(t.green, 0.38)}`,
+            color: t.green,
+            fontSize: 12,
+            fontWeight: 900,
+            letterSpacing: 1.5,
             textTransform: "uppercase",
-            zIndex: 2,
+            zIndex: 3,
+            opacity: swipeState === "left" ? leftBadgeOpacity : 0.28,
+            transform: swipeState === "left" ? "scale(1.02)" : "scale(0.96)",
+            transition: "opacity 140ms ease, transform 140ms ease",
           }}
         >
-          Swipe left = Interested
+          Yes
         </div>
         <div
           style={{
             position: "absolute",
-            top: 18,
-            right: 18,
-            padding: "8px 12px",
+            top: 20,
+            right: 20,
+            padding: "9px 14px",
             borderRadius: 999,
-            background: swipeState === "right" ? alpha(t.red, 0.12) : alpha(t.ink, 0.04),
-            border: `1px solid ${swipeState === "right" ? alpha(t.red, 0.3) : "transparent"}`,
-            color: swipeState === "right" ? t.red : t.mid,
-            fontSize: 11,
-            fontWeight: 800,
-            letterSpacing: 1.2,
+            background: alpha(t.red, 0.14),
+            border: `1px solid ${alpha(t.red, 0.32)}`,
+            color: t.red,
+            fontSize: 12,
+            fontWeight: 900,
+            letterSpacing: 1.5,
             textTransform: "uppercase",
-            zIndex: 2,
+            zIndex: 3,
+            opacity: swipeState === "right" ? rightBadgeOpacity : 0.28,
+            transform: swipeState === "right" ? "scale(1.02)" : "scale(0.96)",
+            transition: "opacity 140ms ease, transform 140ms ease",
           }}
         >
-          Swipe right = Pass
+          No
         </div>
         {children}
       </div>
@@ -192,98 +216,139 @@ function DiscoverCard({
 }) {
   if (!profile) return null;
 
+  const moneyLine =
+    profile.role === "investor"
+      ? formatCurrency(profile.investment_budget)
+      : formatCurrency(profile.funding_sought);
+
+  const keyFacts = profile.role === "investor"
+    ? [
+        { label: "Budget", value: formatCurrency(profile.investment_budget) },
+        {
+          label: "Range",
+          value: [formatCurrency(profile.investment_range_min), formatCurrency(profile.investment_range_max)]
+            .filter(Boolean)
+            .join(" - "),
+        },
+        { label: "Stage", value: profile.stage_preference },
+        { label: "Focus", value: profile.looking_to_invest_in },
+      ]
+    : [
+        { label: "Ask", value: formatCurrency(profile.funding_sought) },
+        { label: "Revenue", value: formatCurrency(profile.revenue) },
+        { label: "Equity", value: formatPercent(profile.equity_available) },
+        { label: "Category", value: profile.category },
+      ];
+
   return (
     <DeckSwipeCard t={t} onSwipeLeft={onInterested} onSwipeRight={onPass}>
-      <div style={{ position: "relative", minHeight: 560 }}>
+      <div style={{ position: "relative", minHeight: 670 }}>
         {profile.hero_image_url || profile.avatar_url ? (
-          <div style={{ width: "100%", aspectRatio: "1.1 / 1", overflow: "hidden", background: t.skin }}>
+          <div style={{ position: "relative", width: "100%", aspectRatio: "0.82 / 1", overflow: "hidden", background: t.skin }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={profile.hero_image_url || profile.avatar_url}
               alt={profile.full_name}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.18) 32%, rgba(0,0,0,0.72) 100%)",
+              }}
+            />
           </div>
         ) : (
           <div
             style={{
+              position: "relative",
               width: "100%",
-              aspectRatio: "1.1 / 1",
-              background: `linear-gradient(180deg, ${alpha(t.green, 0.12)} 0%, ${t.skin} 100%)`,
+              aspectRatio: "0.82 / 1",
+              background: `linear-gradient(180deg, ${alpha(t.green, 0.16)} 0%, ${alpha(t.ink, 0.92)} 100%)`,
               display: "grid",
               placeItems: "center",
             }}
           >
-            <Avatar src="" name={profile.full_name} size={96} t={t} />
+            <Avatar src="" name={profile.full_name} size={110} t={t} />
           </div>
         )}
 
-        <div style={{ padding: "18px 18px 20px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
-            <div>
-              <div style={{ fontSize: 23, fontWeight: 800, color: t.ink, lineHeight: 1.08 }}>{profile.full_name}</div>
-              <div style={{ marginTop: 6, fontSize: 13, color: t.mid }}>
-                {profile.role === "investor" ? "Investor" : "Inventor"} · {profile.location || "Location not set"}
+        <div
+          style={{
+            position: "absolute",
+            left: 18,
+            right: 18,
+            bottom: 18,
+            display: "grid",
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              padding: "18px 18px 16px",
+              borderRadius: 24,
+              background: "rgba(7,7,7,0.72)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              backdropFilter: "blur(14px)",
+              WebkitBackdropFilter: "blur(14px)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
+              <div>
+                <div style={{ fontSize: 28, fontWeight: 800, color: "#ffffff", lineHeight: 0.96, letterSpacing: -0.6 }}>
+                  {profile.full_name}
+                </div>
+                <div style={{ marginTop: 8, fontSize: 13, color: "rgba(255,255,255,0.72)", lineHeight: 1.6 }}>
+                  {profile.role === "investor" ? "Investor" : "Inventor"} · {profile.location || "Location not set"}
+                </div>
+              </div>
+              <div
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 999,
+                  background: "rgba(255,255,255,0.08)",
+                  color: "#ffffff",
+                  fontSize: 11,
+                  fontWeight: 800,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {formatRelativeJoined(profile.created_at)}
               </div>
             </div>
+
+            <div style={{ marginTop: 12, fontSize: 14, lineHeight: 1.75, color: "rgba(255,255,255,0.84)" }}>
+              {profile.short_pitch || profile.bio || profile.description || "No summary added yet."}
+            </div>
+
             <div
               style={{
-                padding: "8px 10px",
-                borderRadius: 999,
-                background: alpha(t.green, 0.08),
-                color: t.green,
-                fontSize: 11,
-                fontWeight: 800,
-                whiteSpace: "nowrap",
+                marginTop: 14,
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gap: 10,
               }}
             >
-              {formatRelativeJoined(profile.created_at)}
+              <MetricChip t={{ ...t, ink: "#ffffff", mid: "rgba(255,255,255,0.68)", muted: "rgba(255,255,255,0.52)", skin: "rgba(255,255,255,0.07)", border: "rgba(255,255,255,0.08)" }} label={profile.role === "investor" ? "Budget" : "Ask"} value={moneyLine} compact />
+              <MetricChip t={{ ...t, ink: "#ffffff", mid: "rgba(255,255,255,0.68)", muted: "rgba(255,255,255,0.52)", skin: "rgba(255,255,255,0.07)", border: "rgba(255,255,255,0.08)" }} label={profile.role === "investor" ? "Stage" : "Type"} value={profile.role === "investor" ? profile.stage_preference : profile.invention_type} compact />
             </div>
           </div>
+        </div>
 
-          <div style={{ marginTop: 14, fontSize: 14, lineHeight: 1.75, color: t.mid }}>
-            {profile.short_pitch || profile.bio || profile.description || "No summary added yet."}
-          </div>
-
+        <div style={{ padding: "18px 18px 20px" }}>
           <div
             className="ii-metrics-grid"
             style={{
-              marginTop: 16,
               display: "grid",
               gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
               gap: 10,
             }}
           >
-            <MetricChip
-              t={t}
-              label={profile.role === "investor" ? "Interests" : "Category"}
-              value={profile.role === "investor" ? profile.looking_to_invest_in : profile.category}
-            />
-            <MetricChip
-              t={t}
-              label={profile.role === "investor" ? "Stage" : "Type"}
-              value={profile.role === "investor" ? profile.stage_preference : profile.invention_type}
-            />
-            <MetricChip
-              t={t}
-              label={profile.role === "investor" ? "Budget" : "Revenue"}
-              value={
-                profile.role === "investor"
-                  ? formatCurrency(profile.investment_budget)
-                  : formatCurrency(profile.revenue)
-              }
-            />
-            <MetricChip
-              t={t}
-              label={profile.role === "investor" ? "Range" : "Equity"}
-              value={
-                profile.role === "investor"
-                  ? [formatCurrency(profile.investment_range_min), formatCurrency(profile.investment_range_max)]
-                      .filter(Boolean)
-                      .join(" - ")
-                  : formatPercent(profile.equity_available)
-              }
-            />
+            {keyFacts.map((item) => (
+              <MetricChip key={item.label} t={t} label={item.label} value={item.value} />
+            ))}
           </div>
 
           {(profile.public_email || profile.public_phone) && (
@@ -308,16 +373,16 @@ function DiscoverCard({
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 18 }}>
             <PrimaryButton t={t} onClick={onInterested}>
-              Interested
+              Yes
             </PrimaryButton>
             <SecondaryButton t={t} onClick={onPass}>
-              Pass
+              No
             </SecondaryButton>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginTop: 10 }}>
             <SecondaryButton t={t} onClick={onStartChat}>Message</SecondaryButton>
-            <SecondaryButton t={t} onClick={onBlock}>Block</SecondaryButton>
+            <SecondaryButton t={t} onClick={onBlock}>Hide</SecondaryButton>
             <SecondaryButton t={t} onClick={onReport}>Report</SecondaryButton>
           </div>
         </div>
@@ -348,13 +413,13 @@ export function InventorsInvestorsSwipePage({
       t={t}
       eyebrow="Discover"
       title={viewerRole === "investor" ? "Discover inventors" : "Discover investors"}
-      subtitle="Swipe left to show interest. Swipe right to pass. It is the same simple deck mechanic, just built for investors and inventors instead of dating."
+      subtitle="A cleaner, photo-first deck. Swipe left for yes. Swipe right for no. Open the profile details that matter faster."
     >
       <SearchBar
         t={t}
         value={searchTerm}
         onChange={onSearch}
-        placeholder="Search by name, location, category, type, or investment interest"
+        placeholder="Search by name, location, category, type, or focus"
         rightSlot={
           <button
             type="button"
