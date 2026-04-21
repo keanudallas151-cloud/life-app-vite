@@ -1,11 +1,11 @@
 {
-  "name": "life-app-vite",
+  "name": "life-app",
   "version": "0.0.0",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
-      "name": "life-app-vite",
+      "name": "life-app",
       "version": "0.0.0",
       "dependencies": {
         "@supabase/supabase-js": "^2.102.1",
