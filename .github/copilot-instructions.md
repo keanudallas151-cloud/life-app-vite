@@ -1,4 +1,4 @@
-# Copilot Instructions for `life-app`
+# Copilot Instructions for `life-app-vite`
 
 ## Build, lint, and test commands
 
