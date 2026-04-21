@@ -8,6 +8,8 @@ import { computeEssentialScore } from "../data/tailoring";
 import { LS } from "../systems/storage";
 
 const FOCUS_MODE_HINT_KEY = "reader_focus_mode_hint_dismissed";
+const PAGE_TURN_THRESHOLD = 110;
+const PAGE_TURN_HORIZONTAL_BIAS = 1.45;
 
 export function FinanceDisclaimer({ t: theme } = {}) {
   const t = theme || C;
@@ -729,6 +731,7 @@ export function EbookReader({
   const [anim, setAnim] = useState(null);
   const pageRef = useRef(null);
   const sx = useRef(null);
+  const sy = useRef(null);
 
   useEffect(() => {
     // Always open on the title page (page 0) when a topic is selected
@@ -781,13 +784,21 @@ export function EbookReader({
 
   const onTS = (e) => {
     sx.current = e.touches[0].clientX;
+    sy.current = e.touches[0].clientY;
   };
 
   const onTE = (e) => {
-    if (sx.current === null) return;
+    if (sx.current === null || sy.current === null) return;
     const dx = e.changedTouches[0].clientX - sx.current;
-    if (Math.abs(dx) > 50) turn(dx < 0 ? 1 : -1);
+    const dy = e.changedTouches[0].clientY - sy.current;
+    if (
+      Math.abs(dx) >= PAGE_TURN_THRESHOLD &&
+      Math.abs(dx) > Math.abs(dy) * PAGE_TURN_HORIZONTAL_BIAS
+    ) {
+      turn(dx < 0 ? 1 : -1);
+    }
     sx.current = null;
+    sy.current = null;
   };
 
   const dismissFocusHint = () => {
@@ -825,11 +836,11 @@ export function EbookReader({
           display: "flex",
           borderBottom: `1px solid ${t.border}`,
           background: t.white,
-          padding: "0 12px",
+          padding: "0 8px 0 0",
           overflowX: "auto",
           flexShrink: 0,
           alignItems: "center",
-          gap: 4,
+          gap: 0,
           transform: readingMode ? "translateY(-100%)" : "translateY(0)",
           maxHeight: readingMode ? 0 : 60,
           opacity: readingMode ? 0 : 1,
@@ -870,10 +881,12 @@ export function EbookReader({
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 6,
+            gap: 8,
             marginLeft: "auto",
             flexShrink: 0,
             position: "relative",
+            paddingLeft: 10,
+            borderLeft: `1px solid ${t.border}`,
           }}
         >
           {showFocusHint && !readingMode && (
@@ -895,7 +908,6 @@ export function EbookReader({
                 userSelect: "none",
               }}
             >
-              {/* Dismiss — 44×44 touch target (Apple HIG) */}
               <button
                 type="button"
                 aria-label="Dismiss reading mode tip"
@@ -919,7 +931,9 @@ export function EbookReader({
                   fontSize: 16,
                   opacity: 0.7,
                   WebkitTapHighlightColor: "transparent",
+                  boxShadow: "none",
                 }}
+                data-ghost="true"
               >
                 ×
               </button>
@@ -949,7 +963,6 @@ export function EbookReader({
               >
                 Tap to hide UI and focus on the text.
               </p>
-              {/* Caret pointing down to the button */}
               <div
                 aria-hidden
                 style={{
@@ -966,7 +979,10 @@ export function EbookReader({
             </div>
           )}
           <button
+            className="life-reader-mode-btn"
             type="button"
+            data-ghost="true"
+            aria-pressed={readingMode}
             onClick={() => {
               setReadingMode((r) => !r);
               if (showFocusHint) dismissFocusHint();
@@ -974,18 +990,19 @@ export function EbookReader({
             aria-label={readingMode ? "Exit reading mode" : "Enter reading mode"}
             title={readingMode ? "Exit reading mode" : "Enter reading mode"}
             style={{
-              background: readingMode ? `${t.green}18` : "none",
-              border: readingMode ? `1px solid ${t.green}44` : "1px solid transparent",
-              borderRadius: 8,
+              background: readingMode ? `${t.green}18` : t.light,
+              border: `1px solid ${readingMode ? `${t.green}55` : t.border}`,
+              borderRadius: 12,
               cursor: "pointer",
               padding: 0,
-              width: 36,
-              height: 36,
+              width: 40,
+              height: 40,
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
               transition: "all 0.2s ease",
+              boxShadow: "none",
             }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={readingMode ? t.green : t.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -996,23 +1013,26 @@ export function EbookReader({
           <button
             className="life-reader-star-btn"
             type="button"
+            data-ghost="true"
             onClick={toggleBk}
             aria-label={isBookmarked ? "Remove bookmark" : "Save bookmark"}
             title={isBookmarked ? "Remove bookmark" : "Save bookmark"}
             style={{
-              background: "none",
-              border: "none",
+              background: isBookmarked ? `${t.gold}12` : t.light,
+              border: `1px solid ${isBookmarked ? `${t.gold}55` : t.border}`,
+              borderRadius: 12,
               cursor: "pointer",
-              color: isBookmarked ? t.gold : t.border,
-              fontSize: 28,
+              color: isBookmarked ? t.gold : t.muted,
               padding: 0,
-              width: 44,
-              height: 44,
+              width: 40,
+              height: 40,
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
               lineHeight: 1,
               flexShrink: 0,
+              transition: "all 0.2s ease",
+              boxShadow: "none",
             }}
           >
             {isBookmarked ? Ic.starFilled() : Ic.star()}
@@ -1075,27 +1095,6 @@ export function EbookReader({
                   boxShadow: `0 0 12px ${t.green}44`,
                 }}
               />
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-end",
-                marginTop: 6,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: t.muted,
-                  fontFamily: "Georgia,serif",
-                  letterSpacing: 0.5,
-                  lineHeight: 1,
-                }}
-              >
-                {showTitlePage && isFirst ? "Title page" : `${pageNum + 1}/${totalPages}`}
-              </span>
             </div>
           </div>
 
@@ -1370,6 +1369,7 @@ export function EbookReader({
                 }}
               >
                 <button
+                  className="life-reader-turn-btn"
                   onClick={() => turn(-1)}
                   disabled={pageNum === 0}
                   style={{
@@ -1427,6 +1427,7 @@ export function EbookReader({
                 </div>
                 </div>
                 <button
+                  className="life-reader-turn-btn"
                   onClick={() => turn(1)}
                   disabled={isLast}
                   style={{
