@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useInventorsInvestorsData } from "../hooks/useInventorsInvestorsData";
 import {
   clearDraft,
@@ -66,6 +66,113 @@ function mapInventorForm(profile, inventorProfile, userId) {
   };
 }
 
+function getActivityStorageKey(userId) {
+  return `life_ii_activity_${userId}`;
+}
+
+function loadActivityFeed(userId) {
+  if (!userId || typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(getActivityStorageKey(userId));
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveActivityFeed(userId, items) {
+  if (!userId || typeof window === "undefined") return;
+  window.localStorage.setItem(getActivityStorageKey(userId), JSON.stringify(items));
+}
+
+function appendShellNotification(userEmail, entry) {
+  if (!userEmail || typeof window === "undefined") return;
+  try {
+    const key = `notif_${userEmail}`;
+    const current = JSON.parse(window.localStorage.getItem(key) || "[]");
+    const next = [
+      {
+        id: entry.id,
+        text:
+          entry.type === "match"
+            ? `New match waiting: ${entry.name}`
+            : `You liked ${entry.name}. Keep building your investor and inventor trail.`,
+        time: "Just now",
+        read: false,
+        targetPage: "networking",
+      },
+      ...current,
+    ].slice(0, 40);
+    window.localStorage.setItem(key, JSON.stringify(next));
+    window.dispatchEvent(new CustomEvent("life_notifications_updated"));
+  } catch {
+    // Ignore local notification persistence failures.
+  }
+}
+
+function ActivitySummaryBar({ t, feed, onOpenMessages, onClear }) {
+  if (!feed?.length) return null;
+  const matchCount = feed.filter((item) => item.type === "match").length;
+  const likedCount = feed.filter((item) => item.type === "liked").length;
+  const latest = feed[0];
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        maxWidth: 720,
+        margin: "10px auto 0",
+        padding: "0 18px",
+        boxSizing: "border-box",
+      }}
+    >
+      <div
+        style={{
+          borderRadius: 18,
+          border: `1px solid ${t.border}`,
+          background: t.white,
+          boxShadow: "0 10px 24px rgba(0,0,0,0.05)",
+          padding: "14px 14px 12px",
+          display: "grid",
+          gap: 12,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.8, textTransform: "uppercase", color: t.green }}>
+              Activity memory
+            </div>
+            <div style={{ marginTop: 5, fontSize: 13, lineHeight: 1.55, color: t.mid }}>
+              {latest.type === "match"
+                ? `${latest.name} was added as a fresh match.`
+                : `${latest.name} was added to your interest trail.`}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+            {matchCount > 0 ? (
+              <div style={{ padding: "8px 10px", borderRadius: 999, background: `${t.green}14`, color: t.green, fontSize: 11, fontWeight: 800 }}>
+                {matchCount} match{matchCount === 1 ? "" : "es"}
+              </div>
+            ) : null}
+            {likedCount > 0 ? (
+              <div style={{ padding: "8px 10px", borderRadius: 999, background: `${t.ink}08`, color: t.ink, fontSize: 11, fontWeight: 800 }}>
+                {likedCount} liked
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 10 }}>
+          <PrimaryButton t={t} onClick={onOpenMessages}>
+            Open messages
+          </PrimaryButton>
+          <SecondaryButton t={t} onClick={onClear}>Clear</SecondaryButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MatchOverlay({ t, matchState, onClose, onOpenMessages }) {
   if (!matchState) return null;
   const isMatch = matchState.type === "match";
@@ -91,7 +198,7 @@ function MatchOverlay({ t, matchState, onClose, onOpenMessages }) {
   );
 }
 
-export function InventorsInvestors({ t, user, play }) {
+export function InventorsInvestors({ t, user, play, onSystemNotify }) {
   const {
     loading,
     saving,
@@ -126,6 +233,37 @@ export function InventorsInvestors({ t, user, play }) {
   const [inventorForm, setInventorForm] = useState(() => mapInventorForm(null, null, userId));
   const [roleSubmitting, setRoleSubmitting] = useState(false);
   const [matchState, setMatchState] = useState(null);
+  const [activityFeed, setActivityFeed] = useState(() => loadActivityFeed(userId));
+
+  useEffect(() => {
+    setActivityFeed(loadActivityFeed(userId));
+  }, [userId]);
+
+  const persistActivityFeed = useCallback(
+    (updater) => {
+      setActivityFeed((current) => {
+        const next = typeof updater === "function" ? updater(current) : updater;
+        saveActivityFeed(userId, next);
+        return next;
+      });
+    },
+    [userId],
+  );
+
+  const appendActivity = useCallback(
+    (entry) => {
+      persistActivityFeed((current) => [entry, ...current].slice(0, 30));
+      appendShellNotification(user?.email, entry);
+      onSystemNotify?.({
+        text:
+          entry.type === "match"
+            ? `New match waiting: ${entry.name}`
+            : `You liked ${entry.name}.`,
+        targetPage: "networking",
+      });
+    },
+    [onSystemNotify, persistActivityFeed, user?.email],
+  );
 
   useEffect(() => {
     if (!userId || userId === "guest") return;
@@ -217,13 +355,36 @@ export function InventorsInvestors({ t, user, play }) {
     }
   };
 
+  const openMatchConversation = async () => {
+    if (!matchState?.targetUserId) {
+      await openMessages();
+      setMatchState(null);
+      return;
+    }
+    const conversationId = await ensureConversation(matchState.targetUserId);
+    if (conversationId) {
+      setActiveConversationId(conversationId);
+      setView("messages");
+      await markConversationRead(conversationId);
+    }
+    setMatchState(null);
+  };
+
   const showSwipeFeedback = (targetProfile) => {
     if (!targetProfile) return;
     const shouldMatch = Math.random() < 0.35;
-    setMatchState({
+    const entry = {
+      id: `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
       type: shouldMatch ? "match" : "liked",
       name: targetProfile.full_name || "this profile",
       targetUserId: targetProfile.user_id,
+      createdAt: new Date().toISOString(),
+    };
+    appendActivity(entry);
+    setMatchState({
+      type: entry.type,
+      name: entry.name,
+      targetUserId: entry.targetUserId,
     });
   };
 
@@ -358,7 +519,7 @@ export function InventorsInvestors({ t, user, play }) {
             onSendMessage={sendMessage}
             sending={messageSending}
           />
-          <MatchOverlay t={t} matchState={matchState} onClose={() => setMatchState(null)} onOpenMessages={openMessages} />
+          <MatchOverlay t={t} matchState={matchState} onClose={() => setMatchState(null)} onOpenMessages={openMatchConversation} />
         </>
       );
 
@@ -369,6 +530,12 @@ export function InventorsInvestors({ t, user, play }) {
             <div style={{ width: "100%", maxWidth: 720, margin: "0 auto", padding: "12px 18px 0" }}>
               <SecondaryButton t={t} onClick={() => { play?.("tap"); setView("landing"); }}>← Back</SecondaryButton>
             </div>
+            <ActivitySummaryBar
+              t={t}
+              feed={activityFeed}
+              onOpenMessages={openMessages}
+              onClear={() => persistActivityFeed([])}
+            />
             <InventorsInvestorsSwipePage
               t={t}
               viewerRole={profile?.role || roleChoice}
@@ -393,7 +560,7 @@ export function InventorsInvestors({ t, user, play }) {
               onCompleteProfile={handleCompleteProfileSetup}
             />
           </div>
-          <MatchOverlay t={t} matchState={matchState} onClose={() => setMatchState(null)} onOpenMessages={openMessages} />
+          <MatchOverlay t={t} matchState={matchState} onClose={() => setMatchState(null)} onOpenMessages={openMatchConversation} />
         </>
       );
 
@@ -408,7 +575,7 @@ export function InventorsInvestors({ t, user, play }) {
             onChooseRole={handleRoleContinue}
             onGoMessages={openMessages}
           />
-          <MatchOverlay t={t} matchState={matchState} onClose={() => setMatchState(null)} onOpenMessages={openMessages} />
+          <MatchOverlay t={t} matchState={matchState} onClose={() => setMatchState(null)} onOpenMessages={openMatchConversation} />
         </>
       );
   }
