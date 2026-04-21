@@ -422,6 +422,12 @@ export default function LifeApp() {
   }, []);
 
   useEffect(() => {
+    if (!isFirebaseConfigured || !auth) {
+      setUser(null);
+      setScreen("landing");
+      return undefined;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (!firebaseUser) {
         const nextScreen = postAuthScreenRef.current || "landing";
@@ -1112,6 +1118,13 @@ export default function LifeApp() {
     if (authLoading) return;
     play("tap");
     setSiSocialErr("");
+    if (!isFirebaseConfigured || !auth) {
+      setSiSocialErr(
+        "Firebase auth is not configured yet. Add the NEXT_PUBLIC_FIREBASE_* values to your deployment settings.",
+      );
+      play("err");
+      return;
+    }
     setAuthLoading(true);
     await new Promise((r) => setTimeout(r, 3000));
     try {
@@ -1139,6 +1152,13 @@ export default function LifeApp() {
     if (authLoading) return;
     setSiErr("");
     setSiSocialErr("");
+    if (!isFirebaseConfigured || !auth) {
+      setSiErr(
+        "Firebase auth is not configured yet. Add the NEXT_PUBLIC_FIREBASE_* values to your deployment settings.",
+      );
+      play("err");
+      return;
+    }
     if (!siEmail.trim()) {
       setSiErr("Please enter your email.");
       play("err");
@@ -1175,6 +1195,13 @@ export default function LifeApp() {
     if (authLoading) return;
     setFpErr("");
     setFpMsg("");
+    if (!isFirebaseConfigured || !auth) {
+      setFpErr(
+        "Firebase auth is not configured yet. Add the NEXT_PUBLIC_FIREBASE_* values to your deployment settings.",
+      );
+      play("err");
+      return;
+    }
     if (!fpEmail.trim() || !fpEmail.includes("@")) {
       setFpErr("Please enter a valid email.");
       play("err");
@@ -1202,6 +1229,14 @@ export default function LifeApp() {
   const doRegister = async () => {
     if (authLoading) return;
     setRErr({});
+    if (!isFirebaseConfigured || !auth) {
+      setRErr({
+        email:
+          "Firebase auth is not configured yet. Add the NEXT_PUBLIC_FIREBASE_* values to your deployment settings.",
+      });
+      play("err");
+      return;
+    }
     // Helper that snapshots current form values BEFORE updating errors,
     // so the clearing-effect knows what "old" values looked like.
     const setRErrSnap = (errs) => {
@@ -1299,7 +1334,9 @@ export default function LifeApp() {
   const doSignOut = async () => {
     postAuthScreenRef.current = "landing";
     passwordRecoveryRef.current = false;
-    await signOut(auth);
+    if (auth) {
+      await signOut(auth);
+    }
     clearAuthFormState();
     setUser(null);
     setScreen("landing");

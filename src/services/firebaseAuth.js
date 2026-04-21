@@ -1,5 +1,5 @@
 import { signInWithPopup, signInWithRedirect } from "firebase/auth";
-import { auth, googleProvider } from "../firebaseClient";
+import { auth, googleProvider, isFirebaseConfigured } from "../firebaseClient";
 
 const REDIRECT_FALLBACK_CODES = new Set([
   "auth/popup-blocked",
@@ -9,6 +9,12 @@ const REDIRECT_FALLBACK_CODES = new Set([
 ]);
 
 export async function signInWithGoogle() {
+  if (!isFirebaseConfigured || !auth || !googleProvider) {
+    throw new Error(
+      "Firebase auth is not configured. Set the NEXT_PUBLIC_FIREBASE_* values in your deployment settings.",
+    );
+  }
+
   try {
     return await signInWithPopup(auth, googleProvider);
   } catch (error) {

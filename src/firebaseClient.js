@@ -18,10 +18,12 @@ export const isFirebaseConfigured = Boolean(
     && firebaseConfig.appId,
 );
 
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const app = isFirebaseConfigured
+  ? (getApps().length ? getApp() : initializeApp(firebaseConfig))
+  : null;
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const googleProvider = new GoogleAuthProvider();
+export const auth = app ? getAuth(app) : null;
+export const db = app ? getFirestore(app) : null;
+export const googleProvider = app ? new GoogleAuthProvider() : null;
 
-googleProvider.setCustomParameters({ prompt: "select_account" });
+googleProvider?.setCustomParameters({ prompt: "select_account" });

@@ -48,7 +48,7 @@ export function useQuizStats(userId) {
   const [loading, setLoading]    = useState(false);
   const [error,   setError]      = useState("");
 
-  const isGuest = !userId || userId === "_";
+  const isGuest = !db || !userId || userId === "_";
 
   useEffect(() => {
     if (isGuest) {

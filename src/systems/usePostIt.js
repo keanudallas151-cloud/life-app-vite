@@ -65,6 +65,14 @@ export function usePostIt(user) {
   const pendingVoteIds = useRef({});  // { postId: pendingCount }
 
   const load = useCallback(async () => {
+    if (!db) {
+      setPosts([]);
+      setMyVotes({});
+      setLoading(false);
+      setError("Community is unavailable until Firebase is configured.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -148,6 +156,8 @@ export function usePostIt(user) {
   useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
+    if (!db) return undefined;
+
     const unsubscribe = onSnapshot(
       query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(100)),
       () => {
@@ -162,7 +172,7 @@ export function usePostIt(user) {
   }, [load]);
 
   const addPost = useCallback(async ({ title, body, flair }) => {
-    if (!user?.id) return;
+    if (!db || !user?.id) return;
     const author = user.name
       ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
       : "??";
@@ -193,7 +203,7 @@ export function usePostIt(user) {
   }, [user]);
 
   const addComment = useCallback(async (postId, text) => {
-    if (!user?.id || !text.trim()) return;
+    if (!db || !user?.id || !text.trim()) return;
     const author = user.name
       ? user.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
       : "??";
@@ -221,7 +231,7 @@ export function usePostIt(user) {
   // Upserts into post_votes. Realtime handles the UI update.
   // We do an optimistic update here as well so it feels instant.
   const vote = useCallback(async (postId, dir) => {
-    if (!user?.id) return;
+    if (!db || !user?.id) return;
 
     const prev = myVotesRef.current[postId] ?? 0;
     // One vote per direction per user (like Reddit): same click again does nothing

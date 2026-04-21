@@ -12,7 +12,7 @@ export function useUserData(userId) {
   const [loading,     setLoading]         = useState(false);
   const [error,       setError]           = useState("");
 
-  const isGuest = !userId || userId === "_";
+  const isGuest = !db || !userId || userId === "_";
   const persistTimerRef = useRef(null);
   const pendingPatchRef = useRef(null);
   const persistInFlightRef = useRef(false);
