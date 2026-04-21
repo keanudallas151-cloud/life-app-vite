@@ -26,6 +26,7 @@ const browserGlobals = {
   HTMLElement: "readonly",
   Element: "readonly",
   MutationObserver: "readonly",
+  CustomEvent: "readonly",
   process: "readonly",
 };
 
@@ -51,6 +52,16 @@ export default defineConfig([
       "no-unused-vars": ["error", { varsIgnorePattern: "^[A-Z_]" }],
       "react-hooks/set-state-in-effect": "off",
       "react-hooks/static-components": "off",
+    },
+  },
+  {
+    files: [
+      "src/components/inventorsInvestors/pages/InventorsInvestorsSwipePage.jsx",
+      "src/components/inventorsInvestors/InventorsInvestorsUI.jsx",
+      "src/components/AccountCustomizePage.jsx",
+    ],
+    rules: {
+      "@next/next/no-img-element": "off",
     },
   },
   {
