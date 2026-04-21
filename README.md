@@ -21,14 +21,14 @@ Without env vars the shell still runs, but auth, cloud-synced library data, quiz
 ### Option A: File Explorer (manual)
 
 1. Save your work in your editor and close VS Code/terminals that are using the repo.
-2. Open `C:\Users\louie\`.
+2. Open `C:\Users\<your-username>\` (for example `C:\Users\louie\`).
 3. Right-click `life-app-vite` → **Rename** → `life-app`.
-4. Re-open a terminal in `C:\Users\louie\life-app`.
+4. Re-open a terminal in `C:\Users\<your-username>\life-app`.
 
 ### Option B: PowerShell
 
 ```powershell
-Move-Item -LiteralPath "C:\Users\louie\life-app-vite" -Destination "C:\Users\louie\life-app"
+Move-Item -LiteralPath "C:\Users\<your-username>\life-app-vite" -Destination "C:\Users\<your-username>\life-app"
 ```
 
 If you get a file-lock error, close apps using that folder and retry.
@@ -36,7 +36,7 @@ If you get a file-lock error, close apps using that folder and retry.
 ### Git-safe checks after rename
 
 ```powershell
-cd "C:\Users\louie\life-app"
+cd "C:\Users\<your-username>\life-app"
 git status
 git branch --show-current
 git remote -v
@@ -46,7 +46,7 @@ git log -n 1 --oneline
 ### Continue development after rename
 
 ```powershell
-cd "C:\Users\louie\life-app"
+cd "C:\Users\<your-username>\life-app"
 npm ci
 npm run lint
 npm run build
@@ -90,7 +90,7 @@ Get-ChildItem -Path . -Recurse -Include *.md,*.json,*.yml,*.yaml,*.sh,*.ps1,*.tx
 
 - Update local env files, IDE workspace paths, and terminal shortcuts that still point to `life-app-vite`.
 - Verify CI/deployment settings that may include old names (GitHub Actions envs, Vercel/Netlify project naming, Docker/container configs).
-- Re-open any editor workspaces from the new `C:\Users\louie\life-app` path.
+- Re-open any editor workspaces from the new `C:\Users\<your-username>\life-app` path.
 
 ## Vercel + Supabase + GitHub setup
 
