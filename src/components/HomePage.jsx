@@ -3,8 +3,6 @@ import { MAP } from "../data/content";
 import { clearResumeTopic, getResumeTopic } from "../systems/resumeReading";
 import { S } from "../systems/theme";
 
-// Time-of-day greeting based on the user's local hour.
-// Morning 5-11, Afternoon 12-16, Evening 17-21, Night 22-04.
 function greetingFor(hour) {
   if (hour >= 5 && hour < 12) return "Good Morning";
   if (hour >= 12 && hour < 17) return "Good Afternoon";
@@ -30,8 +28,6 @@ export function HomePage({
     return { key: saved.key, label: MAP[saved.key].node?.label || saved.key };
   }, []);
 
-  // Compute greeting. Re-check every 5 minutes so it updates if the app
-  // stays open across a time-of-day boundary (morning → afternoon, etc.).
   const [greetHour, setGreetHour] = useState(() => new Date().getHours());
   useEffect(() => {
     const id = setInterval(
@@ -58,7 +54,6 @@ export function HomePage({
 
   return (
     <div>
-      {/* HERO SECTION */}
       <div
         className="life-grain life-home-hero"
         style={{
@@ -69,7 +64,6 @@ export function HomePage({
           overflow: "hidden",
         }}
       >
-        {/* Decorative circles */}
         <div
           aria-hidden
           style={{
@@ -149,7 +143,6 @@ export function HomePage({
             />
           </h1>
 
-          {/* Tagline — now with quote marks */}
           <blockquote
             style={{
               color: t.mid,
@@ -232,16 +225,7 @@ export function HomePage({
               }}
             >
               Let&apos;s Start!
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={t.ink}
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={t.ink} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
               </svg>
@@ -273,16 +257,7 @@ export function HomePage({
               }}
             >
               Let&apos;s Make Money
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={t.ink}
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={t.ink} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
               </svg>
@@ -291,16 +266,14 @@ export function HomePage({
         </div>
       </div>
 
-      {/* CONTENT SECTION */}
       <div style={{ padding: "28px 20px 0", maxWidth: 620, margin: "0 auto" }}>
-        {/* CONTINUE READING */}
         {resumeTopic && !dismissed && (
           <div
             style={{
               position: "relative",
               marginBottom: 24,
               background: t.white,
-              border: `1.5px solid ${t.green}33`,
+              border: `1.5px solid ${t.green}26`,
               borderRadius: 18,
               boxShadow: S.sm,
               overflow: "hidden",
@@ -315,7 +288,7 @@ export function HomePage({
                 display: "flex",
                 alignItems: "center",
                 gap: 14,
-                padding: "16px 52px 16px 18px",
+                padding: "16px 44px 16px 18px",
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
@@ -326,31 +299,22 @@ export function HomePage({
             >
               <div
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: 42,
+                  height: 42,
                   borderRadius: 12,
-                  background: `${t.green}18`,
+                  background: `${t.green}14`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   flexShrink: 0,
                 }}
               >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke={t.green}
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={t.green} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
                   <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
                 </svg>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flex: 1, minWidth: 0, paddingRight: 6 }}>
                 <p
                   style={{
                     margin: 0,
@@ -377,22 +341,11 @@ export function HomePage({
                   {resumeTopic.label}
                 </p>
               </div>
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={t.muted}
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ flexShrink: 0 }}
-              >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={t.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginRight: 2 }}>
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </button>
 
-            {/* Dismiss × — own click target on top */}
             <button
               type="button"
               onClick={handleDismissResume}
@@ -400,13 +353,13 @@ export function HomePage({
               title="Dismiss"
               style={{
                 position: "absolute",
-                top: 10,
-                right: 10,
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                background: `${t.muted}14`,
-                border: "none",
+                top: 12,
+                right: 12,
+                width: 24,
+                height: 24,
+                borderRadius: 999,
+                background: `${t.muted}10`,
+                border: `1px solid ${t.border}`,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
@@ -414,34 +367,26 @@ export function HomePage({
                 color: t.mid,
                 padding: 0,
                 zIndex: 2,
-                transition:
-                  "background 0.15s ease, color 0.15s ease, transform 0.12s ease",
+                transition: "background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.12s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = `${t.muted}28`;
+                e.currentTarget.style.background = `${t.muted}18`;
                 e.currentTarget.style.color = t.ink;
+                e.currentTarget.style.borderColor = `${t.muted}2a`;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = `${t.muted}14`;
+                e.currentTarget.style.background = `${t.muted}10`;
                 e.currentTarget.style.color = t.mid;
+                e.currentTarget.style.borderColor = t.border;
               }}
               onMouseDown={(e) => {
-                e.currentTarget.style.transform = "scale(0.9)";
+                e.currentTarget.style.transform = "scale(0.92)";
               }}
               onMouseUp={(e) => {
                 e.currentTarget.style.transform = "scale(1)";
               }}
             >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -449,7 +394,6 @@ export function HomePage({
           </div>
         )}
 
-        {/* FROM THE AUTHOR */}
         <div
           style={{
             position: "relative",
@@ -462,7 +406,6 @@ export function HomePage({
             marginBottom: 24,
           }}
         >
-          {/* Huge decorative quote mark */}
           <span
             aria-hidden
             style={{
@@ -537,14 +480,7 @@ export function HomePage({
               position: "relative",
             }}
           >
-            <span
-              style={{
-                display: "inline-block",
-                width: 28,
-                height: 2,
-                background: t.green,
-              }}
-            />
+            <span style={{ display: "inline-block", width: 28, height: 2, background: t.green }} />
             <span
               style={{
                 fontSize: 11,
@@ -560,7 +496,6 @@ export function HomePage({
           </div>
         </div>
 
-        {/* QUICK ACTIONS GRID — 4 cards, even 2x2 on mobile */}
         <p
           style={{
             margin: "4px 2px 12px",
@@ -582,26 +517,10 @@ export function HomePage({
           }}
         >
           {[
-            {
-              label: "Practice Quiz",
-              desc: "Jump into your next round.",
-              onClick: onOpenQuiz,
-            },
-            {
-              label: "Daily Growth",
-              desc: "Keep momentum alive today.",
-              onClick: onOpenDailyGrowth,
-            },
-            {
-              label: "Momentum Hub",
-              desc: "Streaks, missions, wins.",
-              onClick: onOpenMomentumHub,
-            },
-            {
-              label: "My Goals",
-              desc: "Set and track what matters.",
-              onClick: onOpenGoalSetting,
-            },
+            { label: "Practice Quiz", desc: "Jump into your next round.", onClick: onOpenQuiz },
+            { label: "Daily Growth", desc: "Keep momentum alive today.", onClick: onOpenDailyGrowth },
+            { label: "Momentum Hub", desc: "Streaks, missions, wins.", onClick: onOpenMomentumHub },
+            { label: "My Goals", desc: "Set and track what matters.", onClick: onOpenGoalSetting },
           ].map((action) => (
             <button
               key={action.label}
@@ -624,17 +543,12 @@ export function HomePage({
                 gap: 6,
               }}
             >
-              <span style={{ fontSize: 13.5, fontWeight: 700, color: t.ink }}>
-                {action.label}
-              </span>
-              <span style={{ fontSize: 12, lineHeight: 1.5, color: t.muted }}>
-                {action.desc}
-              </span>
+              <span style={{ fontSize: 13.5, fontWeight: 700, color: t.ink }}>{action.label}</span>
+              <span style={{ fontSize: 12, lineHeight: 1.5, color: t.muted }}>{action.desc}</span>
             </button>
           ))}
         </div>
 
-        {/* FOOTER — centered copyright on dashboard */}
         <p
           style={{
             margin: "32px auto 8px",
