@@ -104,7 +104,14 @@ export function useInventorsInvestorsData(user) {
             hero_image_url: imageMap.get(item.inventor_profile_id) || "",
           }));
 
-        setDiscoveryProfiles(filtered);
+        const ranked = filtered
+          .map((item) => ({
+            ...item,
+            discovery_rank: computeDiscoveryRank(item),
+          }))
+          .sort((a, b) => b.discovery_rank - a.discovery_rank);
+
+        setDiscoveryProfiles(ranked);
       } catch (error) {
         console.error("Failed to load discovery profiles", error);
         setDiscoveryProfiles([]);
@@ -723,6 +730,37 @@ export function useInventorsInvestorsData(user) {
     reportUser,
     refresh: loadInitial,
   };
+}
+
+function computeDiscoveryRank(profile) {
+  const now = Date.now();
+  const updatedAt = new Date(profile.updated_at || profile.created_at || now).getTime();
+  const ageHours = Math.max(1, (now - updatedAt) / (1000 * 60 * 60));
+  const freshnessScore = Math.max(0, 60 - Math.min(60, ageHours * 1.2));
+
+  const hasHeroImage = profile.hero_image_url ? 18 : 0;
+  const hasAvatar = profile.avatar_url ? 12 : 0;
+  const bioLength = String(profile.bio || profile.short_pitch || profile.description || "").trim().length;
+  const bioScore = Math.min(18, Math.floor(bioLength / 18));
+
+  const investorSignal =
+    profile.role === "investor"
+      ? Number(Boolean(profile.investment_budget)) * 12 +
+        Number(Boolean(profile.investment_range_min && profile.investment_range_max)) * 8 +
+        Number(Boolean(profile.stage_preference)) * 6
+      : 0;
+
+  const inventorSignal =
+    profile.role === "inventor"
+      ? Number(Boolean(profile.funding_sought)) * 12 +
+        Number(Boolean(profile.revenue)) * 8 +
+        Number(Boolean(profile.category || profile.invention_type)) * 6
+      : 0;
+
+  const completeness = Number(profile.profile_completed) ? 14 : 0;
+  const publicContactSignal = Number(Boolean(profile.public_email || profile.public_phone)) * 4;
+
+  return freshnessScore + hasHeroImage + hasAvatar + bioScore + investorSignal + inventorSignal + completeness + publicContactSignal;
 }
 
 function toNumberOrNull(value) {
