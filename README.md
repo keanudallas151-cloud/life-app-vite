@@ -76,7 +76,7 @@ Get-ChildItem -Path . -Recurse -Include *.md,*.json,*.yml,*.yaml,*.sh,*.ps1,*.tx
 ### Suggested PR metadata
 
 - **Title:** `Rename repository references from "life-app-vite" to "life-app"`
-- **Scope to check:** `README.md`, `package.json`, `.github/*`, `.clinerules/*`, and root docs/scripts.
+- **Scope to check:** `README.md`, `package.json`, `.github/*`, top-level `.clinerules/*`, and root docs/scripts.
 
 ### Suggested QA checklist
 
