@@ -16,7 +16,7 @@ Without env vars the shell still runs, but auth, cloud-synced library data, quiz
 
 ## Renaming your local folder on Windows (`life-app-vite` → `life-app`)
 
-> Do this on your machine only. This repository cannot rename your local folder for you.
+> This is a local operation only and does not affect the remote repository.
 
 ### Option A: File Explorer (manual)
 
@@ -55,7 +55,7 @@ npm run dev
 
 ## Updating repository references (`life-app-vite` text) if needed
 
-There are currently no in-repo `life-app-vite` matches, but use this flow for future cleanup PRs.
+Use this flow if you need to update repository text references in future cleanup PRs.
 
 ### Search
 
