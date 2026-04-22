@@ -108,6 +108,7 @@ function DeckSwipeCard({ t, onSwipeLeft, onSwipeRight, onTap, children }) {
           background: `linear-gradient(180deg, ${alpha(t.green, 0.08)} 0%, ${t.skin} 100%)`,
           transform: "scale(0.96)",
           zIndex: 0,
+          pointerEvents: "none",
         }}
       />
       <div
@@ -121,6 +122,7 @@ function DeckSwipeCard({ t, onSwipeLeft, onSwipeRight, onTap, children }) {
           background: `linear-gradient(180deg, ${alpha(t.green, 0.05)} 0%, ${t.skin} 100%)`,
           transform: "scale(0.92)",
           zIndex: 0,
+          pointerEvents: "none",
         }}
       />
       {/* Active card */}
