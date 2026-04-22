@@ -23,6 +23,30 @@ function pickFirstDefined(...values) {
   return undefined;
 }
 
+function isPlainObject(value) {
+  if (!value || typeof value !== "object") return false;
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+}
+
+function sanitizeForPersistence(value) {
+  if (value === undefined) return undefined;
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => sanitizeForPersistence(item))
+      .filter((item) => item !== undefined);
+  }
+  if (!isPlainObject(value)) return value;
+
+  return Object.entries(value).reduce((acc, [key, entry]) => {
+    const next = sanitizeForPersistence(entry);
+    if (next !== undefined) {
+      acc[key] = next;
+    }
+    return acc;
+  }, {});
+}
+
 function normalizeCloudUserData(data = {}) {
   return {
     bookmarks: pickFirstDefined(data.bookmarks, []),
@@ -102,10 +126,11 @@ export function useUserData(userId) {
       while (pendingPatchRef.current) {
         const patch = pendingPatchRef.current;
         pendingPatchRef.current = null;
+        const sanitizedPatch = sanitizeForPersistence(patch) || {};
 
         const payload = {
           userId,
-          ...patch,
+          ...sanitizedPatch,
           updatedAt: serverTimestamp(),
         };
 
@@ -113,7 +138,7 @@ export function useUserData(userId) {
           await setDoc(doc(db, "userData", userId), payload, { merge: true });
           saveCachedUserData(userId, {
             ...loadCachedUserData(userId),
-            ...patch,
+            ...sanitizedPatch,
           });
           retryCountRef.current = 0;
           setError("");

@@ -7,6 +7,30 @@ import {
 const MOMENTUM_VERSION = 1;
 const MAX_EVENTS = 120;
 
+function isPlainObject(value) {
+  if (!value || typeof value !== "object") return false;
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+}
+
+function stripUndefinedDeep(value) {
+  if (value === undefined) return undefined;
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => stripUndefinedDeep(item))
+      .filter((item) => item !== undefined);
+  }
+  if (!isPlainObject(value)) return value;
+
+  return Object.entries(value).reduce((acc, [key, entry]) => {
+    const next = stripUndefinedDeep(entry);
+    if (next !== undefined) {
+      acc[key] = next;
+    }
+    return acc;
+  }, {});
+}
+
 function pad(n) {
   return String(n).padStart(2, "0");
 }
@@ -79,7 +103,7 @@ function sanitizeMission(mission, dateKey) {
 
 function sanitizeEvent(event) {
   if (!event || !event.id || !isMomentumType(event.type)) return null;
-  return {
+  return stripUndefinedDeep({
     id: String(event.id),
     type: event.type,
     source: event.source || "home",
@@ -88,7 +112,7 @@ function sanitizeEvent(event) {
     contentKey: event.contentKey,
     topicKey: event.topicKey,
     meta: event.meta || undefined,
-  };
+  });
 }
 
 function previousDateKey(dateKey) {
@@ -241,15 +265,17 @@ export function getNextMomentumSuggestion(snapshot) {
   const missions = Array.isArray(snapshot?.missions) ? snapshot.missions : [];
   const pending = missions
     .filter((mission) => !mission.completed)
-    .map((mission) => ({
-      actionType: mission.type,
-      title: mission.label,
-      body: mission.description,
-      route: mission.route,
-      priority: MOMENTUM_SUGGESTION_PRIORITY[mission.type] ?? 40,
-      contentKey: mission.contentKey,
-      topicKey: mission.topicKey,
-    }))
+    .map((mission) =>
+      stripUndefinedDeep({
+        actionType: mission.type,
+        title: mission.label,
+        body: mission.description,
+        route: mission.route,
+        priority: MOMENTUM_SUGGESTION_PRIORITY[mission.type] ?? 40,
+        contentKey: mission.contentKey,
+        topicKey: mission.topicKey,
+      }),
+    )
     .sort((a, b) => b.priority - a.priority);
 
   return pending[0] || MOMENTUM_EMPTY_SUGGESTION;

@@ -326,7 +326,9 @@ export function PostItFeed({ play, user, onMomentumEvent }) {
         : [...prev, postId];
       try {
         sessionStorage.setItem("life_saved_posts", JSON.stringify(next));
-      } catch {}
+      } catch {
+        // Ignore sessionStorage write failures and keep the in-memory state.
+      }
       return next;
     });
   };
@@ -334,11 +336,15 @@ export function PostItFeed({ play, user, onMomentumEvent }) {
   const handleShare = (post) => {
     const text = `${post.title} — via Life. app`;
     if (navigator.share) {
-      navigator.share({ title: post.title, text }).catch(() => {});
+      navigator.share({ title: post.title, text }).catch(() => {
+        // User cancelled share or the platform rejected it.
+      });
     } else {
       try {
         navigator.clipboard.writeText(text);
-      } catch {}
+      } catch {
+        // Clipboard access can be blocked; the copied-state UI still handles feedback.
+      }
       setShareCopied(post.id);
       setTimeout(() => setShareCopied(null), 2000);
     }

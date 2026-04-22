@@ -86,8 +86,8 @@ export function ProfileDetailSheet({
 
   // Slide-in animation
   useEffect(() => {
-    const id = requestAnimationFrame(() => setMounted(true));
-    return () => cancelAnimationFrame(id);
+    const id = window.requestAnimationFrame(() => setMounted(true));
+    return () => window.cancelAnimationFrame(id);
   }, []);
 
   // Back-button closes the sheet

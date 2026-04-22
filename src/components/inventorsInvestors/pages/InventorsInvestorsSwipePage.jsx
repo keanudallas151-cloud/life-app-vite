@@ -9,7 +9,6 @@ import {
 } from "../InventorsInvestorsUI";
 import {
   formatCurrency,
-  formatPercent,
 } from "../../../utils/inventorsInvestors";
 
 const DECK_SWIPE_TRIGGER = 88;
@@ -216,7 +215,6 @@ function DiscoverCard({
   onViewProfile,
   onInterested,
   onPass,
-  onStartChat,
   onCompleteProfile,
 }) {
   if (!profile) return null;
