@@ -21,6 +21,7 @@ import { InventorsInvestorsLandingPage } from "./inventorsInvestors/pages/Invent
 import { InventorsInvestorsMessagesPage } from "./inventorsInvestors/pages/InventorsInvestorsMessagesPage";
 import { InventorsInvestorsSwipePage } from "./inventorsInvestors/pages/InventorsInvestorsSwipePage";
 import { InvestorProfileSetupPage } from "./inventorsInvestors/pages/InvestorProfileSetupPage";
+import { ProfileDetailSheet } from "./inventorsInvestors/pages/ProfileDetailSheet";
 
 function mapInvestorForm(profile, investorProfile, user, userId) {
   const base = loadDraft(userId, "investor", investorProfileDefaults);
@@ -327,6 +328,8 @@ export function InventorsInvestors({ t, user, play, onSystemNotify }) {
   );
   const [roleSubmitting, setRoleSubmitting] = useState(false);
   const [matchState, setMatchState] = useState(null);
+  const [profileDetailTarget, setProfileDetailTarget] = useState(null);
+  const [reportModal, setReportModal] = useState(null); // { userId, reason, details }
   const [activityFeed, setActivityFeed] = useState(() =>
     loadActivityFeed(userId),
   );
@@ -535,13 +538,23 @@ export function InventorsInvestors({ t, user, play, onSystemNotify }) {
     await blockUser(targetUserId);
   };
 
-  const handleReport = async (targetUserId) => {
+  const handleReport = (targetUserId) => {
     play?.("tap");
-    const reason =
-      window.prompt("Report reason", "Spam or misleading profile") ||
-      "User report";
-    const details = window.prompt("Extra detail (optional)", "") || "";
-    await reportUser(targetUserId, reason, details);
+    setReportModal({
+      userId: targetUserId,
+      reason: "Spam or misleading profile",
+      details: "",
+    });
+  };
+
+  const handleSubmitReport = async () => {
+    if (!reportModal) return;
+    await reportUser(
+      reportModal.userId,
+      reportModal.reason || "User report",
+      reportModal.details || "",
+    );
+    setReportModal(null);
   };
 
   const setInvestorField = (field, value) => {
@@ -689,6 +702,7 @@ export function InventorsInvestors({ t, user, play, onSystemNotify }) {
               }
               onResetSearch={() => setSearchTerm("")}
               onCompleteProfile={handleCompleteProfileSetup}
+              onViewProfile={(p) => setProfileDetailTarget(p)}
             />
           </div>
           <MatchOverlay
@@ -697,6 +711,187 @@ export function InventorsInvestors({ t, user, play, onSystemNotify }) {
             onClose={() => setMatchState(null)}
             onOpenMessages={openMatchConversation}
           />
+          {profileDetailTarget ? (
+            <ProfileDetailSheet
+              t={t}
+              profile={profileDetailTarget}
+              onClose={() => setProfileDetailTarget(null)}
+              onInterested={() => {
+                showSwipeFeedback(profileDetailTarget);
+                createSwipe(profileDetailTarget.user_id, "interested");
+                setProfileDetailTarget(null);
+              }}
+              onPass={() => {
+                createSwipe(profileDetailTarget.user_id, "pass");
+                setProfileDetailTarget(null);
+              }}
+              onStartChat={() => {
+                handleStartChat(profileDetailTarget.user_id);
+                setProfileDetailTarget(null);
+              }}
+              onBlock={() => {
+                handleBlock(profileDetailTarget.user_id);
+                setProfileDetailTarget(null);
+              }}
+              onReport={() => {
+                handleReport(profileDetailTarget.user_id);
+                setProfileDetailTarget(null);
+              }}
+            />
+          ) : null}
+
+          {/* Inline report modal */}
+          {reportModal ? (
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.72)",
+                zIndex: 600,
+                display: "grid",
+                placeItems: "center",
+                padding: "20px",
+              }}
+              onClick={() => setReportModal(null)}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  background: t.white,
+                  borderRadius: 24,
+                  padding: "28px 24px",
+                  width: "100%",
+                  maxWidth: 420,
+                  boxSizing: "border-box",
+                }}
+              >
+                <h3
+                  style={{
+                    margin: "0 0 6px",
+                    fontSize: 18,
+                    fontWeight: 800,
+                    color: t.ink,
+                  }}
+                >
+                  Report this profile
+                </h3>
+                <p
+                  style={{
+                    margin: "0 0 20px",
+                    fontSize: 13,
+                    color: t.muted,
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Your report is private. We review every submission and take
+                  action within 48 hours.
+                </p>
+                <div style={{ marginBottom: 14 }}>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 800,
+                      color: t.muted,
+                      letterSpacing: 1.2,
+                      textTransform: "uppercase",
+                      marginBottom: 8,
+                    }}
+                  >
+                    Reason
+                  </div>
+                  {[
+                    "Spam or misleading profile",
+                    "Inappropriate content",
+                    "Fake or impersonation",
+                    "Harassment",
+                    "Other",
+                  ].map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() =>
+                        setReportModal((m) => ({ ...m, reason: r }))
+                      }
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        textAlign: "left",
+                        background: reportModal.reason === r ? t.green : t.skin,
+                        border: `1px solid ${reportModal.reason === r ? t.green : t.border}`,
+                        borderRadius: 12,
+                        padding: "11px 14px",
+                        marginBottom: 8,
+                        fontSize: 14,
+                        fontWeight: reportModal.reason === r ? 700 : 500,
+                        color: reportModal.reason === r ? "#fff" : t.ink,
+                        cursor: "pointer",
+                        transition: "background 140ms, color 140ms",
+                      }}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  value={reportModal.details}
+                  onChange={(e) =>
+                    setReportModal((m) => ({ ...m, details: e.target.value }))
+                  }
+                  placeholder="Extra details (optional)"
+                  style={{
+                    width: "100%",
+                    minHeight: 80,
+                    borderRadius: 14,
+                    border: `1px solid ${t.border}`,
+                    background: t.skin,
+                    color: t.ink,
+                    padding: "12px 14px",
+                    fontSize: 16,
+                    resize: "vertical",
+                    boxSizing: "border-box",
+                    outline: "none",
+                    marginBottom: 16,
+                  }}
+                />
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button
+                    type="button"
+                    onClick={handleSubmitReport}
+                    style={{
+                      flex: 1,
+                      background: t.red,
+                      border: "none",
+                      borderRadius: 14,
+                      padding: "14px",
+                      fontSize: 15,
+                      fontWeight: 800,
+                      color: "#fff",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Submit report
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReportModal(null)}
+                    style={{
+                      flex: 1,
+                      background: t.skin,
+                      border: `1px solid ${t.border}`,
+                      borderRadius: 14,
+                      padding: "14px",
+                      fontSize: 15,
+                      fontWeight: 700,
+                      color: t.muted,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </>
       );
 
