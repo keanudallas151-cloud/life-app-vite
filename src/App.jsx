@@ -3692,6 +3692,7 @@ export default function LifeApp() {
         {/* MAIN CONTENT */}
         <div
           className="life-main-scroll"
+          data-current-page={page}
           ref={mainScrollRef}
           style={{
             flex: 1,

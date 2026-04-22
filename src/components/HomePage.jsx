@@ -53,7 +53,16 @@ export function HomePage({
   };
 
   return (
-    <div>
+    <div
+      data-page-tag="#dashboard_home"
+      style={{
+        minHeight: "100%",
+        background: t.skin,
+        overflowX: "hidden",
+        paddingBottom: "calc(var(--life-bottom-nav-height, 0px) + 16px)",
+        boxSizing: "border-box",
+      }}
+    >
       <div
         className="life-grain life-home-hero"
         style={{

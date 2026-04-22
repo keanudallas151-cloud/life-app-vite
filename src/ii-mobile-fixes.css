@@ -38,6 +38,10 @@ body,
   .life-main-scroll {
     padding-bottom: calc(var(--life-bottom-nav-height) + 4px) !important;
   }
+
+  .life-main-scroll[data-current-page="home"] {
+    padding-bottom: 0 !important;
+  }
 }
 
 /* General networking frame cleanup */

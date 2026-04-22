@@ -3,10 +3,18 @@ import { C } from "../systems/theme";
 import { CONTENT_TAGS, buildProfile, computeEssentialScore } from "../data/tailoring";
 import { CONTENT } from "../data/content";
 
+const TIME_OPTIONS = [
+  { label: "30 min a day", hint: "A gentle start that still compounds." },
+  { label: "Once a day", hint: "One focused session keeps the rhythm steady." },
+  { label: "Twice a day", hint: "A stronger pace for faster progress." },
+  { label: "Every evening", hint: "A reliable wind-down routine for learning." },
+  { label: "Every day, locked in", hint: "You want the deepest, most consistent plan." },
+];
+
 export function TailorIntro({userName,onExplore,onTailor,t:theme}){
   const t = theme || C;
   return(
-    <div style={{height:"100%",paddingBottom:"var(--safe-bottom, 0px)",background:`linear-gradient(165deg, ${t.skin} 0%, ${t.light} 35%, ${t.skin} 70%, ${t.light} 100%)`,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif",overflowY:"auto",WebkitOverflowScrolling:"touch",position:"relative"}}>
+    <div data-page-tag="#tailor_intro" style={{height:"100%",paddingBottom:"var(--safe-bottom, 0px)",background:`linear-gradient(165deg, ${t.skin} 0%, ${t.light} 35%, ${t.skin} 70%, ${t.light} 100%)`,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif",overflowX:"hidden",overflowY:"auto",WebkitOverflowScrolling:"touch",position:"relative"}}>
       {/* Decorative background circles */}
       <div aria-hidden style={{position:"absolute",top:-60,right:-40,width:200,height:200,borderRadius:"50%",border:`1.5px solid ${t.green}12`,pointerEvents:"none"}}/>
       <div aria-hidden style={{position:"absolute",bottom:"20%",left:-30,width:140,height:140,borderRadius:"50%",background:`${t.green}08`,pointerEvents:"none"}}/>
@@ -51,20 +59,20 @@ export function TailorQuestions({onComplete,onBack,t:theme}){
   const t = theme || C;
   const[step,setStep]=useState(0);
   const[answers,setAnswers]=useState({
-    goals:null,motivation:null,finance_level:null,english_level:null,learning_style:null,
-    age_group:null,biggest_challenge:null,reading_frequency:null,accountability_style:null,content_depth:null,
-    time:40,life_areas:[]
+    goals:[],motivation:[],finance_level:null,english_level:null,learning_style:[],
+    age_group:null,biggest_challenge:[],reading_frequency:null,accountability_style:null,content_depth:null,
+    time:null,life_areas:[]
   });
   const[animDir,setAnimDir]=useState("in");
 
   const questions=[
-    {id:"goals",label:"What is your biggest dream or goal right now?",multi:false,
+    {id:"goals",label:"What is your biggest dream or goal right now?",multi:true,
       opts:["Generate Income","Start A Business","Improving Mindset","Learning","Freedom","To Be Wiser"]},
-    {id:"motivation",label:"What drives you to seek knowledge?",multi:false,
+    {id:"motivation",label:"What drives you to seek knowledge?",multi:true,
       opts:["Financial Freedom","Self-Improvement","Curiosity","Solve Personal Problems","Self-Discipline And Structure"]},
     {id:"age_group",label:"Which age group best describes you?",multi:false,
       opts:["13-17","18-24","25-34","35-44","45+"]},
-    {id:"biggest_challenge",label:"What is the biggest challenge holding you back?",multi:false,
+    {id:"biggest_challenge",label:"What is the biggest challenge holding you back?",multi:true,
       opts:["Lack of motivation","Not enough money","No clear direction","Bad habits / discipline","Social anxiety / confidence","Time management"]},
     {id:"finance_level",label:"How would you rate your financial literacy?",multi:false,
       opts:["No understanding (Beginner)","Basic understanding","Intermediate","Advanced","Expert Understanding"]},
@@ -72,13 +80,13 @@ export function TailorQuestions({onComplete,onBack,t:theme}){
       opts:["Beginner","Fluent","Shakespeare Level"]},
     {id:"reading_frequency",label:"How often do you read or study on your own?",multi:false,
       opts:["Never / rarely","A few times a month","Weekly","Daily reader"]},
-    {id:"learning_style",label:"How do you learn best?",multi:false,
+    {id:"learning_style",label:"How do you learn best?",multi:true,
       opts:["Reading","Videos","Interactive/Hands-on","Audio"]},
     {id:"accountability_style",label:"What keeps you accountable?",multi:false,
       opts:["I prefer solo learning","I like tracking my progress","I need a community","I work best with a mentor"]},
     {id:"content_depth",label:"How deep do you want the content to go?",multi:false,
       opts:["Quick tips & summaries","Balanced — some detail","Deep dives & full breakdowns","I want everything available"]},
-    {id:"time",label:"How much time per week will you dedicate to learning?",multi:false,opts:null,slider:true},
+    {id:"time",label:"How much time per week will you dedicate to learning?",multi:false,opts:TIME_OPTIONS},
     {id:"life_areas",label:"Which areas of your life need the most work?",multi:true,
       opts:["Finance","Psychology/Mindset","Discipline","Social Skills","Health","Business/Entrepreneurship","Communication","Productivity"]},
   ];
@@ -86,21 +94,7 @@ export function TailorQuestions({onComplete,onBack,t:theme}){
   const q=questions[step];
   const total=questions.length;
 
-  const timeLabels=[
-    {v:0,label:"30 min a day"},
-    {v:25,label:"Once a day"},
-    {v:50,label:"Twice a day"},
-    {v:75,label:"Every evening"},
-    {v:100,label:"Everyday Nonstop 😤"},
-  ];
-  const getNearestLabel=(val)=>{
-    let closest=timeLabels[0];
-    timeLabels.forEach(tl=>{if(Math.abs(tl.v-val)<Math.abs(closest.v-val))closest=tl;});
-    return closest.label;
-  };
-
   const isAnswered=()=>{
-    if(q.slider)return true;
     if(q.multi)return (answers[q.id]?.length ?? 0) > 0;
     return answers[q.id]!==null;
   };
@@ -117,7 +111,10 @@ export function TailorQuestions({onComplete,onBack,t:theme}){
 
   const toggleOpt=(id,val,multi)=>{
     if(multi){
-      setAnswers(a=>{const arr=a[id];return{...a,[id]:arr.includes(val)?arr.filter(x=>x!==val):[...arr,val]};});
+      setAnswers(a=>{
+        const arr=Array.isArray(a[id])?a[id]:[];
+        return{...a,[id]:arr.includes(val)?arr.filter(x=>x!==val):[...arr,val]};
+      });
     }else{
       setAnswers(a=>({...a,[id]:val}));
     }
@@ -126,11 +123,11 @@ export function TailorQuestions({onComplete,onBack,t:theme}){
   const pct=Math.round(((step+1)/total)*100);
 
   return(
-    <div data-page-tag="#tailor_questions" style={{height:"100%",paddingBottom:"var(--safe-bottom, 0px)",background:`linear-gradient(180deg, ${t.skin} 0%, ${t.light} 100%)`,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+    <div data-page-tag="#tailor_questions" style={{height:"100%",paddingBottom:"var(--safe-bottom, 0px)",background:`linear-gradient(180deg, ${t.skin} 0%, ${t.light} 100%)`,display:"flex",flexDirection:"column",fontFamily:"Georgia,serif",overflowX:"hidden",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
       {/* Header bar */}
       <div style={{background:t.white,borderBottom:`1px solid ${t.border}`,padding:"16px 20px"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-          <button onClick={goPrev} style={{background:"none",border:"none",cursor:"pointer",color:t.muted,fontSize:13,padding:0,fontFamily:"Georgia,serif",display:"flex",alignItems:"center",gap:4}}>
+          <button onClick={goPrev} data-ghost="true" style={{background:"none",border:"none",cursor:"pointer",color:t.muted,fontSize:13,padding:0,fontFamily:"Georgia,serif",display:"flex",alignItems:"center",gap:4,boxShadow:"none",outline:"none"}}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             Back
           </button>
@@ -148,34 +145,16 @@ export function TailorQuestions({onComplete,onBack,t:theme}){
         <p style={{margin:"0 0 4px",fontSize:10,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase",color:t.green}}>Question {step+1}</p>
         <h2 style={{margin:"0 0 24px",fontSize:20,fontWeight:800,color:t.ink,lineHeight:1.35,letterSpacing:-0.3}}>{q.label}</h2>
 
-        {/* Slider question */}
-        {q.slider&&(
-          <div style={{padding:"4px 0 20px"}}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:6}}>
-              {timeLabels.map(tl=>(
-                <span key={tl.v} style={{fontSize:10,color:Math.abs(tl.v-answers.time)<14?t.green:t.muted,fontWeight:Math.abs(tl.v-answers.time)<14?700:400,fontFamily:"Georgia,serif",textAlign:"center",maxWidth:70,lineHeight:1.3}}>{tl.label}</span>
-              ))}
-            </div>
-            <div style={{position:"relative",height:44,display:"flex",alignItems:"center"}}>
-              <div style={{position:"absolute",left:0,right:0,height:5,background:t.border,borderRadius:4}}>
-                <div style={{height:"100%",width:`${answers.time}%`,background:t.green,borderRadius:4}}/>
-              </div>
-              <input type="range" min="0" max="100" value={answers.time}
-                onChange={e=>setAnswers(a=>({...a,time:Number(e.target.value)}))}
-                style={{position:"absolute",left:0,right:0,width:"100%",opacity:0,height:44,cursor:"pointer",zIndex:2}}/>
-              <div style={{position:"absolute",left:`calc(${answers.time}% - 14px)`,width:28,height:28,borderRadius:"50%",background:t.green,boxShadow:`0 2px 10px rgba(255,255,255,0.2)`,border:`3px solid ${t.white}`,pointerEvents:"none",transition:"left 0.05s"}}/>
-            </div>
-            <p style={{marginTop:16,textAlign:"center",fontSize:14,fontWeight:700,color:t.green,fontFamily:"Georgia,serif"}}>{getNearestLabel(answers.time)}</p>
-          </div>
-        )}
-
         {/* Options grid */}
-        {!q.slider&&q.opts&&(
+        {q.opts&&(
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
             {q.opts.map(opt=>{
-              const sel=q.multi?answers[q.id].includes(opt):answers[q.id]===opt;
+              const optValue=typeof opt==="string"?opt:(opt.value??opt.label);
+              const optLabel=typeof opt==="string"?opt:opt.label;
+              const optHint=typeof opt==="string"?null:opt.hint;
+              const sel=q.multi?answers[q.id].includes(optValue):answers[q.id]===optValue;
               return(
-                <button key={opt} onClick={()=>toggleOpt(q.id,opt,q.multi)}
+                <button key={optValue} onClick={()=>toggleOpt(q.id,optValue,q.multi)}
                   style={{
                     background:sel?t.green:t.white,
                     border:`1.5px solid ${sel?t.green:t.border}`,
@@ -201,7 +180,10 @@ export function TailorQuestions({onComplete,onBack,t:theme}){
                   }}>
                     {sel&&<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   </span>
-                  {opt}
+                  <span style={{display:"flex",flexDirection:"column",gap:optHint?3:0}}>
+                    <span>{optLabel}</span>
+                    {optHint&&<span style={{fontSize:11,fontWeight:500,color:sel?`${t.white}cc`:t.muted,lineHeight:1.45}}>{optHint}</span>}
+                  </span>
                 </button>
               );
             })}
@@ -214,7 +196,7 @@ export function TailorQuestions({onComplete,onBack,t:theme}){
       <div style={{padding:"14px 22px 32px",maxWidth:520,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
         <button onClick={goNext} disabled={!isAnswered()}
           style={{width:"100%",background:isAnswered()?t.green:t.light,border:"none",borderRadius:14,padding:"17px",color:isAnswered()?t.white:t.muted,fontSize:16,fontWeight:700,cursor:isAnswered()?"pointer":"default",fontFamily:"Georgia,serif",transition:"background 0.2s, color 0.2s"}}>
-          {step<total-1?"Continue →":"Build My Plan ✦"}
+          {step<total-1?"Continue →":"Build My Plan!"}
         </button>
       </div>
     </div>
@@ -230,6 +212,7 @@ export function TailorResult({profile,userName,onContinue,t:theme}){
     finance:{label:"Finance",col:t.greenAlt,icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>},
     mindset:{label:"Mindset",col:"#7B9ED9",icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2a4.5 4.5 0 000 9"/><path d="M14.5 2a4.5 4.5 0 010 9"/><path d="M5 11a4 4 0 004 4v5h6v-5a4 4 0 004-4"/></svg>},
     psychology:{label:"Psychology",col:"#C48BB8",icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>},
+    social:{label:"Social Growth",col:"#7BA5B6",icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>},
     business:{label:"Business",col:"#b8975a",icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>},
     philosophy:{label:"Philosophy",col:"#9E8FA8",icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24,7.76 14.12,14.12 7.76,16.24 9.88,9.88 16.24,7.76"/></svg>},
     practical:{label:"Practical Skills",col:"#7AB899",icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>},
@@ -249,7 +232,7 @@ export function TailorResult({profile,userName,onContinue,t:theme}){
     .map(x=>x.key);
 
   return(
-    <div style={{height:"100%",paddingBottom:"var(--safe-bottom, 0px)",background:t.skin,fontFamily:"Georgia,serif",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+    <div data-page-tag="#tailor_result" style={{height:"100%",paddingBottom:"var(--safe-bottom, 0px)",background:t.skin,fontFamily:"Georgia,serif",overflowX:"hidden",overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
       <div style={{background:`linear-gradient(160deg,${t.greenAlt} 0%,${t.green} 100%)`,padding:"max(40px, var(--safe-top, 0px)) 28px 36px",textAlign:"center",position:"relative"}}>
         <div style={{width:56,height:56,borderRadius:"18px",background:"rgba(255,255,255,0.18)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>

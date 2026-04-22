@@ -110,27 +110,35 @@ export const TSD_WEIGHTS={
   },
 };
 
+function applyWeightedAnswer(answer, weightGroup, add) {
+  if (answer == null) return;
+  const selections = Array.isArray(answer) ? answer : [answer];
+  selections.forEach((selection) => {
+    Object.entries(weightGroup?.[selection] || {}).forEach(([k, v]) => add(k, v));
+  });
+}
+
 export function buildProfile(answers){
   const scores={};
   const add=(cat,val)=>{scores[cat]=(scores[cat]||0)+val;};
-  if(answers.goals)Object.entries(TSD_WEIGHTS.goals[answers.goals]||{}).forEach(([k,v])=>add(k,v));
-  if(answers.motivation)Object.entries(TSD_WEIGHTS.motivation[answers.motivation]||{}).forEach(([k,v])=>add(k,v));
-  if(answers.finance_level)Object.entries(TSD_WEIGHTS.finance_level[answers.finance_level]||{}).forEach(([k,v])=>add(k,v));
-  if(answers.english_level)Object.entries(TSD_WEIGHTS.english_level[answers.english_level]||{}).forEach(([k,v])=>add(k,v));
-  if(answers.learning_style)Object.entries(TSD_WEIGHTS.learning_style[answers.learning_style]||{}).forEach(([k,v])=>add(k,v));
-  if(answers.age_group)Object.entries(TSD_WEIGHTS.age_group[answers.age_group]||{}).forEach(([k,v])=>add(k,v));
-  if(answers.biggest_challenge)Object.entries(TSD_WEIGHTS.biggest_challenge[answers.biggest_challenge]||{}).forEach(([k,v])=>add(k,v));
-  if(answers.reading_frequency)Object.entries(TSD_WEIGHTS.reading_frequency[answers.reading_frequency]||{}).forEach(([k,v])=>add(k,v));
-  if(answers.accountability_style)Object.entries(TSD_WEIGHTS.accountability_style[answers.accountability_style]||{}).forEach(([k,v])=>add(k,v));
-  if(answers.content_depth)Object.entries(TSD_WEIGHTS.content_depth[answers.content_depth]||{}).forEach(([k,v])=>add(k,v));
-  if(answers.life_areas)answers.life_areas.forEach(area=>{Object.entries(TSD_WEIGHTS.life_areas[area]||{}).forEach(([k,v])=>add(k,v));});
+  applyWeightedAnswer(answers.goals,TSD_WEIGHTS.goals,add);
+  applyWeightedAnswer(answers.motivation,TSD_WEIGHTS.motivation,add);
+  applyWeightedAnswer(answers.finance_level,TSD_WEIGHTS.finance_level,add);
+  applyWeightedAnswer(answers.english_level,TSD_WEIGHTS.english_level,add);
+  applyWeightedAnswer(answers.learning_style,TSD_WEIGHTS.learning_style,add);
+  applyWeightedAnswer(answers.age_group,TSD_WEIGHTS.age_group,add);
+  applyWeightedAnswer(answers.biggest_challenge,TSD_WEIGHTS.biggest_challenge,add);
+  applyWeightedAnswer(answers.reading_frequency,TSD_WEIGHTS.reading_frequency,add);
+  applyWeightedAnswer(answers.accountability_style,TSD_WEIGHTS.accountability_style,add);
+  applyWeightedAnswer(answers.content_depth,TSD_WEIGHTS.content_depth,add);
+  applyWeightedAnswer(answers.life_areas,TSD_WEIGHTS.life_areas,add);
   const diffMap={"No understanding (Beginner)":"beginner","Basic understanding":"beginner","Intermediate":"intermediate","Advanced":"advanced","Expert Understanding":"advanced"};
   const difficulty=diffMap[answers.finance_level]||"beginner";
   const max=Math.max(1,...Object.values(scores));
   const norm={};
   Object.entries(scores).forEach(([k,v])=>{norm[k]=Math.round((v/max)*100)/100;});
   const topCats=Object.entries(norm).filter(([k])=>["finance","mindset","psychology","business","philosophy","practical","social"].includes(k)).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k])=>k);
-  return{scores:norm,difficulty,topCats,answers,time:answers.time||40};
+  return{scores:norm,difficulty,topCats,answers,time:answers.time||"Once a day"};
 }
 
 export function computeEssentialScore(key,profile){

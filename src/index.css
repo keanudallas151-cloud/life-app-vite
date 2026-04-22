@@ -289,7 +289,7 @@ p {
    Adds a subtle green rim-light + stronger border so buttons never blend
    into the page. Automatically applies to every <button> except the
    explicitly-ghost styles (sidebar links, header icons). */
-button:not(.life-sidebar-link):not(.life-bottom-nav-item):not([data-ghost]):not(.life-password-toggle) {
+button:not(.life-sidebar-link):not(.life-bottom-nav-item):not([data-ghost]):not(.life-password-toggle):not([style*="background: none"]):not([style*="background:none"]):not([style*="background: transparent"]):not([style*="background:transparent"]) {
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.04),
     0 1px 2px rgba(0, 0, 0, 0.5),
@@ -297,7 +297,7 @@ button:not(.life-sidebar-link):not(.life-bottom-nav-item):not([data-ghost]):not(
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  button:not(.life-sidebar-link):not(.life-bottom-nav-item):not([data-ghost]):not(.life-password-toggle):hover {
+  button:not(.life-sidebar-link):not(.life-bottom-nav-item):not([data-ghost]):not(.life-password-toggle):not([style*="background: none"]):not([style*="background:none"]):not([style*="background: transparent"]):not([style*="background:transparent"]):hover {
     box-shadow:
       0 0 0 1px rgba(255, 255, 255, 0.06),
       0 2px 6px rgba(0, 0, 0, 0.4),
@@ -1518,6 +1518,9 @@ select:focus-visible {
 
   .life-reader-toolbar-actions {
     gap: 4px !important;
+    border-left: none !important;
+    margin-left: 6px !important;
+    padding-left: 4px !important;
     padding-right: 2px !important;
     min-width: max-content !important;
   }
@@ -2820,6 +2823,10 @@ button:active:not(:disabled),
   /* Push page content above the bottom nav */
   .life-main-scroll {
     padding-bottom: calc(var(--life-bottom-nav-height) + 8px) !important;
+  }
+
+  .life-main-scroll[data-current-page="home"] {
+    padding-bottom: 0 !important;
   }
 
   /* Hide scroll-to-top on mobile (bottom nav already orients user) */

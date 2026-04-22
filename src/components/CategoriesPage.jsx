@@ -114,16 +114,19 @@ export function CategoriesPage({ t, play, catStep, setCatStep, setPage, userName
                       play("back");
                       setCatStep(catStep - 1);
                     }}
+                    data-ghost="true"
                     style={{
-                      background: t.white,
-                      border: `1.5px solid ${t.border}`,
-                      borderRadius: 12,
-                      padding: "14px 24px",
+                      background: "none",
+                      border: "none",
+                      borderRadius: 0,
+                      padding: 0,
                       color: t.mid,
                       fontSize: 15,
                       fontWeight: 600,
                       cursor: "pointer",
                       fontFamily: "Georgia,serif",
+                      boxShadow: "none",
+                      outline: "none",
                     }}
                   >
                     ← Back
