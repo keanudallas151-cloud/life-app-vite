@@ -33,11 +33,13 @@ export function ToolsOrganizedPage({ uid, setPage, setScreen }) {
   const overlay = (
     <div
       data-page-tag="#tools_organized_page"
+      className="organized-feature"
       style={{
         position: "fixed",
         inset: 0,
         zIndex: 9000,
-        background: "var(--background, #fff)",
+        background: "var(--background)",
+        color: "var(--foreground)",
         overflow: "auto",
         WebkitOverflowScrolling: "touch",
       }}
@@ -51,19 +53,19 @@ export function ToolsOrganizedPage({ uid, setPage, setScreen }) {
           top: "max(12px, env(safe-area-inset-top))",
           left: "max(12px, env(safe-area-inset-left))",
           zIndex: 10000,
-          height: 40,
-          minWidth: 40,
-          padding: "0 14px",
+          height: 44,
+          minWidth: 44,
+          padding: "0 16px",
           borderRadius: 999,
-          border: "1px solid rgba(0,0,0,0.12)",
-          background: "rgba(255,255,255,0.85)",
+          border: "1px solid var(--border)",
+          background: "color-mix(in oklab, var(--card) 85%, transparent)",
           backdropFilter: "blur(10px)",
           WebkitBackdropFilter: "blur(10px)",
-          color: "#111",
-          fontSize: 13,
+          color: "var(--foreground)",
+          fontSize: 14,
           fontWeight: 600,
           cursor: "pointer",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+          boxShadow: "0 6px 18px color-mix(in oklab, var(--foreground) 12%, transparent)",
         }}
       >
         ← Life
