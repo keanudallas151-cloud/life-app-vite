@@ -13,14 +13,14 @@
     "mtxr.sqltools",
     "ms-ossdata.vscode-pgsql",
     "phu1237.vs-browser",
-    "usernamehw.errorlens",
+    "usernamehw.errorlens"
   ],
   "github.copilot.chat.agent.autoFix": true,
   "github.copilot.chat.copilotMemory.enabled": true,
   "github.copilot.chat.gpt54ConcisePrompt.enabled": true,
   "github.copilot.chat.agent.omitFileAttachmentContents": true,
   "github.copilot.chat.githubMcpServer.enabled": true,
-  "chat.mcp.autostart": true,
+  "chat.mcp.autostart": "newAndOutdated",
   "chat.mcp.apps.enabled": true,
   "terminal.integrated.initialHint.copilotCli": true,
   "terminal.integrated.defaultProfile.linux": "bash",
@@ -28,7 +28,7 @@
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "modificationsIfAvailable",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
+    "source.fixAll.eslint": "explicit"
   },
   "eslint.validate": ["javascript", "javascriptreact"],
   "git.autofetch": true,
@@ -40,8 +40,40 @@
   "github.copilot.chat.claudeAgent.allowDangerouslySkipPermissions": true,
   "cSpell.words": ["Firestore"],
   "editor.tokenColorCustomizations": {
-    "comments": "",
-    "textMateRules": []
+    "comments": "#00000000",
+    "textMateRules": [
+      {
+        "scope": [
+          "hidecomments",
+          "comment",
+          "comment.block",
+          "comment.line",
+          "comment.line.double-slash",
+          "variable.other.jsdoc",
+          "storage.type.class.jsdoc",
+          "punctuation.definition.block.tag.jsdoc",
+          "punctuation.definition.bracket.curly.begin.jsdoc",
+          "punctuation.definition.bracket.curly.end.jsdoc",
+          "entity.name.type.instance.jsdoc",
+          "comment.block.documentation.ts",
+          "comment.block.documentation.js",
+          "comment.block.documentation.cs",
+          "comment.block.documentation.cs entity.other.attribute-name.localname.cs",
+          "comment.block.documentation.cs entity.other.attribute-name.cs",
+          "comment.block.documentation.cs punctuation.definition.tag.cs",
+          "comment.block.documentation.cs punctuation.definition.string.begin.cs",
+          "comment.block.documentation.cs punctuation.definition.string.end.cs",
+          "comment.block.documentation.cs punctuation.definition.bracket.curly.begin.cs",
+          "comment.block.documentation.cs punctuation.definition.bracket.curly.end.cs",
+          "comment.block.documentation.cs punctuation.definition.block.tag.cs",
+          "comment.block.documentation.cs string.quoted.double.cs",
+          "comment.block.documentation.cs entity.name.tag.localname.cs"
+        ],
+        "settings": {
+          "foreground": "#00000000"
+        }
+      }
+    ]
   },
   "chat.mcp.discovery.enabled": {
     "claude-desktop": true,
@@ -49,6 +81,5 @@
     "cursor-global": true,
     "cursor-workspace": true
   },
-  "github.copilot.chat.githubMcpServer.enabled": true,
-  "chat.mcp.assisted.nuget.enabled": true,
+  "chat.mcp.assisted.nuget.enabled": true
 }
