@@ -1,5 +1,6 @@
 // #ProfileDetailSheet — full-profile side-sheet for the Inventors & Investors feature
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Avatar,
   PrimaryButton,
@@ -80,15 +81,32 @@ export function ProfileDetailSheet({
   onStartChat,
   onBlock,
   onReport,
+  previewMode = false,
+  onCompleteProfile,
 }) {
   const closedRef = useRef(false);
   const [mounted, setMounted] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
 
   // Slide-in animation
   useEffect(() => {
     const id = window.requestAnimationFrame(() => setMounted(true));
     return () => window.cancelAnimationFrame(id);
   }, []);
+
+  // Lock the page behind the sheet while open.
+  useEffect(() => {
+    if (typeof document === "undefined" || !profile) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [profile]);
 
   // Back-button closes the sheet
   useEffect(() => {
@@ -120,9 +138,11 @@ export function ProfileDetailSheet({
     handleClose();
   };
 
-  if (!profile) return null;
+  if (!profile || !portalReady || typeof document === "undefined") return null;
 
   const isInvestor = profile.role === "investor";
+  const isStarterProfile = String(profile.user_id || "").startsWith("starter-");
+  const isPreview = previewMode || isStarterProfile;
   const heroSrc = profile.hero_image_url || profile.avatar_url;
   const moneyLabel = isInvestor ? "Investment budget" : "Funding sought";
   const moneyValue = isInvestor
@@ -165,7 +185,7 @@ export function ProfileDetailSheet({
 
   const validFacts = facts.filter((f) => f.value);
 
-  return (
+  const content = (
     <>
       {/* Backdrop */}
       <div
@@ -192,7 +212,8 @@ export function ProfileDetailSheet({
           top: 0,
           right: 0,
           bottom: 0,
-          width: "min(100vw, 500px)",
+          width: "100vw",
+          maxWidth: 500,
           background: t.white,
           zIndex: 401,
           overflowY: "auto",
@@ -259,8 +280,8 @@ export function ProfileDetailSheet({
             aria-label="Close profile"
             style={{
               position: "absolute",
-              top: 14,
-              left: 14,
+              top: "max(14px, calc(env(safe-area-inset-top, 0px) + 6px))",
+              left: "max(14px, calc(env(safe-area-inset-left, 0px) + 6px))",
               width: 44,
               height: 44,
               borderRadius: 999,
@@ -283,8 +304,8 @@ export function ProfileDetailSheet({
           <div
             style={{
               position: "absolute",
-              top: 14,
-              right: 14,
+              top: "max(14px, calc(env(safe-area-inset-top, 0px) + 6px))",
+              right: "max(14px, calc(env(safe-area-inset-right, 0px) + 6px))",
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-end",
@@ -331,8 +352,8 @@ export function ProfileDetailSheet({
             style={{
               position: "absolute",
               bottom: 16,
-              left: 18,
-              right: 18,
+              left: "max(18px, calc(env(safe-area-inset-left, 0px) + 12px))",
+              right: "max(18px, calc(env(safe-area-inset-right, 0px) + 12px))",
             }}
           >
             <h2
@@ -558,6 +579,24 @@ export function ProfileDetailSheet({
             </div>
           ) : null}
 
+          {isPreview ? (
+            <div
+              style={{
+                marginBottom: 20,
+                padding: "14px 16px",
+                borderRadius: 18,
+                background: alpha(t.green, 0.06),
+                border: `1px solid ${alpha(t.green, 0.16)}`,
+                fontSize: 13,
+                lineHeight: 1.7,
+                color: t.mid,
+              }}
+            >
+              Starter deck preview — complete your profile to unlock messaging,
+              saved actions, and real investor / inventor conversations.
+            </div>
+          ) : null}
+
           {/* Primary actions */}
           <div style={{ display: "grid", gap: 10, marginTop: 28 }}>
             <div
@@ -572,24 +611,34 @@ export function ProfileDetailSheet({
             </div>
             <PrimaryButton
               t={t}
-              onClick={handleAction(onStartChat)}
-              style={{ background: t.ink, boxShadow: "none" }}
+              onClick={handleAction(isPreview ? onCompleteProfile : onStartChat)}
+              style={
+                isPreview
+                  ? { boxShadow: "none" }
+                  : { background: t.ink, color: t.skin, boxShadow: "none" }
+              }
             >
-              💬 Message {profile.full_name?.split(" ")[0] || "them"}
+              {isPreview
+                ? "Complete setup to unlock messaging"
+                : `💬 Message ${profile.full_name?.split(" ")[0] || "them"}`}
             </PrimaryButton>
-            <div
-              style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}
-            >
-              <SecondaryButton t={t} onClick={handleAction(onBlock)}>
-                Hide
-              </SecondaryButton>
-              <SecondaryButton t={t} onClick={handleAction(onReport)}>
-                Report
-              </SecondaryButton>
-            </div>
+            {!isPreview ? (
+              <div
+                style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}
+              >
+                <SecondaryButton t={t} onClick={handleAction(onBlock)}>
+                  Hide
+                </SecondaryButton>
+                <SecondaryButton t={t} onClick={handleAction(onReport)}>
+                  Report
+                </SecondaryButton>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
     </>
   );
+
+  return createPortal(content, document.body);
 }
