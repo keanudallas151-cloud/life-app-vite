@@ -158,3 +158,26 @@ body.life-dark .organized-feature,
 .pb-safe {
   padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
 }
+
+/* ─── Radix portal z-index lift ───────────────────────────────────────────
+   ToolsOrganizedPage mounts the feature as a fixed overlay at z-index 9000.
+   Radix primitives (Dialog, AlertDialog, Drawer, Popover, DropdownMenu,
+   ContextMenu, HoverCard, Menubar, Select, Tooltip, etc.) render through a
+   Portal into <body>, which lives outside that overlay's stacking context.
+   Without this rule, their default z-50 (shadcn) sits *behind* the 9000
+   overlay, leaving dialogs invisible and clicks landing on the overlay —
+   which presents to the user as "the button breaks". Scope to the active
+   body class so we never affect the rest of life-app's UI. */
+body.life-organized-active [data-slot="dialog-overlay"],
+body.life-organized-active [data-slot="dialog-content"],
+body.life-organized-active [data-slot="alert-dialog-overlay"],
+body.life-organized-active [data-slot="alert-dialog-content"],
+body.life-organized-active [data-slot="drawer-overlay"],
+body.life-organized-active [data-slot="drawer-content"],
+body.life-organized-active [data-slot="sheet-overlay"],
+body.life-organized-active [data-slot="sheet-content"],
+body.life-organized-active [data-radix-popper-content-wrapper],
+body.life-organized-active [data-sonner-toaster] {
+  z-index: 10001 !important;
+}
+
