@@ -1,5 +1,23 @@
 # Copilot Instructions for `life-app-vite`
 
+## Session Baseline
+
+- Treat this repository as `life-app`.
+- When local path context matters, use `C:\Users\louie\life-app` as the canonical local repository path.
+- Assume `main` is the only working branch unless the user explicitly approves another branch.
+- Before continuing any task that depends on current code state, check the latest branch history and confirm the local workspace is up to date with `origin/main`. Always work on the latest update, even if the latest commit was made by someone else. If the workspace is behind, pull `origin/main` first; if history has diverged or there are conflicting local changes, stop and surface it instead of forcing.
+- If the current workspace or branch conflicts with those assumptions, say so plainly instead of guessing.
+- Be brutally honest, extremely concise, and direct.
+- Fix the requested issue first, then opportunistically fix small nearby issues that are clearly in scope and low risk.
+- If you uncover a larger issue that materially expands scope, finish the requested work and then surface the larger issue separately with evidence and a recommended follow-up.
+- When a reusable lesson is discovered, suggest promoting it into persistent project guidance instead of letting it disappear between chats.
+
+### Companion skills
+
+- `start` — run at the beginning of every conversation; full session bootstrap including latest-update policy.
+- `pre-commit-check` — run before committing or pushing; lint/build/repo-rule validation.
+- `mobile-audit` — run when touching UI; mobile, iOS, and theme compliance sweep.
+
 ## Build, lint, and test commands
 
 - Install dependencies: `npm install` for normal local setup, or `npm ci` to match CI.
@@ -42,7 +60,7 @@
 - Reuse the `LS` helper in `src/systems/storage.js` for local persistence. Existing user-scoped keys in `src/App.jsx` use prefixes like `prefs_`, `bk_`, `nt_`, `rd_`, `tsd_`, `mom_`, `notif_`, and `rp_`; follow those patterns instead of inventing a second storage scheme.
 - Supabase-aware features are expected to degrade without crashing when env vars or newer columns are missing. Existing hooks already contain fallback behavior for guest mode and some legacy schema differences; extend those patterns rather than bypassing them.
 - Lazy-loaded app surfaces are centralized in `src/components/AppShell.jsx` and rendered through `Suspense` fallbacks from `src/App.jsx`. Keep that pattern when splitting large surfaces out of the main controller.
-- For orientation, `AI_PROMPT_HELPER.md` is the repository’s best short architecture map and is worth checking before large refactors.
+- For orientation, `AI_PROMPT_HELPER.md` is the repository's best short architecture map and is worth checking before large refactors.
 
 
 # Copilot Instructions — Life. App
