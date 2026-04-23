@@ -17,14 +17,14 @@ Open this file in VS Code when you want the fastest map of how the app is put to
   - Legacy standalone React entry point kept in the repo.
   - Still mounts `App.jsx` into the DOM, but it is not the primary startup path used by `npm run dev` / `next dev`.
  
-- `src/supabaseClient.js`
-  - Creates the Supabase client.
-  - Reads `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` from env.
+- `src/firebaseClient.js`
+  - Creates the Firebase app/auth/firestore/storage clients.
+  - Reads `NEXT_PUBLIC_FIREBASE_*` env vars.
  
 ## Internal flow
  
 1. `app/page.jsx` renders `src/App.jsx` through a dynamic client-only import.
-2. `src/App.jsx` restores the Supabase session on load.
+2. `src/App.jsx` restores Firebase auth state on load.
 3. Authenticated users move into the main app screen.
 4. App content is loaded from `src/data/content.js`.
 5. UI sections are rendered through components in `src/components/`.
@@ -43,7 +43,7 @@ Open this file in VS Code when you want the fastest map of how the app is put to
 - `package.json` - scripts and dependencies
  
 ### Auth and backend
-- `src/supabaseClient.js` - active Supabase client used by the app (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, plus legacy fallbacks)
+- `src/firebaseClient.js` - active Firebase client used by the app (`NEXT_PUBLIC_FIREBASE_*` env vars)
 - `.env` - local env values for development (see `.env.example`)
  
 ### Content and data
@@ -104,7 +104,7 @@ Read files in this order:
 3. `src/data/content.js`
 4. `src/components/Field.jsx`
 5. `src/components/Reader.jsx`
-6. `src/supabaseClient.js`
+6. `src/firebaseClient.js`
 7. `src/systems/storage.js`
  
 ## Quick repo notes
@@ -112,7 +112,7 @@ Read files in this order:
 - The active app shell is Next.js 16 + React 19.
 - `app/page.jsx` is the active entry point and dynamically loads `src/App.jsx`.
 - Legacy Vite startup files (`src/main.jsx`, `index.html`, `vite.config.js`) are still present in the repo but are not the main startup path.
-- React 19 and Supabase are the main runtime dependencies.
+- React 19 and Firebase are the main runtime dependencies.
 - A lot of the app logic is centralized in `src/App.jsx`, so that is the closest thing to an "all internals" file right now.
  
 ## Best single file to inspect

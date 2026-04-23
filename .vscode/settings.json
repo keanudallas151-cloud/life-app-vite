@@ -13,7 +13,6 @@
     "mtxr.sqltools",
     "ms-ossdata.vscode-pgsql",
     "phu1237.vs-browser",
-    "supabase.vscode-supabase-extension",
     "usernamehw.errorlens",
   ],
   "github.copilot.chat.agent.autoFix": true,
@@ -39,7 +38,7 @@
   "mediaPreview.video.loop": true,
   "workbench.externalBrowser": "chrome",
   "github.copilot.chat.claudeAgent.allowDangerouslySkipPermissions": true,
-  "cSpell.words": ["Supabase"],
+  "cSpell.words": ["Firestore"],
   "editor.tokenColorCustomizations": {
     "comments": "",
     "textMateRules": [],

@@ -9,10 +9,10 @@
 
 ## Architecture
 
-- This is a Next.js + React 19 single-page app shell with Supabase for auth and backend.
+- This is a Next.js + React 19 single-page app shell with Firebase for auth and backend.
 - There is NO React Router in active use — screen switching is done via state in `src/App.jsx`.
 - The app uses a single internal scroll container: `.life-main-scroll`. Never add `overflow` to `body` or `html`. Always scroll `.life-main-scroll`.
-- Supabase client is in `src/supabaseClient.js`. It reads `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` from env.
+- Firebase client is in `src/firebaseClient.js`. It reads `NEXT_PUBLIC_FIREBASE_*` environment variables.
 
 ## Styling Rules
 

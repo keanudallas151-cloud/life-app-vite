@@ -92,7 +92,7 @@ if ($promptLower.Contains("style") -or $promptLower.Contains("css") -or $promptL
 
 # Add auth reminders
 if ($promptLower.Contains("auth") -or $promptLower.Contains("login") -or $promptLower.Contains("sign in") -or $promptLower.Contains("register") -or $promptLower.Contains("password")) {
-    $context += "`n`nAUTH REMINDER: Auth flows (doGoogleSignIn, doEmailSignIn, doRegister) live in src/App.jsx. Supabase client is in src/supabaseClient.js. Always handle errors with user-facing messages. Never silently fail."
+    $context += "`n`nAUTH REMINDER: Auth flows (doGoogleSignIn, doEmailSignIn, doRegister) live in src/App.jsx. Firebase client is in src/firebaseClient.js. Always handle errors with user-facing messages. Never silently fail."
 }
 
 # Add mobile reminders
@@ -107,7 +107,7 @@ if ($promptLower.Contains("split") -or $promptLower.Contains("extract") -or $pro
 
 # Add dependency warning
 if ($promptLower.Contains("install") -or $promptLower.Contains("npm add") -or $promptLower.Contains("npm i ") -or $promptLower.Contains("new package") -or $promptLower.Contains("dependency")) {
-    $context += "`n`nDEPENDENCY WARNING: Do NOT add new npm dependencies unless absolutely necessary. The app uses React 19, Supabase, and Vite only. Solve problems with existing tools first."
+    $context += "`n`nDEPENDENCY WARNING: Do NOT add new npm dependencies unless absolutely necessary. The app uses React 19, Firebase, and Next.js only. Solve problems with existing tools first."
 }
 
 # ── Return ──────────────────────────────────────────────────────
