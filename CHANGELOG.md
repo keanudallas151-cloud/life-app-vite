@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7.7 — mobile stabilization, overlay safety, and sync hardening
+
+- Fixed sidebar, notifications, and profile sheet back-button handling so mobile back gestures close overlays cleanly without leaving stale history entries behind.
+- Removed the artificial sign-in and register delays so auth flows now complete on real response timing while keeping loading and error states intact.
+- Hardened `useUserData` persistence so rapid edits keep the newest local state and no longer risk overwriting newer changes during async retries.
+- Reworked the profile detail sheet for mobile with safer scroll locking, better safe-area spacing, cleaner hero rendering, and improved overlap handling.
+- Polished notifications and the full-screen error boundary for mobile sizing, theme consistency, and dynamic viewport support.
+
 ## v0.7.2 — notification system cleanup, support contact wiring, and Firebase sync reliability
 
 - Fixed the Firebase `userData` restore path so cloud data now reads both legacy camelCase and current snake_case field shapes correctly.
@@ -19,11 +27,11 @@
 
 ## v0.7.0 — Firebase platform migration and release hardening
 
-- Migrated the remaining runtime profile, avatar, and Inventors & Investors flows off Supabase onto Firebase Auth, Firestore, and Firebase Storage.
+- Migrated the remaining runtime profile, avatar, and Inventors & Investors flows onto Firebase Auth, Firestore, and Firebase Storage.
 - Added shared Firebase profile helpers so account edits, avatar uploads, and auth profile updates stay consistent across the app.
 - Improved session restore so app user state hydrates from both Firebase Auth and Firestore profile data, preserving usernames, avatars, and profile metadata after refresh.
 - Hardened notifications, networking discovery, and conversation refresh behavior to better match signed-in account state and active message activity.
-- Removed the old Supabase runtime client and package dependency from the active app code path.
+- Removed the old legacy backend runtime client and package dependency from the active app code path.
 - Fixed the ESLint 9 flat-config setup so `npm run lint` and `npm run build` both validate cleanly again.
 - Cleaned local env handling and release readiness details in support of a safer production workflow.
 
@@ -42,25 +50,25 @@
 
 ## v0.6.9 — Auth and backend status hardening
 
-- Added clear setup/status notices across landing, sign-in, register, verify-email, and reset-password screens when Supabase auth is unavailable or needs redirect configuration.
-- Blocked auth actions with direct user-facing messages when `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are missing instead of failing ambiguously.
+- Added clear setup/status notices across landing, sign-in, register, verify-email, and reset-password screens when cloud auth is unavailable or needs redirect configuration.
+- Blocked auth actions with direct user-facing messages when required cloud auth env vars are missing instead of failing ambiguously.
 - Fixed verify-email resend to carry the app redirect URL so local and preview verification flows return to the correct origin.
 - Surfaced cloud sync trouble in-app for profile and quiz data instead of leaving those failures only in the console.
 - Added a reusable status notice component and matching app banner styling for backend health messaging.
 
-## v0.6.8 — Security, config, and core Supabase hardening
+## v0.6.8 — Security, config, and core backend hardening
 
 - Removed the tracked local `.env` file from git and expanded ignore rules for local AI/editor noise.
-- Standardized the app on canonical `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` env names.
+- Standardized the app on canonical cloud env names used at that time.
 - Removed stale Netlify deployment config and aligned deployment/docs around Vercel.
-- Added a core Supabase migration for `user_data`, `quiz_stats`, `posts`, `comments`, and `post_votes` with indexes, defaults, triggers, and RLS.
+- Added a core backend migration for `user_data`, `quiz_stats`, `posts`, `comments`, and `post_votes` with indexes, defaults, triggers, and policy coverage.
 - Hardened Post-It empty-feed loading and cloud-data migration detection without changing the guest/offline app flow.
 
 ## v0.6.7 — Navigation, avatars, settings, and Gemini guide
 
 - Added profile picture upload to the account profile page — tap the avatar circle to choose a photo.
-- Profile photo uploads to a dedicated Supabase storage bucket (profile-avatars), separate from Inventors & Investors media.
-- Photo is persisted to Supabase auth user_metadata and updates live in app state without a page reload.
+- Profile photo uploads to a dedicated profile-avatars storage path, separate from Inventors & Investors media.
+- Photo is persisted to auth user profile metadata and updates live in app state without a page reload.
 - PostIt / Reddit-style feed now shows the poster's real profile photo next to every post and comment. Falls back to initials if no photo is set.
 - Added author_avatar_url column to posts and comments tables via migration.
 - Reader parchment page now has genuine SVG feTurbulence paper grain texture layered over the existing gradients. Works in both light and dark reading mode. No external image request — baked as a data URI.
@@ -86,7 +94,7 @@
 
 - Added the full Inventors & Investors flow under the existing networking entry.
 - Added 6 in-feature pages: landing, role selection, investor setup, inventor setup, swipe discovery, and messages.
-- Added production-oriented Supabase schema, RLS policies, discovery view, storage rules, and messaging RPCs.
+- Added production-oriented backend schema, policies, discovery view, storage rules, and messaging RPCs.
 - Added mobile-first forms with draft persistence, completeness progress, image previews, validation, and privacy toggles.
 - Added swipe discovery with left = interested and right = pass, search, public-contact gating, block/report, and in-app messaging.
 - Added unread message counting and conversation read tracking.

@@ -1,5 +1,7 @@
 // #ProfileDetailSheet — full-profile side-sheet for the Inventors & Investors feature
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { createPortal } from "react-dom";
 import {
   Avatar,
   PrimaryButton,
@@ -62,7 +64,9 @@ function FactRow({ label, value, t, last = false }) {
           color: t.ink,
           textAlign: "right",
           maxWidth: "62%",
+          minWidth: 0,
           lineHeight: 1.5,
+          overflowWrap: "anywhere",
         }}
       >
         {value}
@@ -80,9 +84,23 @@ export function ProfileDetailSheet({
   onStartChat,
   onBlock,
   onReport,
+  previewMode = false,
+  onCompleteProfile,
 }) {
   const closedRef = useRef(false);
+  const onCloseRef = useRef(onClose);
+  const historyPushedRef = useRef(false);
+  const historyConsumedRef = useRef(false);
   const [mounted, setMounted] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
 
   // Slide-in animation
   useEffect(() => {
@@ -90,29 +108,56 @@ export function ProfileDetailSheet({
     return () => window.cancelAnimationFrame(id);
   }, []);
 
+  // Lock the app's main scroll surface behind the sheet while open.
+  useEffect(() => {
+    if (typeof document === "undefined" || !profile) return undefined;
+    const mainScroll = document.querySelector(".life-main-scroll");
+    if (!(mainScroll instanceof HTMLElement)) return undefined;
+
+    const previousLock = mainScroll.getAttribute("data-overlay-lock");
+    mainScroll.setAttribute("data-overlay-lock", "profile-detail");
+
+    return () => {
+      if (previousLock) {
+        mainScroll.setAttribute("data-overlay-lock", previousLock);
+      } else {
+        mainScroll.removeAttribute("data-overlay-lock");
+      }
+    };
+  }, [profile]);
+
   // Back-button closes the sheet
   useEffect(() => {
     if (!profile) return;
     closedRef.current = false;
+    historyPushedRef.current = true;
+    historyConsumedRef.current = false;
     window.history.pushState({ profileDetail: true }, "");
+
     const handlePop = () => {
       if (!closedRef.current) {
+        historyConsumedRef.current = true;
+        historyPushedRef.current = false;
         closedRef.current = true;
-        onClose?.();
+        onCloseRef.current?.();
       }
     };
+
     window.addEventListener("popstate", handlePop);
-    return () => window.removeEventListener("popstate", handlePop);
-  }, [profile, onClose]);
+    return () => {
+      window.removeEventListener("popstate", handlePop);
+      if (historyPushedRef.current && !historyConsumedRef.current) {
+        historyConsumedRef.current = true;
+        historyPushedRef.current = false;
+        window.history.back();
+      }
+    };
+  }, [profile]);
 
   const handleClose = () => {
     if (closedRef.current) return;
     closedRef.current = true;
-    if (window.history.state?.profileDetail) {
-      window.history.back();
-    } else {
-      onClose?.();
-    }
+    onCloseRef.current?.();
   };
 
   const handleAction = (fn) => () => {
@@ -120,9 +165,11 @@ export function ProfileDetailSheet({
     handleClose();
   };
 
-  if (!profile) return null;
+  if (!profile || !portalReady || typeof document === "undefined") return null;
 
   const isInvestor = profile.role === "investor";
+  const isStarterProfile = String(profile.user_id || "").startsWith("starter-");
+  const isPreview = previewMode || isStarterProfile;
   const heroSrc = profile.hero_image_url || profile.avatar_url;
   const moneyLabel = isInvestor ? "Investment budget" : "Funding sought";
   const moneyValue = isInvestor
@@ -165,7 +212,7 @@ export function ProfileDetailSheet({
 
   const validFacts = facts.filter((f) => f.value);
 
-  return (
+  const content = (
     <>
       {/* Backdrop */}
       <div
@@ -173,7 +220,7 @@ export function ProfileDetailSheet({
         style={{
           position: "fixed",
           inset: 0,
-          background: "rgba(0,0,0,0.54)",
+          background: alpha(t.skin, 0.62),
           backdropFilter: "blur(4px)",
           WebkitBackdropFilter: "blur(4px)",
           zIndex: 400,
@@ -192,12 +239,14 @@ export function ProfileDetailSheet({
           top: 0,
           right: 0,
           bottom: 0,
-          width: "min(100vw, 500px)",
+          width: "100vw",
+          maxWidth: 500,
           background: t.white,
           zIndex: 401,
           overflowY: "auto",
           overflowX: "hidden",
-          boxShadow: "-24px 0 60px rgba(0,0,0,0.2)",
+          overscrollBehavior: "contain",
+          boxShadow: `-24px 0 60px ${alpha(t.skin, 0.34)}`,
           transform: mounted ? "translateX(0)" : "translateX(100%)",
           transition: "transform 320ms cubic-bezier(0.22,1,0.36,1)",
           display: "flex",
@@ -211,19 +260,19 @@ export function ProfileDetailSheet({
             width: "100%",
             aspectRatio: "16/10",
             flexShrink: 0,
-            background: "#111",
+            background: alpha(t.skin, 0.98),
             overflow: "hidden",
           }}
         >
           {heroSrc ? (
-            <img
+            <Image
               src={heroSrc}
               alt={profile.full_name}
+              fill
+              unoptimized
+              sizes="(max-width: 500px) 100vw, 500px"
               style={{
-                width: "100%",
-                height: "100%",
                 objectFit: "cover",
-                display: "block",
               }}
             />
           ) : (
@@ -234,7 +283,7 @@ export function ProfileDetailSheet({
                 display: "grid",
                 placeItems: "center",
                 background:
-                  "linear-gradient(135deg, #0e0e0e 0%, #1e1e1e 50%, #111 100%)",
+                  `linear-gradient(135deg, ${alpha(t.skin, 0.98)} 0%, ${alpha(t.white, 0.9)} 50%, ${alpha(t.skin, 0.98)} 100%)`,
               }}
             >
               <div>
@@ -248,7 +297,7 @@ export function ProfileDetailSheet({
               position: "absolute",
               inset: 0,
               background:
-                "linear-gradient(180deg, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.22) 40%, rgba(0,0,0,0.75) 100%)",
+                `linear-gradient(180deg, ${alpha(t.skin, 0.08)} 0%, ${alpha(t.skin, 0.24)} 40%, ${alpha(t.skin, 0.82)} 100%)`,
             }}
           />
 
@@ -259,14 +308,14 @@ export function ProfileDetailSheet({
             aria-label="Close profile"
             style={{
               position: "absolute",
-              top: 14,
-              left: 14,
+              top: "max(14px, calc(env(safe-area-inset-top, 0px) + 6px))",
+              left: "max(14px, calc(env(safe-area-inset-left, 0px) + 6px))",
               width: 44,
               height: 44,
               borderRadius: 999,
               border: "none",
-              background: "rgba(0,0,0,0.58)",
-              color: "#fff",
+              background: alpha(t.skin, 0.62),
+              color: t.ink,
               fontSize: 20,
               cursor: "pointer",
               display: "grid",
@@ -283,8 +332,8 @@ export function ProfileDetailSheet({
           <div
             style={{
               position: "absolute",
-              top: 14,
-              right: 14,
+              top: "max(14px, calc(env(safe-area-inset-top, 0px) + 6px))",
+              right: "max(14px, calc(env(safe-area-inset-right, 0px) + 6px))",
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-end",
@@ -297,8 +346,8 @@ export function ProfileDetailSheet({
                 style={{
                   padding: "6px 10px",
                   borderRadius: 999,
-                  background: "rgba(255,148,66,0.22)",
-                  color: "#ffb067",
+                  background: alpha(t.gold || t.orange || t.green, 0.24),
+                  color: t.gold || t.orange || t.green,
                   fontSize: 11,
                   fontWeight: 800,
                   backdropFilter: "blur(6px)",
@@ -313,8 +362,8 @@ export function ProfileDetailSheet({
                 style={{
                   padding: "6px 10px",
                   borderRadius: 999,
-                  background: "rgba(255,255,255,0.14)",
-                  color: "#fff",
+                  background: alpha(t.skin, 0.3),
+                  color: t.ink,
                   fontSize: 11,
                   fontWeight: 800,
                   backdropFilter: "blur(6px)",
@@ -331,18 +380,19 @@ export function ProfileDetailSheet({
             style={{
               position: "absolute",
               bottom: 16,
-              left: 18,
-              right: 18,
+              left: "max(18px, calc(env(safe-area-inset-left, 0px) + 12px))",
+              right: "max(18px, calc(env(safe-area-inset-right, 0px) + 12px))",
             }}
           >
             <h2
               style={{
                 margin: 0,
-                fontSize: 26,
+                fontSize: "clamp(24px, 6.4vw, 30px)",
                 fontWeight: 800,
-                color: "#fff",
+                color: t.ink,
                 lineHeight: 1.05,
                 letterSpacing: -0.5,
+                overflowWrap: "anywhere",
               }}
             >
               {profile.full_name}
@@ -351,7 +401,7 @@ export function ProfileDetailSheet({
               style={{
                 margin: "6px 0 0",
                 fontSize: 13,
-                color: "rgba(255,255,255,0.76)",
+                color: alpha(t.ink, 0.76),
               }}
             >
               {isInvestor ? "Investor" : "Inventor"}
@@ -361,7 +411,15 @@ export function ProfileDetailSheet({
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "20px 20px calc(40px + env(safe-area-inset-bottom, 0px))" }}>
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            overscrollBehavior: "contain",
+            padding:
+              "20px max(20px, calc(env(safe-area-inset-right, 0px) + 14px)) calc(40px + env(safe-area-inset-bottom, 0px)) max(20px, calc(env(safe-area-inset-left, 0px) + 14px))",
+          }}
+        >
           {/* Tags row */}
           <div
             style={{
@@ -558,6 +616,24 @@ export function ProfileDetailSheet({
             </div>
           ) : null}
 
+          {isPreview ? (
+            <div
+              style={{
+                marginBottom: 20,
+                padding: "14px 16px",
+                borderRadius: 18,
+                background: alpha(t.green, 0.06),
+                border: `1px solid ${alpha(t.green, 0.16)}`,
+                fontSize: 13,
+                lineHeight: 1.7,
+                color: t.mid,
+              }}
+            >
+              Starter deck preview — complete your profile to unlock messaging,
+              saved actions, and real investor / inventor conversations.
+            </div>
+          ) : null}
+
           {/* Primary actions */}
           <div style={{ display: "grid", gap: 10, marginTop: 28 }}>
             <div
@@ -572,24 +648,34 @@ export function ProfileDetailSheet({
             </div>
             <PrimaryButton
               t={t}
-              onClick={handleAction(onStartChat)}
-              style={{ background: t.ink, boxShadow: "none" }}
+              onClick={handleAction(isPreview ? onCompleteProfile : onStartChat)}
+              style={
+                isPreview
+                  ? { boxShadow: "none" }
+                  : { background: t.ink, color: t.skin, boxShadow: "none" }
+              }
             >
-              💬 Message {profile.full_name?.split(" ")[0] || "them"}
+              {isPreview
+                ? "Complete setup to unlock messaging"
+                : `💬 Message ${profile.full_name?.split(" ")[0] || "them"}`}
             </PrimaryButton>
-            <div
-              style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}
-            >
-              <SecondaryButton t={t} onClick={handleAction(onBlock)}>
-                Hide
-              </SecondaryButton>
-              <SecondaryButton t={t} onClick={handleAction(onReport)}>
-                Report
-              </SecondaryButton>
-            </div>
+            {!isPreview ? (
+              <div
+                style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}
+              >
+                <SecondaryButton t={t} onClick={handleAction(onBlock)}>
+                  Hide
+                </SecondaryButton>
+                <SecondaryButton t={t} onClick={handleAction(onReport)}>
+                  Report
+                </SecondaryButton>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
     </>
   );
+
+  return createPortal(content, document.body);
 }

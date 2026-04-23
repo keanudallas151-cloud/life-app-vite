@@ -70,6 +70,7 @@ import { GoalSettingPage } from "./components/GoalSettingPage";
 import { HelpPage } from "./components/HelpPage";
 import { HomePage } from "./components/HomePage";
 import { InventorsInvestors } from "./components/InventorsInvestors";
+import { alpha } from "./components/inventorsInvestors/InventorsInvestorsUI";
 import { LandingPage } from "./components/LandingPage";
 import { LeaderboardPage } from "./components/LeaderboardPage";
 import { MentorshipPage } from "./components/MentorshipPage";
@@ -83,6 +84,7 @@ import SettingsPage from "./components/SettingsPage";
 import { SidebarSectionPage } from "./components/SidebarSectionPage";
 import { SignInPage } from "./components/SignInPage";
 import { ThemePickerPage } from "./components/ThemePickerPage";
+import { ToolsLockInPage } from "./components/ToolsLockInPage";
 import { VerifyEmailPage } from "./components/VerifyEmailPage";
 import { WhereToStartPage } from "./components/WhereToStartPage";
 import { signInWithGoogle } from "./services/firebaseAuth";
@@ -640,6 +642,12 @@ export default function LifeApp() {
   const [localMomentumState, setLocalMomentumStateRaw] = useState(() =>
     LS.get(`mom_${uid}`, null),
   );
+  const [, setLocalToolsTodosRaw] = useState(() =>
+    LS.get(`tools_todos_${uid}`, []),
+  );
+  const [localToolsSession, setLocalToolsSessionRaw] = useState(() =>
+    LS.get(`tools_lockin_${uid}`, null),
+  );
 
   useEffect(() => {
     if (!user?.id || !user?.email) return;
@@ -692,6 +700,7 @@ export default function LifeApp() {
   const momentumState = userIdForData
     ? cloud.momentumState
     : localMomentumState;
+  const toolsSession = userIdForData ? cloud.toolsSession : localToolsSession;
 
   const setBookmarks = (v) => {
     const next = typeof v === "function" ? v(bookmarks) : v;
@@ -723,6 +732,14 @@ export default function LifeApp() {
     else {
       setLocalMomentumStateRaw(next);
       LS.set(`mom_${uid}`, next);
+    }
+  };
+  const setToolsSession = (v) => {
+    const next = typeof v === "function" ? v(toolsSession) : v;
+    if (userIdForData) cloud.setToolsSession(next);
+    else {
+      setLocalToolsSessionRaw(next);
+      LS.set(`tools_lockin_${uid}`, next);
     }
   };
 
@@ -793,6 +810,13 @@ export default function LifeApp() {
   );
 
   const [categoryPageData, setCategoryPageData] = useState(null);
+
+  useEffect(() => {
+    if (page === "tools_todo") {
+      setPage("tools_lockin");
+    }
+  }, [page, setPage]);
+
   const handleFolderSelect = useCallback(
     (key, node) => {
       setCategoryPageData({ key, node });
@@ -839,10 +863,12 @@ export default function LifeApp() {
       momentum_hub: "Momentum Hub — Life.",
       sidebar_life: "Life — Life.",
       sidebar_library: "Library — Life.",
+      sidebar_tools: "Tools — Life.",
       sidebar_socials: "Socials — Life.",
       sidebar_guided: "Guided — Life.",
       sidebar_saved: "Saved — Life.",
       sidebar_experience: "Experience — Life.",
+      tools_lockin: "Lock In — Life.",
       premium: "Premium — Life.",
       discord_networking: "Networking Group — Life.",
       account_customize: "Account — Life.",
@@ -885,6 +911,7 @@ export default function LifeApp() {
   }, [showSearch, search]);
   const [lifeOpen, setLifeOpen] = useState(true);
   const [libOpen, setLibOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const [socialsOpen, setSocialsOpen] = useState(false);
   const [guidedOpen, setGuidedOpen] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
@@ -1022,28 +1049,56 @@ export default function LifeApp() {
     };
   }, [uid]);
 
-  // Android back button / iOS swipe-back: close open overlays before the
-  // browser tries to navigate away. Pushes a history entry when any
-  // overlay opens, pops it when it closes or when the user presses back.
+  const overlayHistoryPushedRef = useRef(false);
+  const overlayHistoryConsumedRef = useRef(false);
+  const overlayCloseRef = useRef(() => {});
+
+  useEffect(() => {
+    overlayCloseRef.current = () => {
+      setSidebarOpen(false);
+      setShowNotif(false);
+    };
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
-    const anyOverlay = sidebarOpen || showNotif;
-    if (!anyOverlay) return undefined;
-    window.history.pushState({ lifeOverlay: true }, "");
+
     const handlePop = () => {
-      if (sidebarOpen) setSidebarOpen(false);
-      if (showNotif) setShowNotif(false);
+      if (!overlayHistoryPushedRef.current) return;
+      overlayHistoryConsumedRef.current = true;
+      overlayHistoryPushedRef.current = false;
+      overlayCloseRef.current();
     };
+
     window.addEventListener("popstate", handlePop);
     return () => {
       window.removeEventListener("popstate", handlePop);
-      // If overlay closed via UI (not back-button), pop the pushed entry
-      // so we don't accumulate stale history.
-      if (window.history.state?.lifeOverlay) {
-        window.history.back();
-      }
     };
-  }, [sidebarOpen, showNotif]);
+  }, []);
+
+  // Keep a single browser history entry while the sidebar or notifications
+  // are open so mobile back gestures close overlays cleanly.
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const anyOverlay = sidebarOpen || showNotif;
+
+    if (anyOverlay) {
+      if (!overlayHistoryPushedRef.current) {
+        window.history.pushState({ lifeOverlay: true }, "");
+        overlayHistoryPushedRef.current = true;
+        overlayHistoryConsumedRef.current = false;
+      }
+      return undefined;
+    }
+
+    if (overlayHistoryPushedRef.current && !overlayHistoryConsumedRef.current) {
+      overlayHistoryConsumedRef.current = true;
+      overlayHistoryPushedRef.current = false;
+      window.history.back();
+    }
+
+    return undefined;
+  }, [showNotif, sidebarOpen]);
 
   const markAllRead = () => {
     const next = markAllNotificationsRead(uid);
@@ -1221,7 +1276,9 @@ export default function LifeApp() {
       (cloud.readKeys?.length ?? 0) > 0 ||
       (cloud.highlights?.length ?? 0) > 0 ||
       cloud.tsdProfile != null ||
-      cloud.momentumState != null;
+      cloud.momentumState != null ||
+      (cloud.toolsTodos?.length ?? 0) > 0 ||
+      cloud.toolsSession != null;
     if (hasCloud) {
       migratedRef.current = true;
       return;
@@ -1231,11 +1288,15 @@ export default function LifeApp() {
     const ln = LS.get(`nt_${email}`, {});
     const lr = LS.get(`rd_${email}`, []);
     const lp = LS.get(`tsd_${email}`, null);
+    const lt = LS.get(`tools_todos_${email}`, []);
+    const ls = LS.get(`tools_lockin_${email}`, null);
     const hasLocal =
       lb.length > 0 ||
       Object.keys(ln).some((k) => ln[k]) ||
       lr.length > 0 ||
-      lp != null;
+      lp != null ||
+      lt.length > 0 ||
+      ls != null;
     migratedRef.current = true;
     if (hasLocal) {
       cloud.replaceAllData({
@@ -1245,6 +1306,8 @@ export default function LifeApp() {
         highlights: cloud.highlights,
         tsd_profile: lp,
         momentum_state: cloud.momentumState,
+        tools_todos: lt,
+        tools_session: ls,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- see block comment above
@@ -1258,6 +1321,8 @@ export default function LifeApp() {
     user?.email,
     cloud.highlights,
     cloud.momentumState,
+    cloud.toolsSession,
+    cloud.toolsTodos,
     cloud.replaceAllData,
   ]);
 
@@ -1270,6 +1335,8 @@ export default function LifeApp() {
       setLocalNotesRaw(LS.get(`nt_${uid}`, {}));
       setLocalReadKeysRaw(LS.get(`rd_${uid}`, []));
       setLocalProfileRaw(LS.get(`tsd_${uid}`, null));
+      setLocalToolsTodosRaw(LS.get(`tools_todos_${uid}`, []));
+      setLocalToolsSessionRaw(LS.get(`tools_lockin_${uid}`, null));
     }
   }, [uid, userIdForData]);
 
@@ -1285,7 +1352,6 @@ export default function LifeApp() {
       return;
     }
     setAuthLoading(true);
-    await new Promise((r) => setTimeout(r, 3000));
     try {
       await signInWithGoogle();
     } catch (error) {
@@ -1331,15 +1397,11 @@ export default function LifeApp() {
       return;
     }
     setAuthLoading(true);
-    const _siStart = Date.now();
     try {
       await signInWithEmailAndPassword(
         auth,
         siEmail.toLowerCase().trim(),
         siPass,
-      );
-      await new Promise((r) =>
-        setTimeout(r, Math.max(0, 3000 - (Date.now() - _siStart))),
       );
     } catch (error) {
       const msg = String(error.message || "").toLowerCase();
@@ -1455,7 +1517,6 @@ export default function LifeApp() {
     }
 
     setAuthLoading(true);
-    const _regStart = Date.now();
     try {
       const credentials = await createUserWithEmailAndPassword(
         auth,
@@ -1466,9 +1527,6 @@ export default function LifeApp() {
         displayName: rName.trim(),
       });
       await sendEmailVerification(credentials.user);
-      await new Promise((r) =>
-        setTimeout(r, Math.max(0, 3000 - (Date.now() - _regStart))),
-      );
       setVerifyEmailAddress(
         credentials.user.email || rEmail.toLowerCase().trim(),
       );
@@ -2397,17 +2455,17 @@ export default function LifeApp() {
                 ? 10
                 : "max(10px, var(--safe-right, 0px))",
               zIndex: 70,
-              background: dark ? "#1a1a1a" : "#ffffff",
-              border: `1px solid ${dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
-              borderRadius: 18,
-              boxShadow: dark
-                ? "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)"
-                : "0 8px 40px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.06)",
+              background: t.white,
+              border: `1px solid ${alpha(t.border, dark ? 0.6 : 0.9)}`,
+              borderRadius: isNarrowViewport ? 22 : 18,
+              boxShadow: `0 12px 36px ${alpha(t.ink, dark ? 0.34 : 0.18)}`,
               width: isNarrowViewport ? "auto" : 340,
-              maxHeight: "min(480px, calc(100dvh - 80px))",
+              maxHeight:
+                "min(480px, calc(100dvh - (72px + var(--safe-top, 0px) + var(--safe-bottom, 0px))))",
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
+              overscrollBehavior: "contain",
             }}
           >
             {/* Header */}
@@ -2417,7 +2475,7 @@ export default function LifeApp() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "14px 16px 13px",
-                borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"}`,
+                borderBottom: `1px solid ${alpha(t.border, 0.75)}`,
                 flexShrink: 0,
               }}
             >
@@ -2426,7 +2484,7 @@ export default function LifeApp() {
                   style={{
                     fontSize: 15,
                     fontWeight: 700,
-                    color: dark ? "#f0f0f0" : "#111",
+                    color: t.ink,
                     letterSpacing: -0.2,
                   }}
                 >
@@ -2436,7 +2494,7 @@ export default function LifeApp() {
                   <span
                     style={{
                       background: t.green,
-                      color: "#fff",
+                      color: t.skin,
                       fontSize: 10,
                       fontWeight: 700,
                       borderRadius: 20,
@@ -2493,9 +2551,7 @@ export default function LifeApp() {
                   <p
                     style={{
                       margin: 0,
-                      color: dark
-                        ? "rgba(255,255,255,0.35)"
-                        : "rgba(0,0,0,0.35)",
+                      color: alpha(t.ink, 0.48),
                       fontSize: 13,
                       textAlign: "center",
                     }}
@@ -2521,8 +2577,8 @@ export default function LifeApp() {
             {notifications.length > 0 && (
               <div
                 style={{
-                  padding: "9px 16px",
-                  borderTop: `1px solid ${dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"}`,
+                  padding: "9px 16px calc(9px + max(var(--safe-bottom, 0px), 2px))",
+                  borderTop: `1px solid ${alpha(t.border, 0.75)}`,
                   flexShrink: 0,
                   textAlign: "center",
                 }}
@@ -2530,7 +2586,7 @@ export default function LifeApp() {
                 <span
                   style={{
                     fontSize: 10.5,
-                    color: dark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.3)",
+                    color: alpha(t.ink, 0.4),
                     fontFamily:
                       "-apple-system,BlinkMacSystemFont,system-ui,sans-serif",
                     display: "flex",
@@ -3443,6 +3499,29 @@ export default function LifeApp() {
             <SS
               theme={t}
               playFn={play}
+              label="Tools"
+              open={toolsOpen}
+              setOpen={setToolsOpen}
+              tag="#tools"
+              onLabelClick={() =>
+                openSidebarSectionPage("sidebar_tools", setToolsOpen)
+              }
+              active={page === "sidebar_tools"}
+            >
+              <SL
+                theme={t}
+                label="Lock In"
+                icon="candle"
+                onClick={() => {
+                  play("tap");
+                  setPage("tools_lockin");
+                }}
+                active={page === "tools_lockin"}
+              />
+            </SS>
+            <SS
+              theme={t}
+              playFn={play}
               label="Socials"
               open={socialsOpen}
               setOpen={setSocialsOpen}
@@ -3851,6 +3930,19 @@ export default function LifeApp() {
                 user={user}
                 play={play}
                 onSystemNotify={pushSystemNotification}
+              />
+            )}
+
+            {page === "sidebar_tools" && (
+              <SidebarSectionPage sectionKey="sidebar_tools" t={t} />
+            )}
+
+            {page === "tools_lockin" && (
+              <ToolsLockInPage
+                t={t}
+                play={play}
+                session={toolsSession}
+                setSession={setToolsSession}
               />
             )}
 

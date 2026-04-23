@@ -66,6 +66,10 @@ const SECTIONS = {
     title: "Library",
     desc: "The Library is the knowledge base of Life. It organizes the reading material into categories and branches so users can explore the app by topic instead of only following one fixed path.",
   },
+  sidebar_tools: {
+    title: "Tools",
+    desc: "Tools are small utilities that help you put what you learn into action. Instead of one long page, each tool lives as its own item in the sidebar so you can jump straight to the one you need. Lock In is the first tool available — a focused work session with task planning, a timer, and optional short breaks. More tools will be added here over time.",
+  },
   sidebar_socials: {
     title: "Socials",
     desc: "Socials is where learning connects with people. This section holds the community feed, networking, and competitive views so users can move from private learning into public conversation and connection.",

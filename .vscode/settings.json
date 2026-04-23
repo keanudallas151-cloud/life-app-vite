@@ -13,8 +13,12 @@
     "mtxr.sqltools",
     "ms-ossdata.vscode-pgsql",
     "phu1237.vs-browser",
+<<<<<<< HEAD
     "supabase.vscode-supabase-extension",
     "usernamehw.errorlens"
+=======
+    "usernamehw.errorlens",
+>>>>>>> fa58ebae4bd1d378c53a6228d7f4678474da7224
   ],
   "github.copilot.chat.agent.autoFix": true,
   "github.copilot.chat.copilotMemory.enabled": true,
@@ -39,7 +43,7 @@
   "mediaPreview.video.loop": true,
   "workbench.externalBrowser": "chrome",
   "github.copilot.chat.claudeAgent.allowDangerouslySkipPermissions": true,
-  "cSpell.words": ["Supabase"],
+  "cSpell.words": ["Firestore"],
   "editor.tokenColorCustomizations": {
     "comments": "#00000000",
     "textMateRules": [

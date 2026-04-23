@@ -4,7 +4,7 @@ Use this file as the fast, practical map for working on **Life.** without breaki
 
 ## What this app is
 
-- **Stack:** Next.js 16, React 19, Supabase
+- **Stack:** Next.js 16, React 19, Firebase
 - **Real entry point:** `app/page.jsx`
 - **Real app controller:** `src/App.jsx`
 - **Build output:** `dist/`
@@ -30,7 +30,7 @@ Use `npm run lint` and `npm run build` before considering a change done.
 4. `src/components/AppShell.jsx`
 5. `src/systems/theme.js`
 6. `src/systems/storage.js`
-7. `src/supabaseClient.js`
+7. `src/firebaseClient.js`
 
 If you only open one file, open **`src/App.jsx`**.
 
@@ -103,14 +103,18 @@ Make **targeted edits**, not broad rewrites.
 
 ## Data and persistence
 
-### Supabase boundary
+### Firebase boundary
 
-`src/supabaseClient.js` is the active client setup.
+`src/firebaseClient.js` is the active client setup.
 
 - Canonical env vars:
-  - `NEXT_PUBLIC_SUPABASE_URL`
-  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-    Expected backend tables include:
+  - `NEXT_PUBLIC_FIREBASE_API_KEY`
+  - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+  - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+  - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+  - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+  - `NEXT_PUBLIC_FIREBASE_APP_ID`
+    Expected backend collections include:
 
 - `user_data`
 - `quiz_stats`
@@ -274,7 +278,7 @@ Check:
 Main files:
 
 - `src/App.jsx`
-- `src/supabaseClient.js`
+- `src/firebaseClient.js`
 - `src/components/SignInPage.jsx`
 - `src/components/RegisterPage.jsx`
 - `src/components/VerifyEmailPage.jsx`
@@ -405,7 +409,7 @@ Main files:
 
 Common bugs:
 
-- missing Supabase table/column assumptions
+- missing Firestore collection/field assumptions
 - optimistic UI getting out of sync
 - page-title mismatches after navigation changes
 
@@ -437,12 +441,12 @@ Common bugs:
 
 Always test both:
 
-- signed-in with Supabase configured
+- signed-in with Firebase configured
 - guest/offline/no-env mode
 
 Main files:
 
-- `src/supabaseClient.js`
+- `src/firebaseClient.js`
 - `src/systems/useUserData.js`
 - `src/systems/useQuizStats.js`
 - `src/systems/usePostIt.js`
@@ -462,7 +466,7 @@ Common bugs:
 | Main app controller  | `src/App.jsx`                 |
 | Global CSS           | `src/index.css`               |
 | Main app CSS         | `src/App.css`                 |
-| Supabase client      | `src/supabaseClient.js`       |
+| Firebase client      | `src/firebaseClient.js`       |
 | Theme system         | `src/systems/theme.js`        |
 | Local storage helper | `src/systems/storage.js`      |
 | Main content tree    | `src/data/content.js`         |
@@ -503,7 +507,7 @@ Trace how [bookmarks/notes/read progress/quiz stats/profile state] flows through
 ### Review a feature for production readiness
 
 ```text
-Audit [page/feature] for mobile usability, theme consistency, data-page-tag coverage, safe-area handling, and compatibility with the current Next.js + Supabase setup. Then propose only the highest-value fixes.
+Audit [page/feature] for mobile usability, theme consistency, data-page-tag coverage, safe-area handling, and compatibility with the current Next.js + Firebase setup. Then propose only the highest-value fixes.
 ```
 
 ### Ship a clean change
