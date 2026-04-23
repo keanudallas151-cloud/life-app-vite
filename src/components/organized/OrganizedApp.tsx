@@ -1,14 +1,9 @@
 import './organized.css';
 
 import {
-    FunnelSimple,
     List,
-    MagnifyingGlass,
-    Moon,
     PencilSimpleLine,
     Plus,
-    Sun,
-    X
 } from '@phosphor-icons/react';
 import { addDays, addMonths, addWeeks, addYears, differenceInDays, endOfWeek, isPast, isToday, startOfWeek } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -19,16 +14,12 @@ import { BatchEditDialog } from './components/BatchEditDialog';
 import { BlockerDialog } from './components/BlockerDialog';
 import { BottomNav } from './components/BottomNav';
 import { CalendarView } from './components/CalendarView';
-import { CategoryDialog } from './components/CategoryDialog';
 import { EditTaskDialog } from './components/EditTaskDialog';
-import { FilterSheet } from './components/FilterSheet';
 import { HistoryDialog } from './components/HistoryDialog';
 import { SettingsView } from './components/SettingsView';
-import { ShareButton } from './components/ShareButton';
 import { StatsView } from './components/StatsView';
 import { TaskList } from './components/TaskList';
 import { Button } from './components/ui/button';
-import { Input } from './components/ui/input';
 import { Toaster } from './components/ui/sonner';
 import { useIsMobile } from './hooks/use-mobile';
 import { useKV } from './hooks/useKV';
@@ -87,9 +78,6 @@ function App() {
   const [filter, setFilter] = useState<FilterType>('all')
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [searchQuery, setSearchQuery] = useState('')
-  const [showSearch, setShowSearch] = useState(false)
-  const [filterSheetOpen, setFilterSheetOpen] = useState(false)
-  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
   const [addTaskFormOpen, setAddTaskFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set())
@@ -489,6 +477,9 @@ function App() {
   const completedTasks = (tasks || []).filter((t) => t.completed).length
   const activeTasks = totalTasks - completedTasks
   const highPriorityTasks = (tasks || []).filter((t) => t.priority === 'high' && !t.completed).length
+  const highPriorityActive = highPriorityTasks
+  const mediumPriorityActive = (tasks || []).filter((t) => t.priority === 'medium' && !t.completed).length
+  const lowPriorityActive = (tasks || []).filter((t) => t.priority === 'low' && !t.completed).length
   const overdueTasks = (tasks || []).filter(t => t.dueDate && isPast(new Date(t.dueDate)) && !t.completed && !isToday(new Date(t.dueDate))).length
 
   const exportData = () => {
@@ -649,7 +640,7 @@ function App() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className={`mx-auto max-w-4xl ${isMobile ? 'px-4 pt-4 pb-32' : 'px-6 pt-8 pb-16'}`}
+          className="mx-auto max-w-4xl px-4 pt-4 pb-32"
         >
           <header className="mb-6">
             <div className="flex items-center justify-between mb-6">
@@ -664,12 +655,26 @@ function App() {
                     {viewMode === 'calendar' && 'Calendar'}
                     {viewMode === 'stats' && 'Statistics'}
                     {viewMode === 'settings' && 'Settings'}
-                    {viewMode === 'list' && 'To-Do'}
+                    {viewMode === 'list' && 'To-Do List'}
                   </h1>
                   {viewMode === 'list' && (
                     <div className="flex items-center gap-3 mt-3 text-sm text-muted-foreground">
+                      {/* Triple "active" breakdown by priority (high / medium / low) to match
+                          the Spark task-manager reference page. Each span filters when clicked. */}
                       <motion.span
-                        key={activeTasks}
+                        key={`high-${highPriorityActive}`}
+                        initial={{ scale: 1.2, color: 'var(--primary)' }}
+                        animate={{ scale: 1, color: 'var(--muted-foreground)' }}
+                        onClick={() => {
+                          setFilter('priority')
+                          setViewMode('list')
+                        }}
+                        className="font-medium cursor-pointer hover:text-primary transition-colors"
+                      >
+                        {highPriorityActive} active
+                      </motion.span>
+                      <motion.span
+                        key={`med-${mediumPriorityActive}`}
                         initial={{ scale: 1.2, color: 'var(--primary)' }}
                         animate={{ scale: 1, color: 'var(--muted-foreground)' }}
                         onClick={() => {
@@ -678,7 +683,19 @@ function App() {
                         }}
                         className="font-medium cursor-pointer hover:text-primary transition-colors"
                       >
-                        {activeTasks} active
+                        {mediumPriorityActive} active
+                      </motion.span>
+                      <motion.span
+                        key={`low-${lowPriorityActive}`}
+                        initial={{ scale: 1.2, color: 'var(--primary)' }}
+                        animate={{ scale: 1, color: 'var(--muted-foreground)' }}
+                        onClick={() => {
+                          setFilter('active')
+                          setViewMode('list')
+                        }}
+                        className="font-medium cursor-pointer hover:text-primary transition-colors"
+                      >
+                        {lowPriorityActive} active
                       </motion.span>
                       <span className="opacity-50">·</span>
                       <motion.span
@@ -693,139 +710,31 @@ function App() {
                       >
                         {completedTasks} done
                       </motion.span>
-                      {overdueTasks > 0 && (
-                        <>
-                          <span className="opacity-50">·</span>
-                          <motion.span
-                            initial={{ scale: 1.2 }}
-                            animate={{ scale: 1 }}
-                            onClick={() => {
-                              setFilter('overdue')
-                              setViewMode('list')
-                            }}
-                            className="text-destructive font-semibold cursor-pointer hover:opacity-80 transition-opacity"
-                          >
-                            {overdueTasks} overdue
-                          </motion.span>
-                        </>
-                      )}
+                      <span className="opacity-50">·</span>
+                      <motion.span
+                        initial={{ scale: 1.2 }}
+                        animate={{ scale: 1 }}
+                        onClick={() => {
+                          setFilter('overdue')
+                          setViewMode('list')
+                        }}
+                        className="text-destructive font-semibold cursor-pointer hover:opacity-80 transition-opacity"
+                      >
+                        {overdueTasks} overdue
+                      </motion.span>
                     </div>
                   )}
                 </div>
               </motion.div>
 
-              <div className="flex items-center gap-2">
-                {!isMobile && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={toggleTheme}
-                      aria-label="Toggle theme"
-                    >
-                      {settings?.theme === 'dark' ? (
-                        <Sun weight="bold" />
-                      ) : (
-                        <Moon weight="bold" />
-                      )}
-                    </Button>
-                    <ShareButton
-                      hapticEnabled={settings?.hapticFeedback}
-                      soundEnabled={settings?.buttonSounds}
-                    />
-                    <Button
-                      variant={showSearch ? 'default' : 'ghost'}
-                      size="icon"
-                      onClick={() => {
-                        playSearchSound(settings?.buttonSounds)
-                        setShowSearch(!showSearch)
-                        if (showSearch) setSearchQuery('')
-                      }}
-                    >
-                      {showSearch ? <X weight="bold" /> : <MagnifyingGlass weight="bold" />}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        playFilterSound(settings?.buttonSounds)
-                        setFilterSheetOpen(true)
-                      }}
-                    >
-                      <FunnelSimple weight="bold" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        playPopupOpenSound(settings?.buttonSounds)
-                        setCategoryDialogOpen(true)
-                      }}
-                    >
-                      <Plus weight="bold" />
-                    </Button>
-                  </>
-                )}
-              </div>
+              {/* Header toolbar is intentionally empty to match the Spark
+                  task-manager reference. Actions are available via the
+                  bottom nav (mobile) and floating "+" FAB (desktop). */}
+              <div className="flex items-center gap-2"></div>
             </div>
-
-            <AnimatePresence>
-              {showSearch && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="mb-5"
-                >
-                  <div className="relative">
-                    <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" weight="bold" />
-                    <Input
-                      placeholder="Search tasks, tags, categories..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 h-11"
-                      autoFocus
-                    />
-                    {searchQuery && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                        onClick={() => setSearchQuery('')}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {!isMobile && viewMode === 'list' && (
-              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                {(['all', 'active', 'completed', 'priority', 'today', 'week', 'overdue'] as FilterType[]).map((f) => (
-                  <Button
-                    key={f}
-                    variant={filter === f ? 'default' : 'secondary'}
-                    size="sm"
-                    onClick={() => {
-                      playFilterSound(settings?.buttonSounds)
-                      setFilter(f)
-                    }}
-                    className="capitalize whitespace-nowrap"
-                  >
-                    {f === 'all' && `All (${totalTasks})`}
-                    {f === 'active' && `Active (${activeTasks})`}
-                    {f === 'completed' && `Done (${completedTasks})`}
-                    {f === 'priority' && `Priority (${highPriorityTasks})`}
-                    {f === 'today' && 'Today'}
-                    {f === 'week' && 'This Week'}
-                    {f === 'overdue' && `Overdue${overdueTasks > 0 ? ` (${overdueTasks})` : ''}`}
-                  </Button>
-                ))}
-              </div>
-            )}
+            {/* Desktop filter-pill row removed to match the Spark reference page.
+                Filtering is still available via the overdue/done/active counts in
+                the header, the FilterSheet, and the bottom-nav views. */}
 
             {selectionMode && (
               <motion.div
@@ -981,30 +890,11 @@ function App() {
           </AnimatePresence>
         </motion.div>
       </div>
-      {isMobile && (
-        <>
-          <BottomNav
-            viewMode={viewMode || 'list'}
-            onViewModeChange={handleViewModeChange}
-            onAddTask={() => setAddTaskFormOpen(true)}
-          />
-        </>
-      )}
-      {!isMobile && (
-        <motion.div
-          className="fixed bottom-6 right-6"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <Button
-            size="lg"
-            className="h-14 w-14 rounded-full shadow-lg"
-            onClick={() => setAddTaskFormOpen(true)}
-          >
-            <Plus weight="bold" className="h-6 w-6" />
-          </Button>
-        </motion.div>
-      )}
+      <BottomNav
+        viewMode={viewMode || 'list'}
+        onViewModeChange={handleViewModeChange}
+        onAddTask={() => setAddTaskFormOpen(true)}
+      />
       <AddTaskForm
         open={addTaskFormOpen}
         onOpenChange={setAddTaskFormOpen}
@@ -1019,12 +909,6 @@ function App() {
         categories={categories || []}
         onUpdateTask={updateTask}
       />
-      <CategoryDialog
-        open={categoryDialogOpen}
-        onOpenChange={setCategoryDialogOpen}
-        onAddCategory={addCategory}
-        soundEnabled={settings?.buttonSounds}
-      />
       <BatchEditDialog
         open={batchEditDialogOpen}
         onOpenChange={setBatchEditDialogOpen}
@@ -1034,15 +918,6 @@ function App() {
         onApplyChanges={handleBatchEdit}
         hapticEnabled={settings?.hapticFeedback}
         soundEnabled={settings?.buttonSounds}
-      />
-      <FilterSheet
-        open={filterSheetOpen}
-        onOpenChange={setFilterSheetOpen}
-        currentFilter={filter}
-        onFilterChange={setFilter}
-        onExport={exportData}
-        settings={settings}
-        onSettingsChange={setSettings}
       />
       <BlockerDialog
         task={blockerTask}
