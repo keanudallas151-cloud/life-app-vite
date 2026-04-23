@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7.7 — mobile stabilization, overlay safety, and sync hardening
+
+- Fixed sidebar, notifications, and profile sheet back-button handling so mobile back gestures close overlays cleanly without leaving stale history entries behind.
+- Removed the artificial sign-in and register delays so auth flows now complete on real response timing while keeping loading and error states intact.
+- Hardened `useUserData` persistence so rapid edits keep the newest local state and no longer risk overwriting newer changes during async retries.
+- Reworked the profile detail sheet for mobile with safer scroll locking, better safe-area spacing, cleaner hero rendering, and improved overlap handling.
+- Polished notifications and the full-screen error boundary for mobile sizing, theme consistency, and dynamic viewport support.
+
 ## v0.7.2 — notification system cleanup, support contact wiring, and Firebase sync reliability
 
 - Fixed the Firebase `userData` restore path so cloud data now reads both legacy camelCase and current snake_case field shapes correctly.

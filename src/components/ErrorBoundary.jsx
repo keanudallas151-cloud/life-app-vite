@@ -30,12 +30,14 @@ class ErrorBoundary extends React.Component {
         <div
           role="alert"
           style={{
-            minHeight: '100vh',
+            minHeight: '100dvh',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: 24,
-            background: '#0f172a',
+            padding: 'max(24px, calc(16px + var(--safe-top, 0px))) 20px max(24px, calc(16px + var(--safe-bottom, 0px)))',
+            boxSizing: 'border-box',
+            background:
+              'radial-gradient(1200px 480px at 12% -10%, rgba(80, 200, 120, 0.08), transparent 62%), linear-gradient(180deg, var(--life-skin) 0%, rgba(5, 5, 5, 1) 100%)',
           }}
         >
           <div
@@ -45,11 +47,11 @@ class ErrorBoundary extends React.Component {
               textAlign: 'center',
               padding: 32,
               borderRadius: 24,
-              border: '1px solid rgba(148, 163, 184, 0.18)',
-              background: 'rgba(15, 23, 42, 0.92)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              background: 'rgba(17, 17, 17, 0.94)',
               backdropFilter: 'blur(14px)',
-              boxShadow: '0 24px 60px rgba(2, 6, 23, 0.45)',
-              color: '#ffffff',
+              boxShadow: '0 24px 60px rgba(0, 0, 0, 0.36)',
+              color: 'var(--life-ink)',
             }}
           >
             <div
@@ -57,20 +59,20 @@ class ErrorBoundary extends React.Component {
                 width: 80,
                 height: 80,
                 borderRadius: '50%',
-                background: 'rgba(239, 68, 68, 0.12)',
+                background: 'rgba(229, 72, 77, 0.14)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto 24px',
               }}
             >
-              <span style={{ color: '#ef4444', fontSize: 40, fontWeight: 700 }}>!</span>
+              <span style={{ color: 'var(--life-red)', fontSize: 40, fontWeight: 700 }}>!</span>
             </div>
 
             <h1 style={{ margin: '0 0 12px', fontSize: 32, fontWeight: 700 }}>
               Something went wrong
             </h1>
-            <p style={{ margin: '0 0 24px', color: '#94a3b8', lineHeight: 1.6 }}>
+            <p style={{ margin: '0 0 24px', color: 'var(--life-muted)', lineHeight: 1.6 }}>
               We encountered an unexpected error. Don't worry, your data is safe.
             </p>
 
@@ -83,14 +85,14 @@ class ErrorBoundary extends React.Component {
                   maxHeight: 160,
                   overflow: 'auto',
                   borderRadius: 16,
-                  background: '#020617',
-                  border: '1px solid rgba(239, 68, 68, 0.14)',
+                  background: 'rgba(0, 0, 0, 0.32)',
+                  border: '1px solid rgba(229, 72, 77, 0.18)',
                 }}
               >
                 <p
                   style={{
                     margin: 0,
-                    color: '#f87171',
+                    color: 'rgba(229, 72, 77, 0.92)',
                     fontSize: 12,
                     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                   }}
@@ -111,13 +113,14 @@ class ErrorBoundary extends React.Component {
               <button
                 onClick={this.handleRetry}
                 style={{
+                  flex: '1 1 160px',
                   minWidth: 140,
                   minHeight: 48,
                   padding: '12px 24px',
                   borderRadius: 14,
                   border: 'none',
-                  background: '#f59e0b',
-                  color: '#0f172a',
+                  background: 'var(--life-green)',
+                  color: 'var(--life-skin)',
                   fontWeight: 700,
                   cursor: 'pointer',
                 }}
@@ -127,13 +130,14 @@ class ErrorBoundary extends React.Component {
               <button
                 onClick={this.handleHome}
                 style={{
+                  flex: '1 1 160px',
                   minWidth: 140,
                   minHeight: 48,
                   padding: '12px 24px',
                   borderRadius: 14,
-                  border: '1px solid rgba(148, 163, 184, 0.28)',
+                  border: '1px solid rgba(255, 255, 255, 0.14)',
                   background: 'transparent',
-                  color: '#ffffff',
+                  color: 'var(--life-ink)',
                   fontWeight: 700,
                   cursor: 'pointer',
                 }}

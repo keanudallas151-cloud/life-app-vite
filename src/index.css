@@ -4,6 +4,9 @@
   --life-ink: #ededed;
   --life-green: #50c878;
   --life-green-soft: #0f2818;
+  --life-gold: #f5a623;
+  --life-red: #e5484d;
+  --life-orange: #e58b2a;
   --life-muted: #a1a1a1;
   --life-border: #2e2e2e;
   --life-white: #111111;
@@ -872,6 +875,12 @@ canvas {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
+}
+
+.life-main-scroll[data-overlay-lock] {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  touch-action: none;
 }
 
 .life-overlay-dismiss {

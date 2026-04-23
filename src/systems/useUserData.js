@@ -106,6 +106,7 @@ export function useUserData(userId) {
   const pendingPatchRef = useRef(null);
   const persistInFlightRef = useRef(false);
   const retryCountRef = useRef(0);
+  const latestDataRef = useRef({ ...EMPTY_USER_DATA });
 
   const clearPersistTimer = useCallback(() => {
     if (!persistTimerRef.current) return;
@@ -113,8 +114,23 @@ export function useUserData(userId) {
     persistTimerRef.current = null;
   }, []);
 
+  const queuePatch = useCallback((patch) => {
+    pendingPatchRef.current = {
+      ...(pendingPatchRef.current || {}),
+      ...patch,
+    };
+  }, []);
+
+  const requeueFailedPatch = useCallback((patch) => {
+    pendingPatchRef.current = {
+      ...patch,
+      ...(pendingPatchRef.current || {}),
+    };
+  }, []);
+
   const applyFetchedData = useCallback((data = {}) => {
     const normalized = normalizeCloudUserData(data);
+    latestDataRef.current = normalized;
     setBookmarksState(normalized.bookmarks ?? []);
     setNotesState(normalized.notes ?? {});
     setReadKeysState(normalized.read_keys ?? []);
@@ -146,20 +162,16 @@ export function useUserData(userId) {
 
         try {
           await setDoc(doc(db, "userData", userId), payload, { merge: true });
-          saveCachedUserData(userId, {
-            ...loadCachedUserData(userId),
-            ...sanitizedPatch,
-          });
+          saveCachedUserData(userId, latestDataRef.current);
           retryCountRef.current = 0;
           setError("");
           continue;
         } catch (error) {
           console.error("useUserData persist:", error.message);
           retryCountRef.current += 1;
-          pendingPatchRef.current = {
-            ...patch,
-            ...(pendingPatchRef.current || {}),
-          };
+          // Re-queue the failed payload underneath anything newer so rapid edits
+          // made while the request was in flight still win.
+          requeueFailedPatch(patch);
           if (retryCountRef.current >= 2) {
             setError(
               "Profile sync is retrying in the background. Your latest changes are saved on this device and will upload once the connection settles.",
@@ -183,20 +195,17 @@ export function useUserData(userId) {
         void flushPersistQueue();
       }
     }
-  }, [clearPersistTimer, isGuest, userId]);
+  }, [clearPersistTimer, isGuest, requeueFailedPatch, userId]);
 
   const schedulePersist = useCallback((patch, delay = 250) => {
     if (isGuest) return;
-    pendingPatchRef.current = {
-      ...(pendingPatchRef.current || {}),
-      ...patch,
-    };
+    queuePatch(patch);
     clearPersistTimer();
     persistTimerRef.current = setTimeout(() => {
       persistTimerRef.current = null;
       void flushPersistQueue();
     }, delay);
-  }, [clearPersistTimer, flushPersistQueue, isGuest]);
+  }, [clearPersistTimer, flushPersistQueue, isGuest, queuePatch]);
 
   useEffect(() => {
     clearPersistTimer();
@@ -205,6 +214,7 @@ export function useUserData(userId) {
     retryCountRef.current = 0;
 
     if (isGuest) {
+      latestDataRef.current = { ...EMPTY_USER_DATA };
       setBookmarksState([]);
       setNotesState({});
       setReadKeysState([]);
@@ -267,133 +277,51 @@ export function useUserData(userId) {
     return () => window.removeEventListener("online", handleOnline);
   }, [flushPersistQueue, isGuest]);
 
+  const updateDataField = useCallback((key, stateSetter, value, delay) => {
+    const currentSnapshot = latestDataRef.current;
+    const nextValue = typeof value === "function" ? value(currentSnapshot[key]) : value;
+    const nextSnapshot = {
+      ...currentSnapshot,
+      [key]: nextValue,
+    };
+
+    latestDataRef.current = nextSnapshot;
+    stateSetter(nextValue);
+    saveCachedUserData(userId, nextSnapshot);
+    schedulePersist({ [key]: nextValue }, delay);
+  }, [schedulePersist, userId]);
+
   const setBookmarks = useCallback((v) => {
-    const next = typeof v === "function" ? v(bookmarks) : v;
-    setBookmarksState(next);
-    saveCachedUserData(userId, {
-      bookmarks: next,
-      notes,
-      read_keys: readKeys,
-      highlights,
-      tsd_profile: tsdProfile,
-      momentum_state: momentumState,
-      tools_todos: toolsTodos,
-      tools_session: toolsSession,
-    });
-    schedulePersist({ bookmarks: next }, 180);
-  }, [bookmarks, highlights, momentumState, notes, readKeys, schedulePersist, toolsSession, toolsTodos, tsdProfile, userId]);
+    updateDataField("bookmarks", setBookmarksState, v, 180);
+  }, [updateDataField]);
 
   const setNotes = useCallback((v) => {
-    const next = typeof v === "function" ? v(notes) : v;
-    setNotesState(next);
-    saveCachedUserData(userId, {
-      bookmarks,
-      notes: next,
-      read_keys: readKeys,
-      highlights,
-      tsd_profile: tsdProfile,
-      momentum_state: momentumState,
-      tools_todos: toolsTodos,
-      tools_session: toolsSession,
-    });
-    schedulePersist({ notes: next }, 700);
-  }, [bookmarks, highlights, momentumState, notes, readKeys, schedulePersist, toolsSession, toolsTodos, tsdProfile, userId]);
+    updateDataField("notes", setNotesState, v, 700);
+  }, [updateDataField]);
 
   const setReadKeys = useCallback((v) => {
-    const next = typeof v === "function" ? v(readKeys) : v;
-    setReadKeysState(next);
-    saveCachedUserData(userId, {
-      bookmarks,
-      notes,
-      read_keys: next,
-      highlights,
-      tsd_profile: tsdProfile,
-      momentum_state: momentumState,
-      tools_todos: toolsTodos,
-      tools_session: toolsSession,
-    });
-    schedulePersist({ read_keys: next }, 180);
-  }, [bookmarks, highlights, momentumState, notes, readKeys, schedulePersist, toolsSession, toolsTodos, tsdProfile, userId]);
+    updateDataField("read_keys", setReadKeysState, v, 180);
+  }, [updateDataField]);
 
   const setHighlights = useCallback((v) => {
-    const next = typeof v === "function" ? v(highlights) : v;
-    setHighlightsState(next);
-    saveCachedUserData(userId, {
-      bookmarks,
-      notes,
-      read_keys: readKeys,
-      highlights: next,
-      tsd_profile: tsdProfile,
-      momentum_state: momentumState,
-      tools_todos: toolsTodos,
-      tools_session: toolsSession,
-    });
-    schedulePersist({ highlights: next }, 220);
-  }, [bookmarks, highlights, momentumState, notes, readKeys, schedulePersist, toolsSession, toolsTodos, tsdProfile, userId]);
+    updateDataField("highlights", setHighlightsState, v, 220);
+  }, [updateDataField]);
 
   const setTsdProfile = useCallback((v) => {
-    const next = typeof v === "function" ? v(tsdProfile) : v;
-    setTsdProfileState(next);
-    saveCachedUserData(userId, {
-      bookmarks,
-      notes,
-      read_keys: readKeys,
-      highlights,
-      tsd_profile: next,
-      momentum_state: momentumState,
-      tools_todos: toolsTodos,
-      tools_session: toolsSession,
-    });
-    schedulePersist({ tsd_profile: next }, 220);
-  }, [bookmarks, highlights, momentumState, notes, readKeys, schedulePersist, toolsSession, toolsTodos, tsdProfile, userId]);
+    updateDataField("tsd_profile", setTsdProfileState, v, 220);
+  }, [updateDataField]);
 
   const setMomentumState = useCallback((v) => {
-    const next = typeof v === "function" ? v(momentumState) : v;
-    setMomentumStateRaw(next);
-    saveCachedUserData(userId, {
-      bookmarks,
-      notes,
-      read_keys: readKeys,
-      highlights,
-      tsd_profile: tsdProfile,
-      momentum_state: next,
-      tools_todos: toolsTodos,
-      tools_session: toolsSession,
-    });
-    schedulePersist({ momentum_state: next }, 260);
-  }, [bookmarks, highlights, momentumState, notes, readKeys, schedulePersist, tsdProfile, toolsSession, toolsTodos, userId]);
+    updateDataField("momentum_state", setMomentumStateRaw, v, 260);
+  }, [updateDataField]);
 
   const setToolsTodos = useCallback((v) => {
-    const next = typeof v === "function" ? v(toolsTodos) : v;
-    setToolsTodosState(next);
-    saveCachedUserData(userId, {
-      bookmarks,
-      notes,
-      read_keys: readKeys,
-      highlights,
-      tsd_profile: tsdProfile,
-      momentum_state: momentumState,
-      tools_todos: next,
-      tools_session: toolsSession,
-    });
-    schedulePersist({ tools_todos: next }, 220);
-  }, [bookmarks, highlights, momentumState, notes, readKeys, schedulePersist, toolsSession, toolsTodos, tsdProfile, userId]);
+    updateDataField("tools_todos", setToolsTodosState, v, 220);
+  }, [updateDataField]);
 
   const setToolsSession = useCallback((v) => {
-    const next = typeof v === "function" ? v(toolsSession) : v;
-    setToolsSessionState(next);
-    saveCachedUserData(userId, {
-      bookmarks,
-      notes,
-      read_keys: readKeys,
-      highlights,
-      tsd_profile: tsdProfile,
-      momentum_state: momentumState,
-      tools_todos: toolsTodos,
-      tools_session: next,
-    });
-    schedulePersist({ tools_session: next }, 180);
-  }, [bookmarks, highlights, momentumState, notes, readKeys, schedulePersist, toolsSession, toolsTodos, tsdProfile, userId]);
+    updateDataField("tools_session", setToolsSessionState, v, 180);
+  }, [updateDataField]);
 
   const replaceAllData = useCallback((next) => {
     const merged = {

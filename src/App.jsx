@@ -70,6 +70,7 @@ import { GoalSettingPage } from "./components/GoalSettingPage";
 import { HelpPage } from "./components/HelpPage";
 import { HomePage } from "./components/HomePage";
 import { InventorsInvestors } from "./components/InventorsInvestors";
+import { alpha } from "./components/inventorsInvestors/InventorsInvestorsUI";
 import { LandingPage } from "./components/LandingPage";
 import { LeaderboardPage } from "./components/LeaderboardPage";
 import { MentorshipPage } from "./components/MentorshipPage";
@@ -1049,28 +1050,56 @@ export default function LifeApp() {
     };
   }, [uid]);
 
-  // Android back button / iOS swipe-back: close open overlays before the
-  // browser tries to navigate away. Pushes a history entry when any
-  // overlay opens, pops it when it closes or when the user presses back.
+  const overlayHistoryPushedRef = useRef(false);
+  const overlayHistoryConsumedRef = useRef(false);
+  const overlayCloseRef = useRef(() => {});
+
+  useEffect(() => {
+    overlayCloseRef.current = () => {
+      setSidebarOpen(false);
+      setShowNotif(false);
+    };
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
-    const anyOverlay = sidebarOpen || showNotif;
-    if (!anyOverlay) return undefined;
-    window.history.pushState({ lifeOverlay: true }, "");
+
     const handlePop = () => {
-      if (sidebarOpen) setSidebarOpen(false);
-      if (showNotif) setShowNotif(false);
+      if (!overlayHistoryPushedRef.current) return;
+      overlayHistoryConsumedRef.current = true;
+      overlayHistoryPushedRef.current = false;
+      overlayCloseRef.current();
     };
+
     window.addEventListener("popstate", handlePop);
     return () => {
       window.removeEventListener("popstate", handlePop);
-      // If overlay closed via UI (not back-button), pop the pushed entry
-      // so we don't accumulate stale history.
-      if (window.history.state?.lifeOverlay) {
-        window.history.back();
-      }
     };
-  }, [sidebarOpen, showNotif]);
+  }, []);
+
+  // Keep a single browser history entry while the sidebar or notifications
+  // are open so mobile back gestures close overlays cleanly.
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const anyOverlay = sidebarOpen || showNotif;
+
+    if (anyOverlay) {
+      if (!overlayHistoryPushedRef.current) {
+        window.history.pushState({ lifeOverlay: true }, "");
+        overlayHistoryPushedRef.current = true;
+        overlayHistoryConsumedRef.current = false;
+      }
+      return undefined;
+    }
+
+    if (overlayHistoryPushedRef.current && !overlayHistoryConsumedRef.current) {
+      overlayHistoryConsumedRef.current = true;
+      overlayHistoryPushedRef.current = false;
+      window.history.back();
+    }
+
+    return undefined;
+  }, [showNotif, sidebarOpen]);
 
   const markAllRead = () => {
     const next = markAllNotificationsRead(uid);
@@ -1324,7 +1353,6 @@ export default function LifeApp() {
       return;
     }
     setAuthLoading(true);
-    await new Promise((r) => setTimeout(r, 3000));
     try {
       await signInWithGoogle();
     } catch (error) {
@@ -1370,15 +1398,11 @@ export default function LifeApp() {
       return;
     }
     setAuthLoading(true);
-    const _siStart = Date.now();
     try {
       await signInWithEmailAndPassword(
         auth,
         siEmail.toLowerCase().trim(),
         siPass,
-      );
-      await new Promise((r) =>
-        setTimeout(r, Math.max(0, 3000 - (Date.now() - _siStart))),
       );
     } catch (error) {
       const msg = String(error.message || "").toLowerCase();
@@ -1494,7 +1518,6 @@ export default function LifeApp() {
     }
 
     setAuthLoading(true);
-    const _regStart = Date.now();
     try {
       const credentials = await createUserWithEmailAndPassword(
         auth,
@@ -1505,9 +1528,6 @@ export default function LifeApp() {
         displayName: rName.trim(),
       });
       await sendEmailVerification(credentials.user);
-      await new Promise((r) =>
-        setTimeout(r, Math.max(0, 3000 - (Date.now() - _regStart))),
-      );
       setVerifyEmailAddress(
         credentials.user.email || rEmail.toLowerCase().trim(),
       );
@@ -2436,17 +2456,17 @@ export default function LifeApp() {
                 ? 10
                 : "max(10px, var(--safe-right, 0px))",
               zIndex: 70,
-              background: dark ? "#1a1a1a" : "#ffffff",
-              border: `1px solid ${dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
-              borderRadius: 18,
-              boxShadow: dark
-                ? "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)"
-                : "0 8px 40px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.06)",
+              background: t.white,
+              border: `1px solid ${alpha(t.border, dark ? 0.6 : 0.9)}`,
+              borderRadius: isNarrowViewport ? 22 : 18,
+              boxShadow: `0 12px 36px ${alpha(t.ink, dark ? 0.34 : 0.18)}`,
               width: isNarrowViewport ? "auto" : 340,
-              maxHeight: "min(480px, calc(100dvh - 80px))",
+              maxHeight:
+                "min(480px, calc(100dvh - (72px + var(--safe-top, 0px) + var(--safe-bottom, 0px))))",
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
+              overscrollBehavior: "contain",
             }}
           >
             {/* Header */}
@@ -2456,7 +2476,7 @@ export default function LifeApp() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "14px 16px 13px",
-                borderBottom: `1px solid ${dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"}`,
+                borderBottom: `1px solid ${alpha(t.border, 0.75)}`,
                 flexShrink: 0,
               }}
             >
@@ -2465,7 +2485,7 @@ export default function LifeApp() {
                   style={{
                     fontSize: 15,
                     fontWeight: 700,
-                    color: dark ? "#f0f0f0" : "#111",
+                    color: t.ink,
                     letterSpacing: -0.2,
                   }}
                 >
@@ -2475,7 +2495,7 @@ export default function LifeApp() {
                   <span
                     style={{
                       background: t.green,
-                      color: "#fff",
+                      color: t.skin,
                       fontSize: 10,
                       fontWeight: 700,
                       borderRadius: 20,
@@ -2532,9 +2552,7 @@ export default function LifeApp() {
                   <p
                     style={{
                       margin: 0,
-                      color: dark
-                        ? "rgba(255,255,255,0.35)"
-                        : "rgba(0,0,0,0.35)",
+                      color: alpha(t.ink, 0.48),
                       fontSize: 13,
                       textAlign: "center",
                     }}
@@ -2560,8 +2578,8 @@ export default function LifeApp() {
             {notifications.length > 0 && (
               <div
                 style={{
-                  padding: "9px 16px",
-                  borderTop: `1px solid ${dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"}`,
+                  padding: "9px 16px calc(9px + max(var(--safe-bottom, 0px), 2px))",
+                  borderTop: `1px solid ${alpha(t.border, 0.75)}`,
                   flexShrink: 0,
                   textAlign: "center",
                 }}
@@ -2569,7 +2587,7 @@ export default function LifeApp() {
                 <span
                   style={{
                     fontSize: 10.5,
-                    color: dark ? "rgba(255,255,255,0.28)" : "rgba(0,0,0,0.3)",
+                    color: alpha(t.ink, 0.4),
                     fontFamily:
                       "-apple-system,BlinkMacSystemFont,system-ui,sans-serif",
                     display: "flex",
