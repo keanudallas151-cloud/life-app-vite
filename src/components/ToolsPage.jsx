@@ -1,26 +1,13 @@
 import { Ic } from "../icons/Ic";
 
 export function ToolsPage({ t, play, setPage }) {
-  const tools = [
-    {
-      id: "todo",
-      title: "To-Do",
-      desc: "Organize tasks, track progress, and stay on top of your goals.",
-      icon: "puzzle",
-      action: "tools_todo",
-      eyebrow: "Capture tasks",
-      meta: "Add, complete, delete",
-    },
-    {
-      id: "lockin",
-      title: "Lock-In",
-      desc: "Start a focused work session with a timer to maintain deep focus.",
-      icon: "candle",
-      action: "tools_lockin",
-      eyebrow: "Protect focus",
-      meta: "Presets + custom duration",
-    },
-  ];
+  const lockInCard = {
+    title: "Lock In",
+    desc: "Set your tasks, choose your time, add optional breaks, and commit until the hourglass finishes.",
+    eyebrow: "Focus tool",
+    meta: "Tasks + timer + breaks",
+    action: "tools_lockin",
+  };
 
   return (
     <div
@@ -63,7 +50,7 @@ export function ToolsPage({ t, play, setPage }) {
           fontFamily: "Georgia,serif",
         }}
       >
-        Boost your productivity with focused utilities designed to help you stay organized and maintain deep focus.
+        Open Lock In to plan one focused session and stay with it until the timer ends.
       </p>
 
       <section
@@ -130,116 +117,129 @@ export function ToolsPage({ t, play, setPage }) {
           </div>
           <div>
             <p style={{ margin: "0 0 6px", color: t.ink, fontSize: 17, fontWeight: 700 }}>
-              Build momentum without leaving the app.
+              One tool. One promise.
             </p>
             <p style={{ margin: 0, color: t.mid, fontSize: 13.5, lineHeight: 1.75 }}>
-              Use quick action tools for capture and focus, then jump back into reading, goals, and momentum with less friction.
+              Prepare your task list, lock the session in, and do not switch to anything else until the hourglass is finished.
             </p>
           </div>
         </div>
       </section>
 
-      <div style={{ display: "grid", gap: 16 }}>
-        {tools.map((tool) => (
-          <button
-            key={tool.id}
-            type="button"
-            onClick={() => {
-              play("tap");
-              setPage(tool.action);
-            }}
-            className="life-card-hover"
+      <button
+        type="button"
+        onClick={() => {
+          play("tap");
+          setPage(lockInCard.action);
+        }}
+        className="life-card-hover"
+        style={{
+          width: "100%",
+          background: t.white,
+          border: `1px solid ${t.border}`,
+          borderRadius: 22,
+          padding: 22,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 18,
+          textAlign: "left",
+          boxShadow: `0 14px 32px ${t.green}10`,
+          transition: "transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-2px)";
+          e.currentTarget.style.boxShadow = `0 18px 36px ${t.green}18`;
+          e.currentTarget.style.borderColor = `${t.green}55`;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(0px)";
+          e.currentTarget.style.boxShadow = `0 14px 32px ${t.green}10`;
+          e.currentTarget.style.borderColor = t.border;
+        }}
+      >
+        <div
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: 16,
+            background: t.greenLt,
+            display: "grid",
+            placeItems: "center",
+            flexShrink: 0,
+          }}
+        >
+          {Ic.candle("none", t.green, 26)}
+        </div>
+        <div style={{ flex: 1 }}>
+          <div
             style={{
-              width: "100%",
-              background: t.white,
-              border: `1px solid ${t.border}`,
-              borderRadius: 18,
-              padding: 20,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 16,
-              textAlign: "left",
-              boxShadow: `0 12px 28px ${t.green}10`,
-              transition: "transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = `0 18px 36px ${t.green}18`;
-              e.currentTarget.style.borderColor = `${t.green}55`;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0px)";
-              e.currentTarget.style.boxShadow = `0 12px 28px ${t.green}10`;
-              e.currentTarget.style.borderColor = t.border;
+              marginBottom: 6,
+              color: t.green,
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: 1.8,
+              textTransform: "uppercase",
             }}
           >
-            <div
+            {lockInCard.eyebrow}
+          </div>
+          <div
+            style={{
+              fontSize: 18,
+              fontWeight: 700,
+              color: t.ink,
+              marginBottom: 6,
+            }}
+          >
+            {lockInCard.title}
+          </div>
+          <div
+            style={{
+              fontSize: 13.5,
+              color: t.mid,
+              lineHeight: 1.6,
+            }}
+          >
+            {lockInCard.desc}
+          </div>
+          <div
+            style={{
+              marginTop: 12,
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 10,
+              flexWrap: "wrap",
+              alignItems: "center",
+            }}
+          >
+            <span
               style={{
-                width: 48,
-                height: 48,
-                borderRadius: 12,
+                display: "inline-flex",
+                alignItems: "center",
+                minHeight: 30,
+                padding: "6px 10px",
+                borderRadius: 999,
                 background: t.greenLt,
-                display: "grid",
-                placeItems: "center",
-                fontSize: 24,
-                flexShrink: 0,
+                color: t.green,
+                fontSize: 11.5,
+                fontWeight: 700,
               }}
             >
-              {Ic[tool.icon]?.("none", t.green, 24) || Ic.box("none", t.green, 24)}
-            </div>
-            <div style={{ flex: 1 }}>
-              <div
-                style={{
-                  marginBottom: 6,
-                  color: t.green,
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: 1.8,
-                  textTransform: "uppercase",
-                }}
-              >
-                {tool.eyebrow}
-              </div>
-              <div
-                style={{
-                  fontSize: 16,
-                  fontWeight: 700,
-                  color: t.ink,
-                  marginBottom: 4,
-                }}
-              >
-                {tool.title}
-              </div>
-              <div
-                style={{
-                  fontSize: 13,
-                  color: t.mid,
-                  lineHeight: 1.5,
-                }}
-              >
-                {tool.desc}
-              </div>
-              <div
-                style={{
-                  marginTop: 10,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  minHeight: 30,
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  background: t.greenLt,
-                  color: t.green,
-                  fontSize: 11.5,
-                  fontWeight: 700,
-                }}
-              >
-                {tool.meta}
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
+              {lockInCard.meta}
+            </span>
+            <span
+              style={{
+                color: t.green,
+                fontSize: 12.5,
+                fontWeight: 700,
+              }}
+            >
+              Open Lock In →
+            </span>
+          </div>
+        </div>
+      </button>
     </div>
   );
 }

@@ -872,7 +872,7 @@ export default function LifeApp() {
       sidebar_saved: "Saved — Life.",
       sidebar_experience: "Experience — Life.",
       tools_todo: "To-Do — Life.",
-      tools_lockin: "Lock-In — Life.",
+      tools_lockin: "Lock In — Life.",
       premium: "Premium — Life.",
       discord_networking: "Networking Group — Life.",
       account_customize: "Account — Life.",

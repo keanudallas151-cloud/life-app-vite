@@ -68,7 +68,7 @@ const SECTIONS = {
   },
   sidebar_tools: {
     title: "Tools",
-    desc: "Tools help you stay productive and focused. Use To-Do for task management and Lock-In for focused work sessions.",
+    desc: "Tools help you stay productive and focused. Right now this section centers on Lock In, a focused work session tool with task planning, a timer, and optional short breaks.",
   },
   sidebar_socials: {
     title: "Socials",
