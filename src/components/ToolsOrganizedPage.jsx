@@ -14,10 +14,13 @@ export function ToolsOrganizedPage({ uid, setPage, setScreen }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    const previousTitle = document.title;
     setMounted(true);
     document.body.classList.add("life-organized-active");
+    document.title = "To-Do";
     return () => {
       document.body.classList.remove("life-organized-active");
+      document.title = previousTitle;
     };
   }, []);
 

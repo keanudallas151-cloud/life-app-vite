@@ -1,5 +1,12 @@
 import '../src/index.css'
 import CanonicalHostRedirect from './CanonicalHostRedirect'
+import { Inter } from 'next/font/google'
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+})
 
 const CANONICAL_SITE_URL = 'https://life-ten-green.vercel.app';
 
@@ -21,7 +28,7 @@ export const metadata = {
   appleWebApp: {
     capable: true,
     title: 'Life.',
-    statusBarStyle: 'black-translucent'
+    statusBarStyle: 'default'
   },
   robots: 'index,follow',
   openGraph: {
@@ -56,9 +63,11 @@ export default function RootLayout({ children }) {
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Life." />
         <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <style>{`
           html,
           body {
@@ -143,7 +152,7 @@ export default function RootLayout({ children }) {
           }
         `}</style>
       </head>
-      <body>
+      <body className={inter.className}>
         <CanonicalHostRedirect canonicalSiteUrl={siteUrl} />
         {children}
       </body>

@@ -106,7 +106,7 @@ export function TaskItem({
 
   const handleTouchStart = () => {
     if (selectionMode || !onSelect) return
-    
+
     longPressTimer.current = setTimeout(() => {
       setIsLongPress(true)
       if (hapticEnabled) triggerHaptic('medium')
@@ -125,14 +125,14 @@ export function TaskItem({
 
   const handleClick = (e: React.MouseEvent) => {
     if (isLongPress) return
-    
+
     const target = e.target as HTMLElement
     const isCheckboxClick = target.closest('[role="checkbox"]') || target.closest('button')
-    
+
     if (isCheckboxClick) {
       return
     }
-    
+
     if (selectionMode) {
       if (hapticEnabled) triggerHaptic('light')
       if (soundEnabled) playButtonSound()
