@@ -100,22 +100,23 @@ function App() {
   }, [categories, setCategories])
 
   useEffect(() => {
-    const validCategories = categories || []
-    const validCategoryIds = new Set(validCategories.map(cat => cat.id))
-    const allTasks = tasks || []
+    const nextCategories = categories || []
+    if (nextCategories.length === 0) return
 
-    const orphanedTasks = allTasks.filter(task => !validCategoryIds.has(task.categoryId))
+    const nextCategoryIds = new Set(nextCategories.map((cat) => cat.id))
 
-    if (orphanedTasks.length > 0 && validCategories.length > 0) {
-      setTasks((current) =>
-        (current || []).map(task =>
-          !validCategoryIds.has(task.categoryId)
-            ? { ...task, categoryId: validCategories[0].id }
-            : task
-        )
+    setTasks((current) => {
+      const currentTasks = current || []
+      const hasOrphans = currentTasks.some((task) => !nextCategoryIds.has(task.categoryId))
+      if (!hasOrphans) return current
+
+      return currentTasks.map((task) =>
+        !nextCategoryIds.has(task.categoryId)
+          ? { ...task, categoryId: nextCategories[0].id }
+          : task
       )
-    }
-  }, [categories, tasks, setTasks])
+    })
+  }, [categories, setTasks])
 
   const addTask = (
     title: string,
@@ -398,8 +399,14 @@ function App() {
     return () => clearInterval(interval)
   }, [tasks])
 
-  const validCategories = (categories || []).filter(
-    (cat) => cat && cat.id && cat.name && cat.color
+  const safeCategories = useMemo(() => categories || [], [categories])
+
+  const validCategories = useMemo(
+    () =>
+      safeCategories.filter(
+        (cat) => cat && cat.id && cat.name && cat.color
+      ),
+    [safeCategories]
   )
   const validCategoryIds = new Set(validCategories.map(cat => cat.id))
 
@@ -644,7 +651,7 @@ function App() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className="mx-auto max-w-4xl px-4 pt-4 pb-32"
+          className="mx-auto max-w-4xl px-4 pt-20 sm:pt-14 pb-32"
         >
           <header className="mb-6">
             <div className="flex items-center justify-between mb-6">
@@ -655,7 +662,7 @@ function App() {
                 className="flex items-center gap-4"
               >
                 <div>
-                  <h1 className="text-6xl font-bold tracking-tight text-foreground">
+                  <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
                     {viewMode === 'calendar' && 'Calendar'}
                     {viewMode === 'stats' && 'Statistics'}
                     {viewMode === 'settings' && 'Settings'}
@@ -675,7 +682,7 @@ function App() {
                         }}
                         className="font-medium cursor-pointer hover:text-primary transition-colors"
                       >
-                        {highPriorityActive} active
+                        {highPriorityActive} high
                       </motion.span>
                       <motion.span
                         key={`med-${mediumPriorityActive}`}
@@ -687,7 +694,7 @@ function App() {
                         }}
                         className="font-medium cursor-pointer hover:text-primary transition-colors"
                       >
-                        {mediumPriorityActive} active
+                        {mediumPriorityActive} medium
                       </motion.span>
                       <motion.span
                         key={`low-${lowPriorityActive}`}
@@ -699,7 +706,7 @@ function App() {
                         }}
                         className="font-medium cursor-pointer hover:text-primary transition-colors"
                       >
-                        {lowPriorityActive} active
+                        {lowPriorityActive} low
                       </motion.span>
                       <span className="opacity-50">·</span>
                       <motion.span
@@ -902,7 +909,7 @@ function App() {
       <AddTaskForm
         open={addTaskFormOpen}
         onOpenChange={setAddTaskFormOpen}
-        categories={categories || []}
+        categories={safeCategories}
         settings={settings}
         onAddTask={addTask}
       />
@@ -910,7 +917,7 @@ function App() {
         task={editingTask}
         open={!!editingTask}
         onOpenChange={(open) => !open && setEditingTask(null)}
-        categories={categories || []}
+        categories={safeCategories}
         onUpdateTask={updateTask}
       />
       <BatchEditDialog

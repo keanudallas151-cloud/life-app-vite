@@ -180,3 +180,88 @@ body.life-organized-active [data-radix-popper-content-wrapper],
 body.life-organized-active [data-sonner-toaster] {
   z-index: 10001 !important;
 }
+
+/* ─── Visual polish pass (sleek, mobile-first, Apple-clean) ───────────── */
+
+.organized-feature .bg-card,
+.organized-feature [data-slot="dialog-content"],
+.organized-feature [data-slot="popover-content"] {
+  box-shadow:
+    0 2px 8px color-mix(in oklch, var(--shadow-color) 10%, transparent),
+    0 12px 34px color-mix(in oklch, var(--shadow-color) 14%, transparent);
+}
+
+.organized-feature .bg-card {
+  transition: box-shadow 220ms ease, transform 220ms ease;
+}
+
+.organized-feature .bg-card:hover {
+  box-shadow:
+    0 6px 16px color-mix(in oklch, var(--shadow-color) 10%, transparent),
+    0 16px 38px color-mix(in oklch, var(--shadow-color) 16%, transparent);
+}
+
+.organized-bottom-nav {
+  box-shadow: 0 -10px 30px color-mix(in oklch, var(--shadow-color) 12%, transparent);
+}
+
+.organized-nav-item {
+  position: relative;
+}
+
+.organized-nav-item.is-active {
+  background: color-mix(in oklch, var(--primary) 14%, transparent);
+}
+
+.organized-fab {
+  box-shadow:
+    0 10px 24px color-mix(in oklch, var(--primary) 34%, transparent),
+    0 0 0 1px color-mix(in oklch, var(--primary) 20%, transparent) inset;
+}
+
+.organized-fab:hover {
+  box-shadow:
+    0 14px 30px color-mix(in oklch, var(--primary) 40%, transparent),
+    0 0 0 1px color-mix(in oklch, var(--primary) 24%, transparent) inset;
+}
+
+.organized-feature :is(button, [role="button"], a, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--ring) 70%, white 10%);
+  outline-offset: 2px;
+}
+
+.organized-feature {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--muted-foreground) 35%, transparent) transparent;
+}
+
+.organized-feature ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.organized-feature ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.organized-feature ::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  background-color: color-mix(in oklch, var(--muted-foreground) 30%, transparent);
+}
+
+.organized-feature ::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in oklch, var(--muted-foreground) 45%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .organized-feature *,
+  .organized-feature *::before,
+  .organized-feature *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

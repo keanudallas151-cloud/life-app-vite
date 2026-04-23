@@ -19,7 +19,7 @@ export function BottomNav({
       initial={{ y: 100 }}
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-lg pb-safe"
+      className="organized-bottom-nav fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-lg pb-safe"
       role="navigation"
       aria-label="Main navigation"
     >
@@ -27,9 +27,9 @@ export function BottomNav({
         <motion.button
           onClick={() => onViewModeChange('list')}
           className={cn(
-            'flex flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors min-h-[44px]',
+            'organized-nav-item flex flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors min-h-[44px]',
             viewMode === 'list'
-              ? 'text-primary'
+              ? 'is-active text-primary'
               : 'text-muted-foreground hover:text-foreground'
           )}
           whileTap={{ scale: 0.95 }}
@@ -54,9 +54,9 @@ export function BottomNav({
         <motion.button
           onClick={() => onViewModeChange('calendar')}
           className={cn(
-            'flex flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors min-h-[44px]',
+            'organized-nav-item flex flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors min-h-[44px]',
             viewMode === 'calendar'
-              ? 'text-primary'
+              ? 'is-active text-primary'
               : 'text-muted-foreground hover:text-foreground'
           )}
           whileTap={{ scale: 0.95 }}
@@ -81,9 +81,9 @@ export function BottomNav({
         <div className="flex flex-1 justify-center">
           <motion.button
             onClick={onAddTask}
-            whileTap={{ scale: 0.9 }}
+            whileTap={{ scale: 0.92, y: 1 }}
             whileHover={{ scale: 1.05 }}
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg"
+            className="organized-fab flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg"
             aria-label="Add new task"
           >
             <Plus weight="bold" className="h-6 w-6" aria-hidden="true" />
@@ -93,9 +93,9 @@ export function BottomNav({
         <motion.button
           onClick={() => onViewModeChange('stats')}
           className={cn(
-            'flex flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors min-h-[44px]',
+            'organized-nav-item flex flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors min-h-[44px]',
             viewMode === 'stats'
-              ? 'text-primary'
+              ? 'is-active text-primary'
               : 'text-muted-foreground hover:text-foreground'
           )}
           whileTap={{ scale: 0.95 }}
@@ -120,9 +120,9 @@ export function BottomNav({
         <motion.button
           onClick={() => onViewModeChange('settings')}
           className={cn(
-            'flex flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors min-h-[44px]',
+            'organized-nav-item flex flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors min-h-[44px]',
             viewMode === 'settings'
-              ? 'text-primary'
+              ? 'is-active text-primary'
               : 'text-muted-foreground hover:text-foreground'
           )}
           whileTap={{ scale: 0.95 }}
