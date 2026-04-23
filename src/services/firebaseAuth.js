@@ -1,6 +1,9 @@
 import { signInWithPopup, signInWithRedirect } from "firebase/auth";
 import { auth, googleProvider, isFirebaseConfigured } from "../firebaseClient";
 
+const CANONICAL_SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://life-ten-green.vercel.app";
+
 const REDIRECT_FALLBACK_CODES = new Set([
   "auth/popup-blocked",
   "auth/popup-closed-by-user",
@@ -18,6 +21,12 @@ export async function signInWithGoogle() {
   try {
     return await signInWithPopup(auth, googleProvider);
   } catch (error) {
+    if (error?.code === "auth/unauthorized-domain") {
+      throw new Error(
+        `Google sign-in is only allowed on ${CANONICAL_SITE_URL}.`,
+      );
+    }
+
     if (REDIRECT_FALLBACK_CODES.has(error?.code)) {
       await signInWithRedirect(auth, googleProvider);
       return null;
