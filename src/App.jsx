@@ -2835,7 +2835,7 @@ export default function LifeApp() {
           borderBottom: `1px solid ${t.border}`,
           display: "flex",
           alignItems: "center",
-          gap: 10,
+          gap: 8,
           position: "sticky",
           top: 0,
           zIndex: 50,
@@ -2850,7 +2850,7 @@ export default function LifeApp() {
             display: "flex",
             alignItems:
               "center" /* vertically centers hamburger with logo + search */,
-            gap: 10,
+            gap: 6,
             flexShrink: 0,
             height: "100%",
           }}
@@ -2903,6 +2903,7 @@ export default function LifeApp() {
           <button
             onClick={goHome}
             className="logo-btn"
+            aria-label="Home"
             style={{
               background: "none",
               border: "none",
@@ -2916,8 +2917,9 @@ export default function LifeApp() {
                 width: 36,
                 height: 36,
                 borderRadius: 10,
-                background: "transparent",
-                border: "none",
+                background: "linear-gradient(145deg, #1c1c1e, #2c2c2e)",
+                border: "0.5px solid rgba(255,255,255,0.1)",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -2933,10 +2935,10 @@ export default function LifeApp() {
               <span
                 style={{
                   color: "#fff",
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: 800,
-                  fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
-                  letterSpacing: "-0.5px",
+                  fontFamily: "Georgia, serif",
+                  letterSpacing: "-1px",
                   lineHeight: 1,
                 }}
               >
@@ -2945,7 +2947,7 @@ export default function LifeApp() {
             </div>
           </button>
         </div>
-        <div style={{ flex: 1, margin: "0 10px", position: "relative" }}>
+        <div style={{ flex: 1, minWidth: 0, margin: "0 4px", position: "relative" }}>
           <svg
             className="life-search-icon"
             width="14"
@@ -2954,7 +2956,7 @@ export default function LifeApp() {
             fill="none"
             style={{
               position: "absolute",
-              left: 10,
+              left: 12,
               top: "50%",
               transform: "translateY(-50%)",
               pointerEvents: "none",
@@ -2992,7 +2994,7 @@ export default function LifeApp() {
               background: t.light,
               border: `1px solid ${t.border}`,
               borderRadius: 20,
-              padding: "9px 34px 9px 34px",
+              padding: "9px 34px 9px 36px",
               color: t.ink,
               fontSize: 13,
               outline: "none",

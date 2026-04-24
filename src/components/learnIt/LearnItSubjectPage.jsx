@@ -238,7 +238,7 @@ function FlipCard({ game, color, lightColor, borderColor, index, onPlay }) {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          padding: "18px 14px",
+          padding: "18px 14px 34px",
           gap: 10,
           backdropFilter: "blur(10px)",
           WebkitBackdropFilter: "blur(10px)",
@@ -267,23 +267,55 @@ function FlipCard({ game, color, lightColor, borderColor, index, onPlay }) {
           <div style={{ fontSize: 15, fontWeight: 700, color: "#ededed", textAlign: "center", fontFamily: FONT, letterSpacing: "-0.02em" }}>
             {game.title}
           </div>
-          <div style={{ fontSize: 12, color: "rgba(161,161,161,0.7)", textAlign: "center", lineHeight: 1.5, fontFamily: FONT }}>
+          <div style={{
+            fontSize: 12,
+            color: "rgba(161,161,161,0.7)",
+            textAlign: "center",
+            lineHeight: 1.5,
+            fontFamily: FONT,
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            padding: "0 4px",
+          }}>
             {game.desc}
           </div>
 
-          {/* Tap hint */}
-          <div style={{
-            position: "absolute",
-            bottom: 12,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            opacity: 0.4,
-          }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
-              <path d="M14 2a8 8 0 0 1 8 8a8 8 0 0 1-8 8h-2.5L3 25 3 14H1A8 8 0 0 1 1 0"/>
-            </svg>
-            <span style={{ fontSize: 10, color: color, fontFamily: FONT, fontWeight: 600 }}>tap to flip</span>
+          {/* Tap hint — subtle pulsing dot, Apple-style */}
+          <div
+            aria-hidden="true"
+            className="life-flipcard-hint"
+            style={{
+              position: "absolute",
+              bottom: 10,
+              left: "50%",
+              transform: "translateX(-50%)",
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              pointerEvents: "none",
+            }}
+          >
+            <span
+              style={{
+                width: 5,
+                height: 5,
+                borderRadius: "50%",
+                background: color,
+                boxShadow: `0 0 0 0 ${color}`,
+                animation: "life-flipcard-hint-pulse 1.8s ease-in-out infinite",
+              }}
+            />
+            <span style={{
+              fontSize: 9.5,
+              color: color,
+              fontFamily: FONT,
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              opacity: 0.55,
+            }}>flip</span>
           </div>
         </div>
 

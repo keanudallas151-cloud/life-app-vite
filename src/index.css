@@ -523,9 +523,10 @@ html {
   -webkit-backdrop-filter: saturate(1.2) blur(12px);
   backdrop-filter: saturate(1.2) blur(12px);
   padding-top: var(--safe-top);
-  padding-left: max(16px, var(--safe-left));
-  padding-right: max(16px, var(--safe-right));
-  min-height: calc(62px + var(--safe-top));
+  padding-bottom: 8px;
+  padding-left: max(12px, var(--safe-left));
+  padding-right: max(12px, var(--safe-right));
+  min-height: calc(56px + var(--safe-top));
   height: auto;
   box-sizing: border-box;
 }
@@ -536,7 +537,7 @@ html {
 
 /* Sticky layers sit below the top bar (height + safe area) */
 .life-search-dropdown {
-  top: calc(62px + var(--safe-top));
+  top: calc(56px + var(--safe-top));
   border-radius: 0 0 18px 18px;
   box-shadow: 0 14px 34px rgba(20, 20, 20, 0.13);
 }
@@ -1447,18 +1448,19 @@ select:focus-visible {
 
   /* Mobile search bar optimizations */
   .life-topbar {
-    padding-left: max(12px, var(--safe-left)) !important;
-    padding-right: max(12px, var(--safe-right)) !important;
+    padding-left: max(10px, var(--safe-left)) !important;
+    padding-right: max(10px, var(--safe-right)) !important;
     padding-top: var(--safe-top) !important;
-    padding-bottom: 10px !important;
-    min-height: calc(62px + var(--safe-top)) !important;
+    padding-bottom: 8px !important;
+    min-height: calc(54px + var(--safe-top)) !important;
     height: auto !important;
+    gap: 8px !important;
   }
 
   .life-topbar input[type="text"] {
     font-size: 16px !important; /* Prevents zoom on iOS */
-    padding: 11px 32px 11px 36px !important;
-    border-radius: 24px !important;
+    padding: 10px 32px 10px 36px !important;
+    border-radius: 22px !important;
   }
 
   .life-topbar input[type="text"]::placeholder {
@@ -1682,6 +1684,36 @@ select:focus-visible {
 /* Search icon animation */
 .life-search-icon {
   transition: all 0.2s ease;
+}
+
+/* Learn It flip-card hint: subtle Apple-style pulsing dot */
+@keyframes life-flipcard-hint-pulse {
+  0%, 100% {
+    opacity: 0.45;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 currentColor;
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.25);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0);
+  }
+}
+
+.life-flipcard-hint {
+  animation: life-flipcard-hint-fade 2.4s ease-in-out infinite;
+}
+
+@keyframes life-flipcard-hint-fade {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .life-flipcard-hint,
+  .life-flipcard-hint > span {
+    animation: none !important;
+  }
 }
 
 .life-topbar input[type="text"]:focus ~ .life-search-icon,
@@ -2259,15 +2291,23 @@ button,
   block-size: clamp(36px, 7vw, 44px) !important;
   min-inline-size: 36px !important;
   padding: 0 !important;
-  color: transparent !important;
-  font-size: 0 !important;
-  line-height: 0 !important;
   aspect-ratio: 1 / 1;
-  border-radius: 12px;
-  text-indent: -9999px;
+  border-radius: 10px !important;
   overflow: hidden;
-  background: 48% 52% / 95% 95% no-repeat url("/favicon.svg");
-  image-rendering: auto;
+  /* Landing-page-matching logo badge: visible in both light and dark themes */
+  background: linear-gradient(145deg, #1c1c1e, #2c2c2e) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  color: #fff !important;
+  font-family: Georgia, serif !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  letter-spacing: -1px !important;
+  text-indent: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .life-topbar .logo-btn {
