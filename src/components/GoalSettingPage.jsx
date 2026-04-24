@@ -70,29 +70,26 @@ export function GoalSettingPage({ t, play }) {
     setGoals(goals.filter((g) => g.id !== id));
   };
 
+  const FONT = "-apple-system, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif";
+
   return (
     <div
       data-page-tag="#goal_setting"
       style={{
-        padding: "32px 20px calc(96px + var(--safe-bottom, 0px)) 20px",
+        padding: "28px 18px calc(96px + var(--safe-bottom, 0px)) 18px",
         maxWidth: 560,
         margin: "0 auto",
-        fontFamily: "Georgia,serif",
+        fontFamily: FONT,
         boxSizing: "border-box",
       }}
     >
-      <h2 style={{ fontSize: 26, fontWeight: 700, color: t.ink, margin: "0 0 8px" }}>
-        Personal Goals
+      <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, letterSpacing: "0.07em", textTransform: "uppercase", color: t.green, fontFamily: FONT }}>
+        Personal
+      </p>
+      <h2 className="ios-large-title" style={{ margin: "0 0 6px", color: t.ink }}>
+        Goals
       </h2>
-      <p
-        style={{
-          color: t.muted,
-          fontSize: 14,
-          lineHeight: 1.7,
-          margin: "0 0 24px",
-          fontStyle: "italic",
-        }}
-      >
+      <p style={{ color: t.muted, fontSize: 14, lineHeight: 1.6, margin: "0 0 24px", fontFamily: FONT }}>
         Define what you want, set a target, and track your progress.
       </p>
 
@@ -132,9 +129,10 @@ export function GoalSettingPage({ t, play }) {
             fontSize: 15,
             color: t.ink,
             outline: "none",
-            fontFamily: "Georgia,serif",
+            fontFamily: FONT,
             boxSizing: "border-box",
             marginBottom: 10,
+            transition: "border-color 0.18s ease, box-shadow 0.18s ease",
           }}
         />
         <input
@@ -151,7 +149,7 @@ export function GoalSettingPage({ t, play }) {
             fontSize: 14,
             color: t.ink,
             outline: "none",
-            fontFamily: "Georgia,serif",
+            fontFamily: FONT,
             boxSizing: "border-box",
             marginBottom: 10,
           }}

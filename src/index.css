@@ -1,4 +1,9 @@
 :root {
+  --life-green: #50c878;
+  --life-ink: #ededed;
+  --life-muted: #a1a1a1;
+  --life-border: #2e2e2e;
+  --life-skin: #0a0a0a;
   /* ─── Vercel/Geist-inspired palette. Mirrors src/systems/theme.js `C`. ── */
   --life-skin: #0a0a0a;
   --life-ink: #ededed;
@@ -5598,5 +5603,715 @@ input[type="date"] {
 /* Sidebar item active highlight */
 .life-sidebar-link[style*="background"] {
   border-radius: 12px !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   iOS DEVELOPER AUDIT — 25 targeted fixes & enhancements
+   Thinking like a UIKit/SwiftUI engineer porting to React
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ────────────────────────────────────────────────────────────────────────────
+   1. iOS NAVIGATION PUSH/POP — directional page transitions
+      UINavigationController pushes right→left, pops left→right
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Default: pages slide in from right (push) */
+.life-surface-enter {
+  animation: ios-push-in 0.32s cubic-bezier(0.25, 1, 0.5, 1) both !important;
+  will-change: transform, opacity;
+}
+
+@keyframes ios-push-in {
+  from { opacity: 0.4; transform: translateX(28px) scale(0.985); }
+  to   { opacity: 1;   transform: translateX(0)    scale(1); }
+}
+
+/* Tab bar switches: fade only (no directional feel) */
+.life-surface-enter[data-current-page="home"],
+.life-surface-enter[data-current-page="quiz"],
+.life-surface-enter[data-current-page="profile"],
+.life-surface-enter[data-current-page="reading"] {
+  animation: ios-tab-in 0.24s cubic-bezier(0.25, 1, 0.5, 1) both !important;
+}
+
+@keyframes ios-tab-in {
+  from { opacity: 0; transform: scale(0.98) translateY(4px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+/* Modal/sheet pages: slide up */
+.life-surface-enter[data-current-page="goal_setting"],
+.life-surface-enter[data-current-page="setting_preferences"],
+.life-surface-enter[data-current-page="daily_growth"],
+.life-surface-enter[data-current-page="momentum_hub"],
+.life-surface-enter[data-current-page="tools_lockin"],
+.life-surface-enter[data-current-page="tools_organized"],
+.life-surface-enter[data-current-page="learn_it"],
+.life-surface-enter[data-current-page="learn_it_subject"],
+.life-surface-enter[data-current-page="postit"],
+.life-surface-enter[data-current-page="leaderboard"],
+.life-surface-enter[data-current-page="mentorship"],
+.life-surface-enter[data-current-page="income_ideas"] {
+  animation: ios-modal-in 0.36s cubic-bezier(0.34, 1.2, 0.64, 1) both !important;
+}
+
+@keyframes ios-modal-in {
+  from { opacity: 0.5; transform: translateY(22px) scale(0.98); }
+  to   { opacity: 1;   transform: translateY(0)    scale(1); }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   2. iOS CONTINUOUS CORNER CURVES (squircle approximation)
+      Apple uses superellipse corners — harder than standard border-radius
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Every card gets a slightly softer corner so it looks more natural */
+.life-card-hover,
+[class*="bg-card"],
+[style*="borderRadius: 20"],
+[style*="borderRadius: 22"],
+[style*="borderRadius: 24"] {
+  border-radius: 22px !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   3. iOS HAPTIC VISUAL FEEDBACK — button press ring
+      In native iOS, buttons give haptic. We simulate with a ripple ring.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@keyframes ios-press-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(80,200,120,0.35); transform: scale(1); }
+  40%  { box-shadow: 0 0 0 6px rgba(80,200,120,0); transform: scale(0.96); }
+  100% { box-shadow: 0 0 0 0 rgba(80,200,120,0); transform: scale(1); }
+}
+
+/* Apply to primary action buttons */
+button.ios-btn-primary:active,
+.ios-fab:active {
+  animation: ios-press-ring 0.38s cubic-bezier(0.25,1,0.5,1) both !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   4. SCROLL MOMENTUM — native iOS rubber-band feel
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.life-main-scroll,
+.life-sidebar-body,
+[style*="overflowY: auto"],
+[style*="overflow-y: auto"] {
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior-y: contain !important;
+  scroll-behavior: smooth;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   5. iOS SELECTION CONTROL — no blue flash, custom highlight
+   ──────────────────────────────────────────────────────────────────────────── */
+
+* {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none;
+}
+
+input, textarea, [contenteditable] {
+  -webkit-touch-callout: default !important;
+}
+
+::selection {
+  background: rgba(80,200,120,0.3) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   6. iOS LARGE TITLE — dynamic shrinking header (CSS only approach)
+      UINavigationBar's Large Title shrinks as you scroll
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.ios-large-title {
+  font-family: -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(28px, 8vw, 36px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  color: #ededed;
+}
+
+.ios-nav-eyebrow {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   7. iOS GROUPED TABLE VIEW — hairline separators between rows
+      UITableView.Style.insetGrouped
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.ios-grouped-section {
+  background: rgba(255,255,255,0.04);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.07);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.ios-grouped-row {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  padding: 10px 16px;
+  gap: 14px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+.ios-grouped-row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 54px;
+  right: 0;
+  height: 0.5px;
+  background: rgba(255,255,255,0.07);
+}
+
+.ios-grouped-row:active {
+  background: rgba(255,255,255,0.06) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   8. SKELETON / SHIMMER LOADING STATES
+      NSIncrementalStore pattern: show structure immediately
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@keyframes ios-skeleton-pulse {
+  0%, 100% { opacity: 0.04; }
+  50%       { opacity: 0.1; }
+}
+
+.ios-skeleton-line {
+  background: #ededed;
+  border-radius: 6px;
+  animation: ios-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.ios-skeleton-circle {
+  background: #ededed;
+  border-radius: 50%;
+  animation: ios-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   9. iOS STATUS BAR SAFE AREA — notch / dynamic island clearance
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.life-app-root {
+  padding-top: env(safe-area-inset-top) !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   10. BOTTOM NAV — iOS tab bar proportions
+       Real iOS tab bar: 83pt tall on 3x displays. We target 56px + safe area.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.life-bottom-nav {
+  border-top: 0.5px solid rgba(255,255,255,0.09) !important;
+}
+
+/* Nav item icon scale matched to SF Symbols sizing */
+.life-bottom-nav-item svg {
+  width: 26px !important;
+  height: 26px !important;
+}
+
+.life-bottom-nav-item--active svg {
+  transform: scale(1.12) translateY(-1px) !important;
+  filter: drop-shadow(0 2px 6px rgba(80,200,120,0.5)) !important;
+}
+
+/* Nav label font matched to tab bar in iOS */
+.life-bottom-nav-label {
+  font-size: 10px !important;
+  letter-spacing: 0 !important;
+  font-weight: 500 !important;
+}
+
+.life-bottom-nav-item--active .life-bottom-nav-label {
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   11. iOS SEARCH BAR — magnifying glass + rounded pill
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.ios-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 12px;
+  padding: 10px 14px;
+  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.ios-search-bar:focus-within {
+  border-color: #50c878;
+  background: rgba(80,200,120,0.05);
+  box-shadow: 0 0 0 3px rgba(80,200,120,0.12);
+}
+
+.ios-search-bar input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: #ededed;
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  min-height: unset !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+.ios-search-bar input::placeholder {
+  color: rgba(161,161,161,0.55);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   12. iOS EMPTY STATE — centered illustration + text + CTA
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.ios-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 32px;
+  gap: 10px;
+  animation: ios-fade-scale-in 0.3s cubic-bezier(0.25,1,0.5,1) both;
+}
+
+.ios-empty-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin-bottom: 6px;
+}
+
+.ios-empty-title {
+  font-family: -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ededed;
+  letter-spacing: -0.02em;
+}
+
+.ios-empty-body {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  color: rgba(161,161,161,0.75);
+  line-height: 1.55;
+  max-width: 260px;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   13. iOS PULL-TO-REFRESH INDICATOR (visual only, CSS only)
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@keyframes ios-ptr-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.ios-ptr-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid rgba(80,200,120,0.2);
+  border-top-color: #50c878;
+  border-radius: 50%;
+  animation: ios-ptr-spin 0.7s linear infinite;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   14. iOS CONTEXT MENU SHADOW — action sheet style
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.ios-context-menu {
+  position: absolute;
+  background: rgba(28,28,30,0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 0.5px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  box-shadow:
+    0 4px 20px rgba(0,0,0,0.4),
+    0 24px 60px rgba(0,0,0,0.35);
+  overflow: hidden;
+  min-width: 200px;
+  animation: ios-context-appear 0.22s cubic-bezier(0.34,1.56,0.64,1) both;
+  transform-origin: top left;
+  z-index: 500;
+}
+
+@keyframes ios-context-appear {
+  from { transform: scale(0.82); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.ios-context-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: #ededed;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  border-bottom: 0.5px solid rgba(255,255,255,0.07);
+}
+
+.ios-context-menu-item:last-child { border-bottom: none; }
+.ios-context-menu-item:active { background: rgba(255,255,255,0.1) !important; }
+.ios-context-menu-item.destructive { color: #e5484d !important; }
+
+/* ────────────────────────────────────────────────────────────────────────────
+   15. DYNAMIC TYPE SUPPORT — respects user text size preference
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   16. iOS SWITCH TOGGLE (native-feeling)
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.ios-toggle {
+  position: relative;
+  width: 52px;
+  height: 31px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.ios-toggle input[type="checkbox"] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.ios-toggle-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  transition: background 0.22s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.ios-toggle input:checked + .ios-toggle-track {
+  background: #50c878;
+}
+
+.ios-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35), 0 0 2px rgba(0,0,0,0.15);
+  transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.ios-toggle input:checked ~ .ios-toggle-thumb {
+  transform: translateX(21px);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   17. iOS NOTIFICATION BADGE — red circle, spring pop
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.ios-notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #e5484d;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #0a0a0a;
+  animation: ios-badge-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  letter-spacing: -0.02em;
+}
+
+@keyframes ios-badge-pop {
+  from { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.25); }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   18. FOCUS STATE — iOS accessibility ring
+   ──────────────────────────────────────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid #50c878 !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+
+button:focus-visible {
+  border-radius: 10px !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   19. iOS SCROLL INDICATOR — thin, iOS-standard
+   ──────────────────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(161,161,161,0.2);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(161,161,161,0.35);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   20. CARD PRESS DEPTH — iOS 3D press feel
+       Like UIButton's .system with scale + shadow reduction
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.life-card-hover {
+  transition:
+    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.22s ease !important;
+}
+
+@media (hover: hover) {
+  .life-card-hover:hover {
+    transform: translateY(-3px) scale(1.012) !important;
+    box-shadow:
+      0 8px 28px rgba(0,0,0,0.18),
+      0 2px 8px rgba(0,0,0,0.1),
+      0 0 0 1px rgba(80,200,120,0.08) !important;
+  }
+}
+
+.life-card-hover:active {
+  transform: scale(0.965) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  transition: transform 0.09s ease, box-shadow 0.09s ease !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   21. SUCCESS STATE ANIMATION — checkmark appear
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@keyframes ios-success-appear {
+  0%   { transform: scale(0) rotate(-45deg); opacity: 0; }
+  60%  { transform: scale(1.2) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.ios-success-icon {
+  animation: ios-success-appear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   22. ERROR SHAKE — iOS invalid input shake animation
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@keyframes ios-shake {
+  0%, 100% { transform: translateX(0); }
+  15%       { transform: translateX(-8px); }
+  30%       { transform: translateX(7px); }
+  45%       { transform: translateX(-5px); }
+  60%       { transform: translateX(4px); }
+  75%       { transform: translateX(-2px); }
+  90%       { transform: translateX(2px); }
+}
+
+.ios-shake {
+  animation: ios-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   23. MOMENTUM CARD — iOS widget feel
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.life-momentum-card {
+  border-radius: 22px !important;
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1) !important;
+}
+
+.life-momentum-card:active {
+  transform: scale(0.975) !important;
+}
+
+/* Stat values — big iOS-style numbers */
+.life-momentum-stat-value {
+  font-family: -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1 !important;
+}
+
+.life-momentum-stat-label {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   24. SIDEBAR SWIPE-TO-CLOSE — hint shadow on right edge
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.life-sidebar {
+  box-shadow:
+    4px 0 8px rgba(0,0,0,0.12),
+    12px 0 40px rgba(0,0,0,0.25) !important;
+  border-right: 0.5px solid rgba(255,255,255,0.06) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   25. STREAK / ACHIEVEMENT BADGE — iOS gamification pattern
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.ios-streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px 5px 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(245,166,35,0.18) 0%, rgba(245,100,35,0.12) 100%);
+  border: 1px solid rgba(245,166,35,0.25);
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #f5a623;
+  letter-spacing: -0.01em;
+  animation: ios-bounce-in 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   26. PROGRESS RING — circular progress like Activity rings on Apple Watch
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.ios-progress-ring {
+  transform: rotate(-90deg);
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.34,1.2,0.64,1);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   27. KEYBOARD AVOIDANCE — iOS keyboard pushes content up
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .life-bottom-nav {
+    display: none !important;
+  }
+
+  .life-main-scroll {
+    padding-bottom: 0 !important;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   28. LONG-PRESS HINT — scale + opacity on sustained touch
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@keyframes ios-long-press-hint {
+  0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(80,200,120,0.3); }
+  100% { transform: scale(0.96); box-shadow: 0 0 0 8px rgba(80,200,120,0); }
+}
+
+.ios-long-pressable {
+  -webkit-touch-callout: none;
+  user-select: none;
+  transition: transform 0.15s ease;
+}
+
+.ios-long-pressable:active {
+  animation: ios-long-press-hint 0.5s ease forwards;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   29. FONT FEATURE SETTINGS — proper iOS number rendering
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Tabular numbers for stats, timers, counters */
+[class*="stat-value"],
+[class*="timer"],
+[class*="countdown"],
+[class*="streak"],
+[style*="fontVariantNumeric"],
+.ios-tabular {
+  font-variant-numeric: tabular-nums !important;
+  font-feature-settings: "tnum" 1, "kern" 1 !important;
+  -webkit-font-smoothing: antialiased !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   30. SWIPE BACK GESTURE INDICATOR — left-edge hint arrow
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.ios-back-swipe-hint {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 64px;
+  background: linear-gradient(to right, rgba(80,200,120,0.4), transparent);
+  border-radius: 0 4px 4px 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 100;
 }
 

@@ -505,11 +505,13 @@ export function HomePage({
           style={{
             margin: "4px 2px 12px",
             fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: 2,
+            fontWeight: 600,
+            letterSpacing: "0.06em",
             textTransform: "uppercase",
             color: t.muted,
             textAlign: "center",
+            fontFamily: "-apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif",
+            opacity: 0.7,
           }}
         >
           Jump back in
@@ -522,11 +524,11 @@ export function HomePage({
           }}
         >
           {[
-            { label: "Practice Quiz", desc: "Jump into your next round.", onClick: onOpenQuiz },
-            { label: "Daily Growth", desc: "Keep momentum alive today.", onClick: onOpenDailyGrowth },
-            { label: "Momentum Hub", desc: "Streaks, missions, wins.", onClick: onOpenMomentumHub },
-            { label: "My Goals", desc: "Set and track what matters.", onClick: onOpenGoalSetting },
-          ].map((action) => (
+            { label: "Practice Quiz", desc: "Jump into your next round.", onClick: onOpenQuiz, emoji: "🎯", color: "#3B82F6" },
+            { label: "Daily Growth", desc: "Keep momentum alive today.", onClick: onOpenDailyGrowth, emoji: "🌱", color: "#50c878" },
+            { label: "Momentum Hub", desc: "Streaks, missions, wins.", onClick: onOpenMomentumHub, emoji: "🔥", color: "#f5a623" },
+            { label: "My Goals", desc: "Set and track what matters.", onClick: onOpenGoalSetting, emoji: "🏆", color: "#A855F7" },
+          ].map((action, i) => (
             <button
               key={action.label}
               type="button"
@@ -534,22 +536,37 @@ export function HomePage({
               className="life-card-hover"
               style={{
                 textAlign: "left",
-                background: t.white,
-                border: `1px solid ${t.border}`,
-                borderRadius: 16,
-                padding: "14px 16px",
+                background: "rgba(255,255,255,0.04)",
+                border: `1px solid rgba(255,255,255,0.07)`,
+                borderRadius: 20,
+                padding: "16px 16px 14px",
                 boxShadow: S.sm,
                 cursor: "pointer",
-                fontFamily: "Georgia,serif",
-                minHeight: 82,
+                fontFamily: "-apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif",
+                minHeight: 90,
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
-                gap: 6,
+                gap: 10,
+                WebkitTapHighlightColor: "transparent",
+                animation: `ios-list-item-in 0.28s ${i * 55}ms cubic-bezier(0.25,1,0.5,1) both`,
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
               }}
             >
-              <span style={{ fontSize: 13.5, fontWeight: 700, color: t.ink }}>{action.label}</span>
-              <span style={{ fontSize: 12, lineHeight: 1.5, color: t.muted }}>{action.desc}</span>
+              <div style={{
+                width: 36, height: 36, borderRadius: 11,
+                background: `${action.color}18`,
+                border: `1px solid ${action.color}30`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 18, lineHeight: 1,
+              }}>
+                {action.emoji}
+              </div>
+              <div>
+                <div style={{ fontSize: 13.5, fontWeight: 600, color: t.ink, letterSpacing: "-0.01em", marginBottom: 2 }}>{action.label}</div>
+                <div style={{ fontSize: 11.5, lineHeight: 1.45, color: t.muted }}>{action.desc}</div>
+              </div>
             </button>
           ))}
         </div>

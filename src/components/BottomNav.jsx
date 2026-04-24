@@ -198,7 +198,11 @@ export function BottomNav({
           <path d="M13.73 21a2 2 0 01-3.46 0" />
         </svg>
         {badgeCount > 0 && (
-          <span className="life-bottom-nav-badge">
+          <span
+            key={badgeCount}
+            className="ios-notif-badge"
+            aria-label={`${badgeCount} unread notifications`}
+          >
             {badgeCount > 9 ? "9+" : badgeCount}
           </span>
         )}

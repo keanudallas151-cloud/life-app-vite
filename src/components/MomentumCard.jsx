@@ -25,22 +25,22 @@ export function MomentumCard({
       </div>
 
       <div className="life-momentum-stat-row">
-        <div>
-          <span className="life-momentum-stat-value">{snapshot.score}</span>
-          <span className="life-momentum-stat-label">score</span>
-        </div>
-        <div>
-          <span className="life-momentum-stat-value">Lv {snapshot.level}</span>
-          <span className="life-momentum-stat-label">level</span>
-        </div>
-        <div>
-          <span className="life-momentum-stat-value">{snapshot.streakDays}d</span>
-          <span className="life-momentum-stat-label">streak</span>
-        </div>
-        <div>
-          <span className="life-momentum-stat-value">{snapshot.completionRate}%</span>
-          <span className="life-momentum-stat-label">today</span>
-        </div>
+        {[
+          { value: snapshot.score, label: "score", highlight: false },
+          { value: `Lv ${snapshot.level}`, label: "level", highlight: true },
+          { value: `${snapshot.streakDays}d`, label: "streak", highlight: snapshot.streakDays > 0 },
+          { value: `${snapshot.completionRate}%`, label: "today", highlight: snapshot.completionRate >= 80 },
+        ].map(({ value, label, highlight }) => (
+          <div key={label} style={{ textAlign: "center", flex: 1 }}>
+            <div
+              className="life-momentum-stat-value ios-tabular"
+              style={{ color: highlight ? "var(--life-green, #50c878)" : "inherit" }}
+            >
+              {value}
+            </div>
+            <div className="life-momentum-stat-label">{label}</div>
+          </div>
+        ))}
       </div>
 
       {suggestion && (
