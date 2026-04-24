@@ -15,7 +15,12 @@ export function LeaderboardPage({ t, readKeys, bookmarks }) {
   return (
     <div
       data-page-tag="#leaderboard"
-      style={{ padding: "48px 28px", maxWidth: 560, margin: "0 auto" }}
+      style={{
+        padding:
+          "48px 28px calc(96px + var(--safe-bottom, 0px) + env(safe-area-inset-bottom, 0px))",
+        maxWidth: 560,
+        margin: "0 auto",
+      }}
     >
       <h2
         style={{

@@ -2,7 +2,12 @@ export function MentorshipPage({ t, play, setPage }) {
   return (
     <div
       data-page-tag="#mentorship"
-      style={{ padding: "48px 28px", maxWidth: 560, margin: "0 auto" }}
+      style={{
+        padding:
+          "48px 28px calc(96px + var(--safe-bottom, 0px) + env(safe-area-inset-bottom, 0px))",
+        maxWidth: 560,
+        margin: "0 auto",
+      }}
     >
       <h2
         style={{

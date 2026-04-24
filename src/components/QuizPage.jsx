@@ -6,18 +6,22 @@ import { LS } from "../systems/storage";
 import { useQuizStats } from "../systems/useQuizStats";
 
 const TOPIC_META = {
-  finance:    { label:"Finance",       col:"#3d5a4c", bg:"#edf1ef",  icon:"wallet"  },
-  psychology: { label:"Psychology",    col:"#7B6FA8", bg:"#f0edf8",  icon:"brain"   },
-  money:      { label:"Money",         col:"#b8975a", bg:"#f7f0e3",  icon:"lock"    },
-  philosophy: { label:"Philosophy",    col:"#4a7ab8", bg:"#e8f0f8",  icon:"book"    },
-  business:   { label:"Business",      col:"#c0604a", bg:"#faecea",  icon:"barChart"},
-  communication: { label:"Communication", col:"#3a7a9e", bg:"#e5f1f8", icon:"users" },
-  mindset:    { label:"Mindset",       col:"#2d8a6e", bg:"#e6f5ee",  icon:"bolt"    },
-  discipline: { label:"Discipline",    col:"#6b4c9a", bg:"#efe8f6",  icon:"shield"  },
-  health:     { label:"Health",        col:"#d4694a", bg:"#fdf0ec",  icon:"leaf"    },
-  general:    { label:"General",       col:"#6c757d", bg:"#f8f9fa",  icon:"globe"   },
+  finance:    { label:"Finance",       col:"#3d5a4c", icon:"wallet"  },
+  psychology: { label:"Psychology",    col:"#7B6FA8", icon:"brain"   },
+  money:      { label:"Money",         col:"#b8975a", icon:"lock"    },
+  philosophy: { label:"Philosophy",    col:"#4a7ab8", icon:"book"    },
+  business:   { label:"Business",      col:"#c0604a", icon:"barChart"},
+  communication: { label:"Communication", col:"#3a7a9e", icon:"users" },
+  mindset:    { label:"Mindset",       col:"#2d8a6e", icon:"bolt"    },
+  discipline: { label:"Discipline",    col:"#6b4c9a", icon:"shield"  },
+  health:     { label:"Health",        col:"#d4694a", icon:"leaf"    },
+  general:    { label:"General",       col:"#6c757d", icon:"globe"   },
 };
-const DIFF_COLORS = { easy:C.green, medium:C.gold, hard:C.red };
+/** Topic tint that respects theme — alpha overlay on the accent color so it
+ *  reads correctly in dark mode instead of a hardcoded cream pastel. */
+const topicBg = (col) => `${col}20`;
+/** DIFF colors resolved from the current theme so dark/light stays consistent. */
+const getDiffColors = (t) => ({ easy: t.green, medium: t.gold, hard: t.red });
 const DIFF_META   = {
   easy:   { secs:20, label:"Easy",   icon:"🌱", desc:"Foundation questions" },
   medium: { secs:15, label:"Medium", icon:"🔥", desc:"Tested understanding" },
@@ -1074,7 +1078,7 @@ export function QuizPage({
                     const meta = TOPIC_META[topic];
                     return (
                       <div key={topic} style={{ display:"flex", alignItems:"center", gap:12, background:t.white, border:`1px solid ${t.border}`, borderRadius:10, padding:"12px 14px" }}>
-                        <div style={{ width:32, height:32, borderRadius:8, background:meta.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <div style={{ width:32, height:32, borderRadius:8, background:topicBg(meta.col), display:"flex", alignItems:"center", justifyContent:"center" }}>
                           {Ic[meta.icon]?.("none",meta.col,16)}
                         </div>
                         <span style={{ flex:1, fontSize:14, fontWeight:600, color:t.ink }}>{meta.label}</span>
@@ -1125,7 +1129,7 @@ export function QuizPage({
                 const sel = topic===k && fmt!=="daily";
                 return (
                   <button key={k} onClick={() => { setTopic(k); if(fmt==="daily") setFmt("multiple"); }}
-                    style={{ background:sel?meta.bg:t.white, border:`1.5px solid ${sel?meta.col:t.border}`,
+                    style={{ background:sel?topicBg(meta.col):t.white, border:`1.5px solid ${sel?meta.col:t.border}`,
                       borderRadius:12, padding:"13px 14px", cursor:"pointer", textAlign:"left",
                       display:"flex", alignItems:"center", gap:10, fontFamily:"Georgia,serif" }}>
                     <div style={{ width:32, height:32, borderRadius:8, background:sel?meta.col+"22":t.light, display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -1144,9 +1148,10 @@ export function QuizPage({
               {["easy","medium","hard"].map(d => {
                 const dm  = DIFF_META[d];
                 const sel = diff===d && fmt!=="daily";
+                const diffColors = getDiffColors(t);
                 return (
                   <button key={d} onClick={() => { setDiff(d); if(fmt==="daily") setFmt("multiple"); }}
-                    style={{ flex:"1 1 100px", minWidth:0, background:sel?DIFF_COLORS[d]:t.white, border:`1.5px solid ${sel?DIFF_COLORS[d]:t.border}`,
+                    style={{ flex:"1 1 100px", minWidth:0, background:sel?diffColors[d]:t.white, border:`1.5px solid ${sel?diffColors[d]:t.border}`,
                       borderRadius:12, padding:"12px 8px", cursor:"pointer", fontFamily:"Georgia,serif", textAlign:"center" }}>
                     <div style={{ fontSize:16, marginBottom:4 }}>{dm.icon}</div>
                     <div style={{ fontSize:13, fontWeight:sel?700:400, color:sel?t.white:t.mid, textTransform:"capitalize" }}>{dm.label}</div>
@@ -1257,7 +1262,7 @@ export function QuizPage({
           </div>
         )}
         <div style={{ background:t.white, border:`1px solid ${t.border}`, borderRadius:20, padding:28, marginBottom:20, textAlign:"center", boxShadow:"0 4px 20px rgba(0,0,0,0.06)" }}>
-          <div style={{ width:64, height:64, borderRadius:20, background:topicMeta.bg, margin:"0 auto 16px", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div style={{ width:64, height:64, borderRadius:20, background:topicBg(topicMeta.col), margin:"0 auto 16px", display:"flex", alignItems:"center", justifyContent:"center" }}>
             {Ic[topicMeta.icon]?.("none", topicMeta.col, 28)}
           </div>
           <h2 style={{ margin:"0 0 4px", fontSize:24, fontWeight:800, color:t.ink, fontFamily:"Georgia,serif" }}>{grade}</h2>
@@ -1274,7 +1279,7 @@ export function QuizPage({
           <div style={{ display:"flex", justifyContent:"space-around" }}>
             <div><div style={{ fontSize:22, fontWeight:700, color:t.ink }}>{bestStreak}</div><div style={{ fontSize:10, color:t.muted, letterSpacing:1 }}>BEST STREAK</div></div>
             <div><div style={{ fontSize:22, fontWeight:700, color:t.ink }}>{qs.length-score}</div><div style={{ fontSize:10, color:t.muted, letterSpacing:1 }}>MISSED</div></div>
-            <div><div style={{ fontSize:22, fontWeight:700, color:DIFF_COLORS[diff] }}>{DIFF_META[diff]?.icon}</div><div style={{ fontSize:10, color:t.muted, letterSpacing:1, textTransform:"uppercase" }}>{diff}</div></div>
+            <div><div style={{ fontSize:22, fontWeight:700, color:getDiffColors(t)[diff] }}>{DIFF_META[diff]?.icon}</div><div style={{ fontSize:10, color:t.muted, letterSpacing:1, textTransform:"uppercase" }}>{diff}</div></div>
           </div>
         </div>
 
@@ -1345,7 +1350,7 @@ export function QuizPage({
     <div className="life-quiz-page" style={{ padding:"20px max(16px, var(--safe-left, 0px)) max(40px, var(--safe-bottom, 0px)) max(16px, var(--safe-right, 0px))", maxWidth:520, margin:"0 auto", boxSizing:"border-box" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:14, gap:12, flexWrap:"wrap" }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <div style={{ width:26, height:26, borderRadius:7, background:topicMeta.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div style={{ width:26, height:26, borderRadius:7, background:topicBg(topicMeta.col), display:"flex", alignItems:"center", justifyContent:"center" }}>
             {Ic[topicMeta.icon]?.("none",topicMeta.col,13)}
           </div>
           <span style={{ fontSize:12, color:t.muted, fontFamily:"Georgia,serif", fontStyle:"italic" }}>{topicMeta.label} · {DIFF_META[diff]?.label}</span>
@@ -1375,7 +1380,7 @@ export function QuizPage({
 
       {q.tag && (
         <div style={{ display:"flex", justifyContent:"center", marginBottom:10 }}>
-          <span style={{ fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", padding:"3px 10px", borderRadius:20, background:topicMeta.bg, color:topicMeta.col }}>
+          <span style={{ fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", padding:"3px 10px", borderRadius:20, background:topicBg(topicMeta.col), color:topicMeta.col }}>
             {q.tag}
           </span>
         </div>
