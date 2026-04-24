@@ -176,36 +176,48 @@ export function BottomNav({
 
       {/* Notifications */}
       <button
-        className="life-bottom-nav-item"
+        className={`life-bottom-nav-item${showNotif ? " life-bottom-nav-item--active" : ""}`}
         onClick={() => {
           play("tap");
           setShowNotif(!showNotif);
         }}
         aria-label="Notifications"
-        style={{ position: "relative" }}
       >
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke={showNotif ? t.green : t.muted}
-          strokeWidth={showNotif ? 2.5 : 1.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
+        {/* Icon wrapper anchors the badge to the bell's top-right corner */}
+        <span
+          className="life-bottom-nav-icon-wrap"
+          style={{
+            position: "relative",
+            display: "inline-flex",
+            width: 22,
+            height: 22,
+            lineHeight: 0,
+          }}
         >
-          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-          <path d="M13.73 21a2 2 0 01-3.46 0" />
-        </svg>
-        {badgeCount > 0 && (
-          <span
-            key={badgeCount}
-            className="ios-notif-badge"
-            aria-label={`${badgeCount} unread notifications`}
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={showNotif ? t.green : t.muted}
+            strokeWidth={showNotif ? 2.5 : 1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ display: "block" }}
           >
-            {badgeCount > 9 ? "9+" : badgeCount}
-          </span>
-        )}
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 01-3.46 0" />
+          </svg>
+          {badgeCount > 0 && (
+            <span
+              key={badgeCount}
+              className="ios-notif-badge"
+              aria-label={`${badgeCount} unread notifications`}
+            >
+              {badgeCount > 9 ? "9+" : badgeCount}
+            </span>
+          )}
+        </span>
         <span className="life-bottom-nav-label" style={{ color: showNotif ? t.green : t.muted, fontFamily: iosfont }}>
           Alerts
         </span>
