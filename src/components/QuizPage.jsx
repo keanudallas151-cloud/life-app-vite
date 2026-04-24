@@ -577,14 +577,14 @@ function SwipeBadgeDeck({ badges, stats, readKeys, totalTopics, t }) {
             <div style={{
               position: "absolute", inset: 0, borderRadius: 28, pointerEvents: "none",
               background: dragX > 0
-                ? "linear-gradient(to right, rgba(80,200,120,0.12), transparent)"
-                : "linear-gradient(to left, rgba(229,72,77,0.12), transparent)",
+                ? "linear-gradient(to right, rgba(255,255,255,0.08), transparent)"
+                : "linear-gradient(to left, rgba(255,255,255,0.08), transparent)",
               display: "flex", alignItems: "center",
               justifyContent: dragX > 0 ? "flex-start" : "flex-end",
               padding: "0 24px",
             }}>
-              <span style={{ fontSize: 36, opacity: Math.min(Math.abs(dragX) / 80, 1) }}>
-                {dragX > 0 ? "👈" : "👉"}
+              <span style={{ fontSize: 24, opacity: Math.min(Math.abs(dragX) / 80, 1), color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>
+                {dragX > 0 ? "←" : "→"}
               </span>
             </div>
           )}
