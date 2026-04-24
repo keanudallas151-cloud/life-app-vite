@@ -386,6 +386,8 @@ function GameModal({ children, onClose, color, title, t, play }) {
           <button
             type="button"
             onClick={() => { play?.("back"); onClose(); }}
+            aria-label="Close"
+            title="Close"
             style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "none", cursor: "pointer", color: t?.muted || "#a1a1a1", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONT, fontSize: 16, WebkitTapHighlightColor: "transparent" }}
           >✕</button>
         </div>
@@ -485,7 +487,19 @@ function WordGuessGame({ color, t, play }) {
 
   if (won || lost) return (
     <div style={{ padding: 24, textAlign: "center", fontFamily: FONT }}>
-      <div style={{ fontSize: 48, marginBottom: 12 }}>{won ? "🎉" : "😔"}</div>
+      <div
+        style={{
+          width: 64, height: 64, borderRadius: 20,
+          background: won ? `${color}22` : "rgba(255,255,255,0.08)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          margin: "0 auto 16px",
+        }}
+        aria-hidden="true"
+      >
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={won ? color : (t?.muted || "#a1a1a1")} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          {won ? <polyline points="20,6 9,17 4,12"/> : <><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>}
+        </svg>
+      </div>
       <div style={{ fontSize: 22, fontWeight: 700, color: t?.ink || "#ededed", marginBottom: 8 }}>{won ? "You got it!" : "Better luck next time"}</div>
       <div style={{ fontSize: 15, color: t?.muted || "#a1a1a1", marginBottom: 24 }}>The word was <strong style={{ color }}>{target}</strong></div>
       <button type="button" onClick={reset} style={{ padding: "13px 28px", background: color, color: "#000", borderRadius: 999, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: FONT }}>Play Again</button>
@@ -1028,12 +1042,12 @@ function CompoundGrowthGame({ color, onClose, t, play }) {
       </div>
       {selected && selected !== "__timeout__" && (
         <div style={{ marginTop: 14, padding: "12px 16px", borderRadius: 14, background: `${color}10`, border: `1px solid ${color}30`, fontSize: 12.5, color, lineHeight: 1.55, fontFamily: FONT }}>
-          💡 Formula: Principal × (1 + rate)^years = {q.display}
+          Formula: Principal × (1 + rate)^years = {q.display}
         </div>
       )}
       {selected === "__timeout__" && (
         <div style={{ marginTop: 14, padding: "12px 16px", borderRadius: 14, background: "rgba(229,72,77,0.12)", border: "1px solid #e5484d40", fontSize: 12.5, color: "#e5484d", lineHeight: 1.55, fontFamily: FONT }}>
-          ⏱ Time&apos;s up! Answer: {q.display}
+          Time&apos;s up! Answer: {q.display}
         </div>
       )}
     </div>
@@ -1087,7 +1101,7 @@ function SpeakItGame({ color, onClose, t, play }) {
           );
         })}
       </div>
-      {selected !== null && <div style={{ marginTop: 14, padding: "12px 16px", borderRadius: 14, background: `${color}10`, border: `1px solid ${color}30`, fontSize: 12.5, color: color, lineHeight: 1.55 }}>💡 {q.why}</div>}
+      {selected !== null && <div style={{ marginTop: 14, padding: "12px 16px", borderRadius: 14, background: `${color}10`, border: `1px solid ${color}30`, fontSize: 12.5, color: color, lineHeight: 1.55 }}>{q.why}</div>}
     </div>
   );
 }
@@ -1176,11 +1190,16 @@ function ConfidenceQuiz({ color, t, play }) {
 
   if (done) {
     const pct = Math.round((score / maxScore) * 100);
-    const label = pct >= 80 ? "Highly Confident 🏆" : pct >= 55 ? "Growing Confident 💪" : "Building Foundation 🌱";
+    const label = pct >= 80 ? "Highly Confident" : pct >= 55 ? "Growing Confident" : "Building Foundation";
+    const iconPath = pct >= 80
+      ? <><path d="M6 9a6 6 0 0012 0V4H6v5z"/><path d="M6 4H3v3a3 3 0 003 3"/><path d="M18 4h3v3a3 3 0 01-3 3"/><path d="M9 21h6"/><path d="M12 15v6"/></>
+      : pct >= 55
+        ? <><circle cx="12" cy="12" r="10"/><polyline points="16,10 11,15 8,12"/></>
+        : <><path d="M11 20A7 7 0 014 13c0-5 4-9 9-11 0 5 2 9 2 11a4 4 0 01-4 7z"/><path d="M11 20c0-5.5 5-9 7-9"/></>;
     return (
       <div style={{ padding: "32px 24px", textAlign: "center", fontFamily: FONT }}>
-        <div style={{ width: 100, height: 100, borderRadius: "50%", background: `${color}15`, border: `3px solid ${color}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 36 }}>
-          {pct >= 80 ? "🏆" : pct >= 55 ? "💪" : "🌱"}
+        <div style={{ width: 100, height: 100, borderRadius: "50%", background: `${color}15`, border: `3px solid ${color}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">{iconPath}</svg>
         </div>
         <div style={{ fontSize: 26, fontWeight: 800, color: t?.ink || "#ededed", marginBottom: 8, letterSpacing: "-0.03em" }}>{label}</div>
         <div style={{ fontSize: 16, color, fontWeight: 700, marginBottom: 24 }}>Score: {pct}%</div>
@@ -1235,7 +1254,19 @@ function DailyDemChallenge({ color, onClose, t, play }) {
   if (accepted) {
     return (
       <div style={{ padding: "40px 24px", textAlign: "center", fontFamily: FONT }}>
-        <div style={{ fontSize: 52, marginBottom: 16 }}>✅</div>
+        <div
+          style={{
+            width: 72, height: 72, borderRadius: 22,
+            background: `${color}1F`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 16px",
+          }}
+          aria-hidden="true"
+        >
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20,6 9,17 4,12"/>
+          </svg>
+        </div>
         <div style={{ fontSize: 22, fontWeight: 700, color: t?.ink || "#ededed", marginBottom: 8, letterSpacing: "-0.03em" }}>Challenge Accepted!</div>
         <div style={{ fontSize: 15, color: t?.muted || "#a1a1a1", marginBottom: 28, lineHeight: 1.55 }}>Come back tomorrow for a new one.</div>
         <button type="button" onClick={onClose} style={{ padding: "13px 32px", background: color, color: "#000", border: "none", borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: FONT }}>Done</button>
@@ -1330,7 +1361,14 @@ function Progress({ current, total, color, t }) {
 
 function ScoreScreen({ score, total, color, customMsg, onReplay, onClose, t, play }) {
   const pct = Math.round((score / total) * 100);
-  const emoji = pct === 100 ? "🏆" : pct >= 70 ? "🌟" : pct >= 50 ? "💪" : "📖";
+  // Centre icon varies by performance. Use SVGs for a cleaner, iOS-native feel.
+  const iconPath = pct === 100
+    ? <><path d="M6 9a6 6 0 0012 0V4H6v5z"/><path d="M6 4H3v3a3 3 0 003 3"/><path d="M18 4h3v3a3 3 0 01-3 3"/><path d="M9 21h6"/><path d="M12 15v6"/></>
+    : pct >= 70
+      ? <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>
+      : pct >= 50
+        ? <><circle cx="12" cy="12" r="10"/><polyline points="16,10 11,15 8,12"/></>
+        : <><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></>;
   // Play sound exactly once on mount. Use a ref guard so strict-mode double-invoke
   // doesn't fire it twice and so changing `play` identity doesn't re-trigger.
   const played = useRef(false);
@@ -1367,8 +1405,8 @@ function ScoreScreen({ score, total, color, customMsg, onReplay, onClose, t, pla
       )}
       <div style={{ position: "relative", width: 120, height: 120, margin: "0 auto 16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: `3px solid ${color}`, animation: "scoreRing 2s ease-in-out infinite" }} />
-        <div style={{ width: 100, height: 100, borderRadius: "50%", background: t?.white || "#111111", border: `3px solid ${color}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48 }}>
-          {emoji}
+        <div style={{ width: 100, height: 100, borderRadius: "50%", background: t?.white || "#111111", border: `3px solid ${color}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{iconPath}</svg>
         </div>
       </div>
       <div style={{ fontSize: 28, fontWeight: 800, color: t?.ink || "#ededed", letterSpacing: "-0.04em", marginBottom: 6 }}>

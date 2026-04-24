@@ -410,6 +410,10 @@ export default function LifeApp() {
   const [rpShowPass, setRpShowPass] = useState(false);
   const [rpShowPass2, setRpShowPass2] = useState(false);
   const [rpErr, setRpErr] = useState("");
+  // Delete-account confirm sheet (iOS-style modal instead of native confirm)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteInProgress, setDeleteInProgress] = useState(false);
+  const deleteCancelRef = useRef(null);
   const postAuthScreenRef = useRef(null);
   const passwordRecoveryRef = useRef(false);
   const passwordResetOobCodeRef = useRef(null);
@@ -1697,13 +1701,14 @@ export default function LifeApp() {
     setSiSocialErr("");
   };
 
-  const doDeleteAccount = async () => {
-    if (typeof window !== "undefined") {
-      const confirmed = window.confirm(
-        "Delete your account? This permanently removes your sign-in and cannot be undone.",
-      );
-      if (!confirmed) return;
-    }
+  const doDeleteAccount = () => {
+    // Open the iOS-style confirm sheet; the actual deletion happens
+    // in performDeleteAccount after the user confirms.
+    setDeleteConfirmOpen(true);
+  };
+
+  const performDeleteAccount = async () => {
+    setDeleteInProgress(true);
     try {
       const currentUser = auth?.currentUser;
       // Best-effort: wipe local-only keys for this user first so a partial failure
@@ -1724,10 +1729,12 @@ export default function LifeApp() {
         await deleteUser(currentUser);
       }
       play("ok");
+      setDeleteConfirmOpen(false);
       await doSignOut();
     } catch (error) {
       const code = String(error?.code || "");
       if (code === "auth/requires-recent-login") {
+        setDeleteConfirmOpen(false);
         if (typeof window !== "undefined") {
           window.alert(
             "For security, please sign in again and then retry deleting your account.",
@@ -1742,6 +1749,8 @@ export default function LifeApp() {
           String(error?.message || "Could not delete your account. Please try again."),
         );
       }
+    } finally {
+      setDeleteInProgress(false);
     }
   };
 
@@ -4731,6 +4740,153 @@ export default function LifeApp() {
           </button>
         </div>
       )}
+
+      {deleteConfirmOpen && (
+        <DeleteAccountConfirm
+          t={t}
+          busy={deleteInProgress}
+          onCancel={() => { if (!deleteInProgress) setDeleteConfirmOpen(false); }}
+          onConfirm={performDeleteAccount}
+          cancelRef={deleteCancelRef}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * iOS-style confirm sheet for account deletion.
+ * - Centred modal with destructive red button
+ * - Focus auto-lands on Cancel (safe default)
+ * - Escape dismisses, simple focus cycle between the two buttons
+ */
+function DeleteAccountConfirm({ t, busy, onCancel, onConfirm, cancelRef }) {
+  const confirmRef = useRef(null);
+
+  useEffect(() => {
+    // Autofocus the safe action
+    const id = setTimeout(() => {
+      cancelRef.current?.focus?.();
+    }, 0);
+    const onKey = (e) => {
+      if (e.key === "Escape" && !busy) {
+        e.preventDefault();
+        onCancel?.();
+        return;
+      }
+      if (e.key === "Tab") {
+        const from = e.target;
+        e.preventDefault();
+        if (from === cancelRef.current) confirmRef.current?.focus?.();
+        else cancelRef.current?.focus?.();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      clearTimeout(id);
+      window.removeEventListener("keydown", onKey);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [busy]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="life-delete-account-title"
+      aria-describedby="life-delete-account-desc"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9000,
+        background: "rgba(0,0,0,0.48)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "max(20px, var(--safe-left)) max(20px, var(--safe-right))",
+        animation: "ios-fade-in 0.2s ease-out both",
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget && !busy) onCancel?.(); }}
+    >
+      <div
+        style={{
+          background: t.white,
+          color: t.ink,
+          borderRadius: 20,
+          border: `1px solid ${t.border}`,
+          maxWidth: 340,
+          width: "100%",
+          padding: "22px 22px 16px",
+          textAlign: "center",
+          fontFamily:
+            "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
+          boxShadow: "0 24px 60px rgba(0,0,0,0.35)",
+          animation: "ios-modal-in 0.26s cubic-bezier(0.22,1,0.36,1) both",
+        }}
+      >
+        <h2
+          id="life-delete-account-title"
+          style={{ margin: "0 0 6px", fontSize: 17, fontWeight: 700 }}
+        >
+          Delete your account?
+        </h2>
+        <p
+          id="life-delete-account-desc"
+          style={{
+            margin: "0 0 18px",
+            fontSize: 13,
+            lineHeight: 1.5,
+            color: t.muted,
+          }}
+        >
+          This permanently removes your sign-in and cannot be undone.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <button
+            ref={confirmRef}
+            type="button"
+            onClick={onConfirm}
+            disabled={busy}
+            style={{
+              appearance: "none",
+              border: "none",
+              borderRadius: 12,
+              padding: "12px 14px",
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: busy ? "default" : "pointer",
+              background: "#FF453A",
+              color: "#fff",
+              opacity: busy ? 0.7 : 1,
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            {busy ? "Deleting…" : "Delete Account"}
+          </button>
+          <button
+            ref={cancelRef}
+            type="button"
+            onClick={onCancel}
+            disabled={busy}
+            style={{
+              appearance: "none",
+              border: `1px solid ${t.border}`,
+              borderRadius: 12,
+              padding: "12px 14px",
+              fontSize: 15,
+              fontWeight: 500,
+              cursor: busy ? "default" : "pointer",
+              background: "transparent",
+              color: t.ink,
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
