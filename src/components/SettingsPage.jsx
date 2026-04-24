@@ -19,6 +19,62 @@ const PREF_DEFAULTS = {
 
 export { PREF_DEFAULTS };
 
+// iOS "system" palette used throughout this screen so the UX matches the
+// stock Settings app. Kept local to this file; not a cross-app token.
+const IOS_BLUE = "#0A84FF";
+const IOS_GREEN = "#34C759";
+const IOS_RED = "#FF453A";
+
+/**
+ * iOS-style toggle switch. Visually matches the native UISwitch:
+ * pill track, circular thumb with subtle shadow, green track when on.
+ * Uses a <button role="switch"> for accessibility.
+ */
+function IOSSwitch({ checked, onChange, label }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={!!checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      style={{
+        appearance: "none",
+        border: "none",
+        padding: 0,
+        margin: 0,
+        width: 51,
+        height: 31,
+        borderRadius: 999,
+        background: checked ? IOS_GREEN : "rgba(120,120,128,0.32)",
+        position: "relative",
+        cursor: "pointer",
+        transition: "background-color 0.2s ease",
+        flexShrink: 0,
+        WebkitTapHighlightColor: "transparent",
+      }}
+    >
+      <span
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          top: 2,
+          left: checked ? 22 : 2,
+          width: 27,
+          height: 27,
+          borderRadius: "50%",
+          background: "#ffffff",
+          boxShadow: "0 3px 8px rgba(0,0,0,0.15), 0 1px 1px rgba(0,0,0,0.06)",
+          transition: "left 0.2s cubic-bezier(0.4,0,0.2,1)",
+        }}
+      />
+    </button>
+  );
+}
+
+const IOS_FONT =
+  "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif";
+
 export default function SettingsPage({
   t,
   play,
@@ -50,14 +106,16 @@ export default function SettingsPage({
       className="life-settings-page"
       data-page-tag="#setting_preferences"
       style={{
-        padding: "28px 16px 36px",
+        padding: "20px 16px 36px",
         maxWidth: 520,
         margin: "0 auto",
         boxSizing: "border-box",
         width: "100%",
         overflowX: "hidden",
+        fontFamily: IOS_FONT,
       }}
     >
+      {/* Back row — iOS convention: SF Blue chevron + previous screen name */}
       <button
         onClick={() => {
           play("back");
@@ -66,41 +124,48 @@ export default function SettingsPage({
         style={{
           background: "none",
           border: "none",
-          color: t.muted,
-          fontSize: 13,
+          color: IOS_BLUE,
+          fontSize: 17,
           cursor: "pointer",
-          fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
-          marginBottom: 16,
+          fontFamily: IOS_FONT,
+          marginBottom: 10,
           display: "flex",
           alignItems: "center",
-          gap: 6,
-          padding: 0,
+          gap: 2,
+          padding: "6px 0",
+          WebkitTapHighlightColor: "transparent",
         }}
       >
         <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
+          width="12"
+          height="20"
+          viewBox="0 0 12 20"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="2.4"
           strokeLinecap="round"
           strokeLinejoin="round"
+          aria-hidden="true"
         >
-          <polyline points="15 18 9 12 15 6" />
-        </svg>{" "}
-        Back to Profile
+          <polyline points="10 2 2 10 10 18" />
+        </svg>
+        <span style={{ marginLeft: 4 }}>Profile</span>
       </button>
+
+      {/* iOS "Large Title" */}
       <h2
         style={{
-          fontSize: 22,
+          fontSize: 34,
           fontWeight: 700,
           color: t.ink,
-          margin: "0 0 20px",
+          margin: "4px 0 22px",
+          letterSpacing: "-0.02em",
+          fontFamily: IOS_FONT,
         }}
       >
         Settings
       </h2>
+
       {[
         {
           tag: "#setting_appearance",
@@ -266,326 +331,394 @@ export default function SettingsPage({
           section.icon && typeof Ic[section.icon] === "function"
             ? Ic[section.icon]
             : null;
+        const visibleItems = section.items.filter(Boolean);
+        const lastItemIdx = visibleItems.length - 1;
 
         return (
           <div
-          className="life-settings-card"
-          key={section.title}
-          data-page-tag={section.tag}
-          style={{
-            background: t.white,
-            border: `1px solid ${t.border}`,
-            borderRadius: 14,
-            padding: "16px 18px",
-            marginBottom: 12,
-            boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => toggleSection(section.title)}
+            className="life-settings-card"
+            key={section.title}
+            data-page-tag={section.tag}
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 12,
-              width: "100%",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-              margin: 0,
+              background: t.white,
+              border: `1px solid ${t.border}`,
+              borderRadius: 12,
+              padding: "4px 16px",
+              marginBottom: 20,
             }}
           >
-            <span
+            {/* Section header row (always visible) — styled like an iOS
+                inset-grouped list caption, clickable to expand content. */}
+            <button
+              type="button"
+              onClick={() => toggleSection(section.title)}
               style={{
-                display: "inline-flex",
+                display: "flex",
                 alignItems: "center",
+                justifyContent: "space-between",
                 gap: 12,
-                minWidth: 0,
+                width: "100%",
+                minHeight: 44,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "8px 0",
+                margin: 0,
+                fontFamily: IOS_FONT,
+                WebkitTapHighlightColor: "transparent",
               }}
             >
               <span
-                aria-hidden
                 style={{
-                  width: 32,
-                  height: 32,
-                  minWidth: 32,
-                  minHeight: 32,
-                  borderRadius: "50%",
                   display: "inline-flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  background: t.light,
-                  border: `1px solid ${t.border}`,
+                  gap: 12,
+                  minWidth: 0,
+                }}
+              >
+                <span
+                  aria-hidden
+                  style={{
+                    width: 30,
+                    height: 30,
+                    minWidth: 30,
+                    minHeight: 30,
+                    borderRadius: 8,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: t.light,
+                    flexShrink: 0,
+                  }}
+                >
+                  {SectionIcon ? SectionIcon("none", t.mid, 16) : null}
+                </span>
+                <span
+                  style={{
+                    fontSize: 17,
+                    fontWeight: 600,
+                    color: t.ink,
+                    textAlign: "left",
+                    fontFamily: IOS_FONT,
+                  }}
+                >
+                  {section.title}
+                </span>
+              </span>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                style={{
+                  transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+                  transition: "transform 0.2s ease",
                   flexShrink: 0,
                 }}
               >
-                {SectionIcon ? SectionIcon("none", t.mid, 16) : null}
-              </span>
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: 2.5,
-                  textTransform: "uppercase",
-                  color: t.muted,
-                  textAlign: "left",
-                }}
-              >
-                {section.title}
-              </span>
-            </span>
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              style={{
-                transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
-                transition: "transform 0.2s ease",
-                flexShrink: 0,
-              }}
-            >
-              <polyline
-                points="4,2 8,6 4,10"
-                fill="none"
-                stroke={t.muted}
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <div
-            style={{
-              maxHeight: isOpen ? 1000 : 0,
-              opacity: isOpen ? 1 : 0,
-              overflow: "hidden",
-              transition: "max-height 0.3s ease, opacity 0.2s ease",
-              paddingTop: isOpen ? 12 : 0,
-            }}
-          >
-          {section.items.filter(Boolean).map((item) => (
+                <polyline
+                  points="4,2 8,6 4,10"
+                  fill="none"
+                  stroke={t.muted}
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
             <div
-              className="life-settings-row"
-              key={item.label}
               style={{
-                display: "flex",
-                alignItems: item.type === "choice" ? "stretch" : "center",
-                flexDirection: item.type === "choice" ? "column" : "row",
-                justifyContent: "space-between",
-                gap: 8,
-                padding: "8px 0",
-                borderBottom: `1px solid ${t.light}`,
+                maxHeight: isOpen ? 2000 : 0,
+                opacity: isOpen ? 1 : 0,
+                overflow: "hidden",
+                transition: "max-height 0.3s ease, opacity 0.2s ease",
+                paddingTop: isOpen ? 4 : 0,
               }}
             >
-              <div style={{ flex: 1 }}>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: 14,
-                    fontWeight: 700,
-                    color: t.ink,
-                  }}
-                >
-                  {item.label}
-                </p>
-                {item.desc && (
-                  <p
-                    style={{
-                      margin: "2px 0 0",
-                      fontSize: 11,
-                      color: t.muted,
-                    }}
-                  >
-                    {item.desc}
-                  </p>
-                )}
-              </div>
-              {item.type === "choice" ? (
+              {visibleItems.map((item, i) => (
                 <div
+                  className="life-settings-row"
+                  key={item.label}
                   style={{
                     display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    padding: 3,
-                    borderRadius: 999,
-                    background: t.light,
-                    border: `1px solid ${t.border}`,
-                    marginTop: 6,
-                    width: "100%",
+                    alignItems:
+                      item.type === "choice" ? "stretch" : "center",
+                    flexDirection: item.type === "choice" ? "column" : "row",
+                    justifyContent: "space-between",
+                    gap: 10,
+                    minHeight: 44,
+                    padding: "10px 0",
+                    // iOS list hairlines: only between rows, not after the last.
+                    borderBottom:
+                      i < lastItemIdx
+                        ? `1px solid ${t.light}`
+                        : "1px solid transparent",
                   }}
                 >
-                  {item.options.map((option) => {
-                    const selected = item.value === option.value;
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => item.onChange(option.value)}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: 17,
+                        fontWeight: 400,
+                        color: t.ink,
+                        fontFamily: IOS_FONT,
+                        letterSpacing: "-0.01em",
+                      }}
+                    >
+                      {item.label}
+                    </p>
+                    {item.desc && (
+                      <p
                         style={{
-                          flex: 1,
-                          border: "none",
-                          borderRadius: 999,
-                          padding: "7px 12px",
-                          background: selected ? t.green : "transparent",
-                          color: selected ? "#fff" : t.ink,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
-                          cursor: "pointer",
-                          textAlign: "center",
-                          transition: "all 0.2s ease",
+                          margin: "2px 0 0",
+                          fontSize: 13,
+                          color: t.muted,
+                          fontFamily: IOS_FONT,
+                          lineHeight: 1.35,
                         }}
                       >
-                        {option.label}
-                      </button>
+                        {item.desc}
+                      </p>
+                    )}
+                  </div>
+                  {item.type === "choice" ? (
+                    <div
+                      // iOS segmented control
+                      role="tablist"
+                      aria-label={item.label}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        padding: 2,
+                        borderRadius: 9,
+                        background: "rgba(120,120,128,0.12)",
+                        marginTop: 6,
+                        width: "100%",
+                      }}
+                    >
+                      {item.options.map((option) => {
+                        const selected = item.value === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            role="tab"
+                            aria-selected={selected}
+                            onClick={() => item.onChange(option.value)}
+                            style={{
+                              flex: 1,
+                              border: "none",
+                              borderRadius: 7,
+                              padding: "6px 12px",
+                              background: selected ? t.white : "transparent",
+                              color: t.ink,
+                              fontSize: 13,
+                              fontWeight: selected ? 600 : 500,
+                              fontFamily: IOS_FONT,
+                              cursor: "pointer",
+                              textAlign: "center",
+                              boxShadow: selected
+                                ? "0 3px 8px rgba(0,0,0,0.12), 0 1px 1px rgba(0,0,0,0.04)"
+                                : "none",
+                              transition:
+                                "background-color 0.2s ease, box-shadow 0.2s ease",
+                              WebkitTapHighlightColor: "transparent",
+                            }}
+                          >
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <IOSSwitch
+                      checked={!!item.value}
+                      onChange={(v) => item.onChange(v)}
+                      label={item.label}
+                    />
+                  )}
+                </div>
+              ))}
+              {section.accountGroups && (
+                <div style={{ display: "grid", gap: 14, margin: "8px 0 14px" }}>
+                  {section.accountGroups.filter(Boolean).map((group) => {
+                    const isGroupOpen = !!openAccountGroups[group.title];
+                    const actions = group.actions.filter(Boolean);
+                    return (
+                      <div key={group.title}>
+                        {/* iOS grouped-list uppercase caption — outside the
+                            card, above it */}
+                        <button
+                          type="button"
+                          onClick={() => toggleAccountGroup(group.title)}
+                          style={{
+                            width: "100%",
+                            background: "none",
+                            border: "none",
+                            padding: "0 4px 6px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 10,
+                            cursor: "pointer",
+                            textAlign: "left",
+                            fontFamily: IOS_FONT,
+                            WebkitTapHighlightColor: "transparent",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 400,
+                              color: t.muted,
+                              letterSpacing: 0.1,
+                              textTransform: "uppercase",
+                              fontFamily: IOS_FONT,
+                            }}
+                          >
+                            {group.title}
+                          </span>
+                          <svg
+                            width="11"
+                            height="11"
+                            viewBox="0 0 12 12"
+                            style={{
+                              transform: isGroupOpen
+                                ? "rotate(90deg)"
+                                : "rotate(0deg)",
+                              transition: "transform 0.2s ease",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <polyline
+                              points="4,2 8,6 4,10"
+                              fill="none"
+                              stroke={t.muted}
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </button>
+                        <div
+                          style={{
+                            maxHeight: isGroupOpen ? 2000 : 0,
+                            opacity: isGroupOpen ? 1 : 0,
+                            overflow: "hidden",
+                            transition:
+                              "max-height 0.28s ease, opacity 0.2s ease",
+                          }}
+                        >
+                          {/* iOS grouped-list card containing the rows */}
+                          <div
+                            style={{
+                              background: t.light,
+                              border: `1px solid ${t.border}`,
+                              borderRadius: 10,
+                              padding: "0 14px",
+                            }}
+                          >
+                            {actions.map((action, ai) => {
+                              const isDisabled = !!action.disabled;
+                              const isLast = ai === actions.length - 1;
+                              const labelColor = action.danger
+                                ? IOS_RED
+                                : isDisabled
+                                  ? t.muted
+                                  : t.ink;
+                              const clickable = !isDisabled && action.onClick;
+                              return (
+                                <button
+                                  key={action.label}
+                                  type="button"
+                                  onClick={action.onClick}
+                                  disabled={isDisabled}
+                                  style={{
+                                    display: "flex",
+                                    width: "100%",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    gap: 12,
+                                    minHeight: 44,
+                                    padding: "10px 0",
+                                    background: "transparent",
+                                    border: "none",
+                                    borderBottom: isLast
+                                      ? "1px solid transparent"
+                                      : `1px solid ${t.border}`,
+                                    cursor: clickable ? "pointer" : "default",
+                                    textAlign: "left",
+                                    fontFamily: IOS_FONT,
+                                    WebkitTapHighlightColor: "transparent",
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      display: "flex",
+                                      flexDirection: "column",
+                                      alignItems: "flex-start",
+                                      gap: 2,
+                                      minWidth: 0,
+                                      flex: 1,
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        fontSize: 17,
+                                        fontWeight: 400,
+                                        color: labelColor,
+                                        fontFamily: IOS_FONT,
+                                        letterSpacing: "-0.01em",
+                                      }}
+                                    >
+                                      {action.label}
+                                    </span>
+                                    {action.desc && (
+                                      <span
+                                        style={{
+                                          fontSize: 13,
+                                          fontWeight: 400,
+                                          color: t.muted,
+                                          lineHeight: 1.35,
+                                          fontFamily: IOS_FONT,
+                                        }}
+                                      >
+                                        {action.desc}
+                                      </span>
+                                    )}
+                                  </span>
+                                  {clickable && !action.danger && (
+                                    <svg
+                                      width="8"
+                                      height="14"
+                                      viewBox="0 0 8 14"
+                                      style={{ flexShrink: 0 }}
+                                      aria-hidden="true"
+                                    >
+                                      <polyline
+                                        points="1,1 7,7 1,13"
+                                        fill="none"
+                                        stroke={t.muted}
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                    </svg>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
-              ) : (
-                <input
-                  type="checkbox"
-                  checked={!!item.value}
-                  onChange={(e) => item.onChange(e.target.checked)}
-                  style={{
-                    width: 20,
-                    height: 20,
-                    accentColor: t.green,
-                    flexShrink: 0,
-                  }}
-                />
               )}
             </div>
-          ))}
-          {section.accountGroups && (
-            <div style={{ display: "grid", gap: 10, marginTop: 10 }}>
-              {section.accountGroups.filter(Boolean).map((group) => {
-                const isGroupOpen = !!openAccountGroups[group.title];
-                return (
-                  <div
-                    key={group.title}
-                    style={{
-                      background: t.light,
-                      border: `1px solid ${t.border}`,
-                      borderRadius: 12,
-                      padding: "12px 12px",
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => toggleAccountGroup(group.title)}
-                      style={{
-                        width: "100%",
-                        background: "none",
-                        border: "none",
-                        padding: 0,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 10,
-                        cursor: "pointer",
-                        textAlign: "left",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: t.ink,
-                          fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
-                        }}
-                      >
-                        {group.title}
-                      </span>
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 12 12"
-                        style={{
-                          transform: isGroupOpen ? "rotate(90deg)" : "rotate(0deg)",
-                          transition: "transform 0.2s ease",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <polyline
-                          points="4,2 8,6 4,10"
-                          fill="none"
-                          stroke={t.muted}
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </button>
-                    <div
-                      style={{
-                        maxHeight: isGroupOpen ? 1000 : 0,
-                        opacity: isGroupOpen ? 1 : 0,
-                        overflow: "hidden",
-                        transition: "max-height 0.28s ease, opacity 0.2s ease",
-                        paddingTop: isGroupOpen ? 10 : 0,
-                      }}
-                    >
-                      <div style={{ display: "grid", gap: 8 }}>
-                        {group.actions.filter(Boolean).map((action) => {
-                          const isDisabled = !!action.disabled;
-                          return (
-                            <button
-                              key={action.label}
-                              type="button"
-                              onClick={action.onClick}
-                              disabled={isDisabled}
-                              style={{
-                                width: "100%",
-                                background: action.danger
-                                  ? "rgba(192,57,43,0.08)"
-                                  : t.white,
-                                border: `1px solid ${
-                                  action.danger
-                                    ? "rgba(192,57,43,0.25)"
-                                    : t.border
-                                }`,
-                                borderRadius: 10,
-                                padding: "12px 12px",
-                                color: action.danger ? t.red : t.ink,
-                                fontSize: 12,
-                                fontWeight: 700,
-                                cursor: isDisabled ? "default" : "pointer",
-                                fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
-                                textAlign: "left",
-                                opacity: isDisabled ? 0.82 : 1,
-                              }}
-                            >
-                              <span style={{ display: "block", marginBottom: action.desc ? 3 : 0 }}>
-                                {action.label}
-                              </span>
-                              {action.desc && (
-                                <span
-                                  style={{
-                                    display: "block",
-                                    fontSize: 11,
-                                    fontWeight: 400,
-                                    lineHeight: 1.6,
-                                    color: action.danger ? t.red : t.muted,
-                                  }}
-                                >
-                                  {action.desc}
-                                </span>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
           </div>
-        </div>
-      );
+        );
       })}
     </div>
   );
