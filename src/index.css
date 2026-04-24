@@ -1240,83 +1240,85 @@ body.life-dark .life-main-scroll {
   }
 }
 
-/* Parchment paper texture for the reading view
-   Uses a subtle layered SVG noise filter + linear gradients to simulate
-   real aged paper. Applied to the reading tab container and individual
-   page content. Dark mode uses a darker skin-toned parchment.
-    */
+/* Paper texture for the reading view.
+   Uses an inline SVG `feTurbulence` filter (no asset file, no network) to
+   produce real grainy paper noise + subtle radial vignettes for depth.
+   Replaces the earlier horizontal-stripe "fibers" which read as gift-wrap
+   rather than paper. Base color is intentionally a *dull* off-white — not
+   bright white — so it feels like real paper under warm light.
+   Dark mode darkens the base so the texture isn't blinding at night. */
 .life-reader-parchment {
-  background-color: #f7f1e3;
+  background-color: #ebe7dd;
   background-image:
-    /* subtle horizontal fibers */
-    repeating-linear-gradient(
-      0deg,
-      rgba(139, 110, 74, 0.015) 0px,
-      rgba(139, 110, 74, 0.015) 1px,
-      transparent 1px,
-      transparent 3px
-    ),
-    /* warm page glow */
+    /* 1. Procedural paper grain (SVG turbulence). Low alpha, multiply. */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.28  0 0 0 0 0.18  0 0 0 0.18 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+    /* 2. Warm page glow (top-left light) */
     radial-gradient(
       ellipse at 20% 10%,
-      rgba(255, 250, 230, 0.5) 0%,
+      rgba(255, 248, 228, 0.35) 0%,
       transparent 55%
     ),
+    /* 3. Subtle darker edge shadow (bottom-right) */
     radial-gradient(
-      ellipse at 80% 90%,
-      rgba(220, 195, 150, 0.16) 0%,
+      ellipse at 80% 95%,
+      rgba(170, 150, 115, 0.14) 0%,
       transparent 60%
     ),
-    /* base paper tint */
+    /* 4. Base paper tint — dull off-white, not bright */
     linear-gradient(
       180deg,
-      #f9f3e3 0%,
-      #f4ead2 100%
+      #ede9df 0%,
+      #e5e0d3 100%
     );
+  background-size:
+    240px 240px,
+    auto,
+    auto,
+    auto;
   background-blend-mode: multiply, normal, normal, normal;
   box-shadow:
-    inset 0 0 38px rgba(160, 130, 85, 0.08),
-    inset 0 0 90px rgba(140, 110, 70, 0.04);
+    inset 0 0 38px rgba(130, 110, 80, 0.10),
+    inset 0 0 90px rgba(100, 85, 60, 0.05);
 }
 
-/* Dark mode — darker skin-toned parchment */
+/* Dark mode — darker paper so the texture doesn't blind at night. */
 body.life-dark .life-reader-parchment {
-  background-color: #2a2420;
+  background-color: #1e1c19;
   background-image:
-    repeating-linear-gradient(
-      0deg,
-      rgba(80, 60, 40, 0.12) 0px,
-      rgba(80, 60, 40, 0.12) 1px,
-      transparent 1px,
-      transparent 3px
-    ),
+    /* Same turbulence grain but tuned brighter so it shows on dark ink. */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.85  0 0 0 0 0.78  0 0 0 0 0.62  0 0 0 0.10 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
     radial-gradient(
       ellipse at 20% 10%,
-      rgba(80, 65, 45, 0.35) 0%,
+      rgba(70, 60, 45, 0.30) 0%,
       transparent 55%
     ),
     radial-gradient(
-      ellipse at 80% 90%,
-      rgba(55, 42, 28, 0.4) 0%,
+      ellipse at 80% 95%,
+      rgba(30, 22, 15, 0.45) 0%,
       transparent 60%
     ),
     linear-gradient(
       180deg,
-      #2d2520 0%,
-      #241d18 100%
+      #22201c 0%,
+      #1a1815 100%
     );
-  background-blend-mode: multiply, normal, normal, normal;
+  background-size:
+    240px 240px,
+    auto,
+    auto,
+    auto;
+  background-blend-mode: screen, normal, normal, normal;
   box-shadow:
-    inset 0 0 38px rgba(20, 15, 10, 0.4),
-    inset 0 0 90px rgba(0, 0, 0, 0.25);
+    inset 0 0 38px rgba(10, 8, 5, 0.5),
+    inset 0 0 90px rgba(0, 0, 0, 0.35);
 }
 
-/* Soft text color inside the parchment — stays readable in both modes */
+/* Soft text color inside the paper — stays readable on the darker base. */
 body.life-dark .life-reader-parchment,
 body.life-dark .life-reader-parchment p,
 body.life-dark .life-reader-parchment h1,
 body.life-dark .life-reader-parchment h2 {
-  color: #e8ddc6;
+  color: #e6dfcd;
 }
 
 /* Enhanced Animations  */
