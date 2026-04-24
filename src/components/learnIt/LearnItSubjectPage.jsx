@@ -183,7 +183,7 @@ const WORD_LADDER_PUZZLES = [
   { start: "CAT", end: "DOG", steps: ["CAT","COT","COG","DOG"] },
   { start: "HOT", end: "COD", steps: ["HOT","HOG","COG","COD"] },
   { start: "MIND", end: "GROW", steps: ["MIND","BIND","BIRD","GIRD","GRID","GRAD","GRAB","CRAB","CROW","GROW"] },
-  { start: "COLD", end: "WARM", steps: ["CORD", "WORD", "WARD", "WARM"] },
+  { start: "COLD", end: "WARM", steps: ["COLD", "CORD", "WORD", "WARD", "WARM"] },
   { start: "BAKE", end: "BITE", steps: ["BIKE", "BITE"] },
   { start: "BOOK", end: "COOL", steps: ["COOK", "COOL"] },
   { start: "FARM", end: "FIRM", steps: ["FORM", "FIRM"] },

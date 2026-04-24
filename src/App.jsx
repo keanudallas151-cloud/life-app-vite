@@ -42,7 +42,7 @@ import {
 import { getReadingStreak, recordReadingDay } from "./systems/readingStreak";
 import { setResumeTopic } from "./systems/resumeReading";
 import { LS } from "./systems/storage";
-import { C, S, useTheme } from "./systems/theme";
+import { C, S, useTheme, THEME_MODES } from "./systems/theme";
 import { useMomentum } from "./systems/useMomentum";
 import { useQuizStats } from "./systems/useQuizStats";
 import { useSound } from "./systems/useSound";
@@ -367,7 +367,10 @@ export default function LifeApp() {
 
   useEffect(() => {
     document.body.classList.toggle("life-dark", dark);
-  }, [dark]);
+    // life-light signals organized + other portaled content that the user
+    // has explicitly chosen light mode (which is now just slightly lighter dark).
+    document.body.classList.toggle("life-light", !dark && themeMode === THEME_MODES.light);
+  }, [dark, themeMode]);
 
   const [screen, setScreen] = useState("loading"); // start loading until session resolved
   const [user, setUser] = useState(null); // { id, email, name, username }

@@ -36,19 +36,21 @@ export const C = {
   orange:   "#e58b2a",  // chart accent used by Charts.jsx and other warning-strength UI states
 };
 
-// Light mode — warm-gray surfaces so the app is readable in bright environments.
-// Designed to match the tone of the HANDOFF request: "gray instead of white".
+// Light mode — "just a touch lighter than dark mode" as requested.
+// This is NOT white; it's a near-dark surface that sits just above the default
+// dark (C) palette. Text colors remain light, so the same rgba() overlay
+// patterns in game components continue to work without changes.
 export const LIGHT = {
-  skin:     "#f0f0f0",  // page bg: light neutral gray
-  white:    "#ffffff",  // card / button surface: crisp white panel
-  green:    "#2f9e63",  // deeper green — stays accessible on light bg
-  greenAlt: "#1d7a4c",  // secondary green
-  greenLt:  "#e6f7ee",  // green tint bg (light)
-  ink:      "#111111",  // primary text: near-black
-  mid:      "#3a3a3a",  // body text: dark gray
-  muted:    "#595959",  // subtle text: #595959 on #f0f0f0 achieves ~4.6:1 (WCAG AA)
-  border:   "#cccccc",  // hairline border: clearly visible on gray bg
-  light:    "#e4e4e4",  // elevated tint (progress tracks, input bg)
+  skin:     "#141414",  // page bg: one step up from C.skin (#0a0a0a)
+  white:    "#1e1e1e",  // card surface: one step up from C.white (#111111)
+  green:    "#50c878",  // same brand accent — still pops on near-black
+  greenAlt: "#2f9e63",  // secondary green
+  greenLt:  "#0f2818",  // green tint (works on dark bg)
+  ink:      "#eeeeee",  // primary text: matches dark mode readability
+  mid:      "#c9c9c9",  // body text: same as C
+  muted:    "#a1a1a1",  // subtle text: same as C
+  border:   "#363636",  // hairline border: slightly lighter than C.border (#2e2e2e)
+  light:    "#282828",  // elevated tint: slightly lighter than C.light (#1a1a1a)
   gold:     "#f5a623",  // warning accent (unchanged)
   red:      "#e5484d",  // error (unchanged)
   orange:   "#e58b2a",  // chart accent (unchanged)
