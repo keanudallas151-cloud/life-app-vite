@@ -132,10 +132,10 @@ export function HomePage({
               fontSize: "clamp(3.6rem, 16vw, 6.4rem)",
               fontWeight: 800,
               color: t.ink,
-              fontFamily: "Nunito, sans-serif",
+              fontFamily:
+                "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
               letterSpacing: "-0.04em",
               lineHeight: 0.92,
-              WebkitTextSizeAdjust: "230%",
             }}
           >
             Life

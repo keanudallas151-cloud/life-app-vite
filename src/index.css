@@ -897,15 +897,9 @@ canvas {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Page content fade-in */
-[data-page-tag] {
-  animation: life-page-in 0.18s ease-out both;
-}
-
-@keyframes life-page-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* Page content fade-in — canonical rule lives above (life-page-in-refined).
+   The old duplicate `[data-page-tag]` animation rule was removed to stop
+   it from overriding the refined transition curve. */
 
 .life-settings-page,
 .life-profile-page {
