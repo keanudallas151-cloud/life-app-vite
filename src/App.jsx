@@ -4786,8 +4786,7 @@ function DeleteAccountConfirm({ t, busy, onCancel, onConfirm, cancelRef }) {
       clearTimeout(id);
       window.removeEventListener("keydown", onKey);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [busy]);
+  }, [busy, onCancel, cancelRef]);
 
   return (
     <div
