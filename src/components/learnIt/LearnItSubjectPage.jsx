@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 
 const FONT = "-apple-system, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif";
 
@@ -435,7 +435,7 @@ function FillGapGame({ color, onClose }) {
   );
 }
 
-function WordGuessGame({ color, onClose }) {
+function WordGuessGame({ color }) {
   const [target] = useState(() => WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)]);
   const [guesses, setGuesses] = useState([]);
   const [current, setCurrent] = useState("");
@@ -460,8 +460,6 @@ function WordGuessGame({ color, onClose }) {
   };
 
   const reset = () => { setGuesses([]); setCurrent(""); setWon(false); setLost(false); };
-
-  const colors = { correct: color, present: "#f59e0b", absent: "rgba(255,255,255,0.1)" };
 
   if (won || lost) return (
     <div style={{ padding: 24, textAlign: "center", fontFamily: FONT }}>
@@ -695,7 +693,7 @@ function MultiChoiceGame({ questions, color, onClose }) {
   );
 }
 
-function FlashcardGame({ cards, color, onClose }) {
+function FlashcardGame({ cards, color }) {
   const [i, setI] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [seen, setSeen] = useState(new Set());
@@ -742,7 +740,7 @@ function FlashcardGame({ cards, color, onClose }) {
   );
 }
 
-function BudgetGame({ color, onClose }) {
+function BudgetGame({ color }) {
   const categories = ["Housing","Food","Transport","Entertainment","Savings","Healthcare"];
   const [budget] = useState(3000);
   const [alloc, setAlloc] = useState({ Housing: 900, Food: 450, Transport: 300, Entertainment: 150, Savings: 600, Healthcare: 150 });
@@ -980,7 +978,7 @@ function FillerCatcherGame({ color, onClose }) {
   );
 }
 
-function ConfidenceQuiz({ color, onClose }) {
+function ConfidenceQuiz({ color }) {
   const [qi, setQi] = useState(0);
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -1071,7 +1069,7 @@ function DailyDemChallenge({ color, onClose }) {
   );
 }
 
-function WordLadderGame({ color, onClose }) {
+function WordLadderGame({ color }) {
   const puzzles = [
     { start: "CAT", end: "DOG", steps: ["CAT","COT","COG","DOG"] },
     { start: "HOT","end": "COD", steps: ["HOT","HOG","COG","COD"] },
@@ -1161,7 +1159,7 @@ function ScoreScreen({ score, total, color, customMsg, onReplay, onClose }) {
 /* ──────────────────────────────────────────────────────────────
    GAME ROUTER
 ────────────────────────────────────────────────────────────── */
-function GameRouter({ gameId, subject, color, onClose }) {
+function GameRouter({ gameId, color, onClose }) {
   const games = {
     fill_gap:     () => <FillGapGame color={color} onClose={onClose} />,
     word_guess:   () => <WordGuessGame color={color} onClose={onClose} />,

@@ -62,8 +62,6 @@ export function SS({
   theme,
   playFn,
   onLabelClick,
-  active = false,
-  icon,
 }) {
   const th = theme || C;
   const iosfont = "-apple-system, SF Pro Display, Helvetica Neue, Arial, sans-serif";

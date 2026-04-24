@@ -766,35 +766,30 @@ export default function LifeApp() {
   const [quizPreset, setQuizPreset] = useState(() =>
     LS.get(`life_quiz_preset_${uid}`, { topic: "finance", activity: "quiz" }),
   );
-  // iOS-style page history stack for back navigation
-  const [pageHistory, setPageHistory] = useState([]);
+  // iOS-style page history stack — useRef so history changes don't cause re-renders
+  const pageHistoryRef = useRef([]);
 
   const setPage = useCallback(
     (p) => {
       setPageRaw(prev => {
         // Track history for back navigation (max 20 deep)
-        setPageHistory(hist => {
-          const next = [...hist.slice(-19), prev];
-          return next;
-        });
+        pageHistoryRef.current = [...pageHistoryRef.current.slice(-19), prev];
         return p;
       });
-      setPageRaw(p);
       LS.set(`life_last_page_${uid}`, p);
     },
     [uid],
   );
 
   // Go back one page in history (like UINavigationController.popViewController)
+  // eslint-disable-next-line no-unused-vars
   const goBack = useCallback(() => {
-    setPageHistory(hist => {
-      if (!hist.length) return hist;
-      const prev = hist[hist.length - 1];
-      const next = hist.slice(0, -1);
-      setPageRaw(prev);
-      LS.set(`life_last_page_${uid}`, prev);
-      return next;
-    });
+    const hist = pageHistoryRef.current;
+    if (!hist.length) return;
+    const prev = hist[hist.length - 1];
+    pageHistoryRef.current = hist.slice(0, -1);
+    setPageRaw(prev);
+    LS.set(`life_last_page_${uid}`, prev);
   }, [uid]);
   const setQuizContext = useCallback(
     (next) => {

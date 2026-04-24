@@ -36,6 +36,24 @@ export const C = {
   orange:   "#e58b2a",  // chart accent used by Charts.jsx and other warning-strength UI states
 };
 
+// Light mode — warm-gray surfaces so the app is readable in bright environments.
+// Designed to match the tone of the HANDOFF request: "gray instead of white".
+export const LIGHT = {
+  skin:     "#f0f0f0",  // page bg: light neutral gray
+  white:    "#ffffff",  // card / button surface: crisp white panel
+  green:    "#2f9e63",  // deeper green — stays accessible on light bg
+  greenAlt: "#1d7a4c",  // secondary green
+  greenLt:  "#e6f7ee",  // green tint bg (light)
+  ink:      "#111111",  // primary text: near-black
+  mid:      "#3a3a3a",  // body text: dark gray
+  muted:    "#6e6e6e",  // subtle text: readable mid-gray (4.5:1 on #f0f0f0)
+  border:   "#cccccc",  // hairline border: clearly visible on gray bg
+  light:    "#e4e4e4",  // elevated tint (progress tracks, input bg)
+  gold:     "#f5a623",  // warning accent (unchanged)
+  red:      "#e5484d",  // error (unchanged)
+  orange:   "#e58b2a",  // chart accent (unchanged)
+};
+
 // Deeper variant for users who pick "dark" explicitly in theme picker.
 // Since default IS already dark, this goes even darker / more contrasty.
 export const DARK = {
@@ -139,7 +157,11 @@ export function useTheme() {
     });
   }, [dark]);
 
-  const t = useMemo(() => (dark ? DARK : C), [dark]);
+  const t = useMemo(() => {
+    if (dark) return DARK;
+    if (themeMode === THEME_MODES.light) return LIGHT;
+    return C;
+  }, [dark, themeMode]);
 
   return { dark, t, themeMode, setThemeMode, toggleTheme, systemDark };
 }
