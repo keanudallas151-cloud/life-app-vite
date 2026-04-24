@@ -6,63 +6,67 @@ import { LS } from "../systems/storage";
 import { useQuizStats } from "../systems/useQuizStats";
 
 const TOPIC_META = {
-  finance:    { label:"Finance",       col:"#3d5a4c", bg:"#edf1ef",  icon:"wallet"  },
-  psychology: { label:"Psychology",    col:"#7B6FA8", bg:"#f0edf8",  icon:"brain"   },
-  money:      { label:"Money",         col:"#b8975a", bg:"#f7f0e3",  icon:"lock"    },
-  philosophy: { label:"Philosophy",    col:"#4a7ab8", bg:"#e8f0f8",  icon:"book"    },
-  business:   { label:"Business",      col:"#c0604a", bg:"#faecea",  icon:"barChart"},
-  communication: { label:"Communication", col:"#3a7a9e", bg:"#e5f1f8", icon:"users" },
-  mindset:    { label:"Mindset",       col:"#2d8a6e", bg:"#e6f5ee",  icon:"bolt"    },
-  discipline: { label:"Discipline",    col:"#6b4c9a", bg:"#efe8f6",  icon:"shield"  },
-  health:     { label:"Health",        col:"#d4694a", bg:"#fdf0ec",  icon:"leaf"    },
-  general:    { label:"General",       col:"#6c757d", bg:"#f8f9fa",  icon:"globe"   },
+  finance:    { label:"Finance",       col:"#3d5a4c", icon:"wallet"  },
+  psychology: { label:"Psychology",    col:"#7B6FA8", icon:"brain"   },
+  money:      { label:"Money",         col:"#b8975a", icon:"lock"    },
+  philosophy: { label:"Philosophy",    col:"#4a7ab8", icon:"book"    },
+  business:   { label:"Business",      col:"#c0604a", icon:"barChart"},
+  communication: { label:"Communication", col:"#3a7a9e", icon:"users" },
+  mindset:    { label:"Mindset",       col:"#2d8a6e", icon:"bolt"    },
+  discipline: { label:"Discipline",    col:"#6b4c9a", icon:"shield"  },
+  health:     { label:"Health",        col:"#d4694a", icon:"leaf"    },
+  general:    { label:"General",       col:"#6c757d", icon:"globe"   },
 };
-const DIFF_COLORS = { easy:C.green, medium:C.gold, hard:C.red };
+/** Topic tint that respects theme — alpha overlay on the accent color so it
+ *  reads correctly in dark mode instead of a hardcoded cream pastel. */
+const topicBg = (col) => `${col}20`;
+/** DIFF colors resolved from the current theme so dark/light stays consistent. */
+const getDiffColors = (t) => ({ easy: t.green, medium: t.gold, hard: t.red });
 const DIFF_META   = {
-  easy:   { secs:20, label:"Easy",   icon:"🌱", desc:"Foundation questions" },
-  medium: { secs:15, label:"Medium", icon:"🔥", desc:"Tested understanding" },
-  hard:   { secs:10, label:"Hard",   icon:"⚡", desc:"Expert-level concepts" },
+  easy:   { secs:20, label:"Easy",   icon:"leaf",     desc:"Foundation questions" },
+  medium: { secs:15, label:"Medium", icon:"flame",    desc:"Tested understanding" },
+  hard:   { secs:10, label:"Hard",   icon:"bolt",     desc:"Expert-level concepts" },
 };
 const FORMAT_META = {
-  multiple:  { label:"Multiple Choice", icon:"🎯", desc:"4 options per question" },
-  truefalse: { label:"True / False",    icon:"⚡", desc:"Quick-fire judgement" },
-  blitz:     { label:"Blitz Mode",      icon:"🚀", desc:"8 seconds — no mercy" },
-  daily:     { label:"Daily Challenge", icon:"📅", desc:"Same for everyone today" },
+  multiple:  { label:"Multiple Choice", icon:"target",   desc:"4 options per question" },
+  truefalse: { label:"True / False",    icon:"bolt",     desc:"Quick-fire judgement" },
+  blitz:     { label:"Blitz Mode",      icon:"rocket",   desc:"8 seconds — no mercy" },
+  daily:     { label:"Daily Challenge", icon:"calendar", desc:"Same for everyone today" },
 };
 const GOAL_KEY = "life_personal_goals";
 const COMMUNICATION_ACTIVITY_KEY = "life_comm_activity_log";
 const COMMUNICATION_ACTIVITIES = {
   quiz: {
     label: "Quiz Drill",
-    icon: "🎯",
+    icon: "target",
     desc: "Classic communication questions with explanations.",
   },
   sentence: {
     label: "Sentence Completion",
-    icon: "✍️",
+    icon: "pencil",
     desc: "Fill in the missing idea and sharpen spoken vocabulary.",
   },
   warmup: {
     label: "Vocal Warmups",
-    icon: "🎙️",
+    icon: "mic",
     desc: "Breathing, resonance, and articulation prompts before speaking.",
   },
   audio: {
     label: "Audio Practice",
-    icon: "🎧",
+    icon: "headphones",
     desc: "Conversation practice with an MP3-ready placeholder flow.",
   },
 };
 
 const ACHIEVEMENTS = [
-  { id:"first_blood",  label:"First Blood",    icon:"🎯", desc:"Complete your first quiz",                    check:(s)=>s.totalPlayed>=1                        },
-  { id:"perfect",      label:"Perfectionist",  icon:"💎", desc:"Score 100% on any quiz",                    check:(_s,r)=>r && r.pct===100                     },
-  { id:"streak5",      label:"On Fire",        icon:"🔥", desc:"Get a 5-question streak",                    check:(_s,r)=>r && r.bestStreak>=5                 },
-  { id:"veteran",      label:"Veteran",        icon:"🏆", desc:"Complete 10 quizzes",                        check:(s)=>s.totalPlayed>=10                       },
-  { id:"blitz_win",    label:"Blitz Champion", icon:"⚡", desc:"Score 80%+ in Blitz mode",                  check:(_s,r)=>r && r.format==="blitz"&&r.pct>=80   },
-  { id:"scholar",      label:"Scholar",        icon:"📚", desc:"Answer 100 questions total",                 check:(s)=>s.totalAnswered>=100                    },
-  { id:"hard_carry",   label:"Hard Carry",     icon:"🧠", desc:"Score 80%+ on Hard difficulty",             check:(_s,r)=>r && r.diff==="hard"&&r.pct>=80      },
-  { id:"multi_topic",  label:"Well Rounded",   icon:"🌍", desc:"Complete quizzes in 3 different topics",    check:(s)=>Object.keys(s.topicsPlayed||{}).length>=3},
+  { id:"first_blood",  label:"First Blood",    icon:"target",  desc:"Complete your first quiz",                    check:(s)=>s.totalPlayed>=1                        },
+  { id:"perfect",      label:"Perfectionist",  icon:"diamond", desc:"Score 100% on any quiz",                    check:(_s,r)=>r && r.pct===100                     },
+  { id:"streak5",      label:"On Fire",        icon:"flame",   desc:"Get a 5-question streak",                    check:(_s,r)=>r && r.bestStreak>=5                 },
+  { id:"veteran",      label:"Veteran",        icon:"trophy",  desc:"Complete 10 quizzes",                        check:(s)=>s.totalPlayed>=10                       },
+  { id:"blitz_win",    label:"Blitz Champion", icon:"bolt",    desc:"Score 80%+ in Blitz mode",                  check:(_s,r)=>r && r.format==="blitz"&&r.pct>=80   },
+  { id:"scholar",      label:"Scholar",        icon:"book",    desc:"Answer 100 questions total",                 check:(s)=>s.totalAnswered>=100                    },
+  { id:"hard_carry",   label:"Hard Carry",     icon:"brain",   desc:"Score 80%+ on Hard difficulty",             check:(_s,r)=>r && r.diff==="hard"&&r.pct>=80      },
+  { id:"multi_topic",  label:"Well Rounded",   icon:"globe",   desc:"Complete quizzes in 3 different topics",    check:(s)=>Object.keys(s.topicsPlayed||{}).length>=3},
 ];
 
 const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
@@ -97,7 +101,9 @@ function AchievementBadge({ ach, unlocked, t }) {
     <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px",
       background:unlocked?t.greenLt:t.white, border:`1px solid ${unlocked?t.green:t.border}`,
       borderRadius:10, opacity:unlocked?1:0.5 }}>
-      <span style={{ fontSize:20 }}>{ach.icon}</span>
+      <span style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", width:28, height:28, borderRadius:8, background: unlocked ? `${t.green}22` : `${t.ink}10` }}>
+        {Ic[ach.icon]?.("none", unlocked ? t.green : t.muted, 16)}
+      </span>
       <div>
         <div style={{ fontSize:13, fontWeight:700, color:unlocked?t.green:t.ink }}>{ach.label}</div>
         <div style={{ fontSize:11, color:t.muted }}>{ach.desc}</div>
@@ -875,7 +881,7 @@ export function QuizPage({
   }, [initialActivity, initialTopic]);
 
   const startQuiz = useCallback(() => {
-    play("ok");
+    play("tritone");
     if (topic === "communication" && communicationActivity !== "quiz") {
       const current = LS.get(COMMUNICATION_ACTIVITY_KEY, []);
       LS.set(
@@ -1035,7 +1041,7 @@ export function QuizPage({
                     const meta = TOPIC_META[topic];
                     return (
                       <div key={topic} style={{ display:"flex", alignItems:"center", gap:12, background:t.white, border:`1px solid ${t.border}`, borderRadius:10, padding:"12px 14px" }}>
-                        <div style={{ width:32, height:32, borderRadius:8, background:meta.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        <div style={{ width:32, height:32, borderRadius:8, background:topicBg(meta.col), display:"flex", alignItems:"center", justifyContent:"center" }}>
                           {Ic[meta.icon]?.("none",meta.col,16)}
                         </div>
                         <span style={{ flex:1, fontSize:14, fontWeight:600, color:t.ink }}>{meta.label}</span>
@@ -1069,7 +1075,9 @@ export function QuizPage({
             {/* Daily Challenge banner */}
             <div className="life-quiz-daily-banner" style={{ background:`linear-gradient(135deg,${t.green},${t.greenAlt})`, borderRadius:14, padding:"16px 18px", marginBottom:24, display:"flex", alignItems:"center", gap:12, cursor:"pointer", flexWrap:"wrap" }}
               onClick={() => { setFmt("daily"); }}>
-              <span style={{ fontSize:28 }}>📅</span>
+              <span style={{ width:36, height:36, borderRadius:11, background:"rgba(255,255,255,0.18)", display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                {Ic.calendar("none", "#ffffff", 20)}
+              </span>
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>Daily Challenge</div>
                 <div style={{ fontSize:12, color:"rgba(255,255,255,0.78)", marginTop:2 }}>
@@ -1086,7 +1094,7 @@ export function QuizPage({
                 const sel = topic===k && fmt!=="daily";
                 return (
                   <button key={k} onClick={() => { setTopic(k); if(fmt==="daily") setFmt("multiple"); }}
-                    style={{ background:sel?meta.bg:t.white, border:`1.5px solid ${sel?meta.col:t.border}`,
+                    style={{ background:sel?topicBg(meta.col):t.white, border:`1.5px solid ${sel?meta.col:t.border}`,
                       borderRadius:12, padding:"13px 14px", cursor:"pointer", textAlign:"left",
                       display:"flex", alignItems:"center", gap:10, fontFamily:"Georgia,serif" }}>
                     <div style={{ width:32, height:32, borderRadius:8, background:sel?meta.col+"22":t.light, display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -1105,11 +1113,12 @@ export function QuizPage({
               {["easy","medium","hard"].map(d => {
                 const dm  = DIFF_META[d];
                 const sel = diff===d && fmt!=="daily";
+                const diffColors = getDiffColors(t);
                 return (
                   <button key={d} onClick={() => { setDiff(d); if(fmt==="daily") setFmt("multiple"); }}
-                    style={{ flex:"1 1 100px", minWidth:0, background:sel?DIFF_COLORS[d]:t.white, border:`1.5px solid ${sel?DIFF_COLORS[d]:t.border}`,
+                    style={{ flex:"1 1 100px", minWidth:0, background:sel?diffColors[d]:t.white, border:`1.5px solid ${sel?diffColors[d]:t.border}`,
                       borderRadius:12, padding:"12px 8px", cursor:"pointer", fontFamily:"Georgia,serif", textAlign:"center" }}>
-                    <div style={{ fontSize:16, marginBottom:4 }}>{dm.icon}</div>
+                    <div style={{ marginBottom:6, display:"flex", justifyContent:"center" }}>{Ic[dm.icon]?.("none", sel?"#fff":t.mid, 18)}</div>
                     <div style={{ fontSize:13, fontWeight:sel?700:400, color:sel?t.white:t.mid, textTransform:"capitalize" }}>{dm.label}</div>
                     <div style={{ fontSize:10, color:sel?"rgba(255,255,255,0.75)":t.muted, marginTop:2 }}>{dm.secs}s/q</div>
                   </button>
@@ -1128,7 +1137,9 @@ export function QuizPage({
                     style={{ background:sel?t.greenLt:t.white, border:`1.5px solid ${sel?t.green:t.border}`,
                       borderRadius:12, padding:"14px 18px", cursor:"pointer", textAlign:"left",
                       display:"flex", alignItems:"center", gap:12, fontFamily:"Georgia,serif" }}>
-                    <span style={{ fontSize:20 }}>{fm.icon}</span>
+                    <span style={{ width:34, height:34, borderRadius:10, background: sel?`${t.green}22`:`${t.ink}08`, display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      {Ic[fm.icon]?.("none", sel?t.green:t.muted, 18)}
+                    </span>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:14, fontWeight:sel?700:500, color:sel?t.green:t.ink }}>{fm.label}</div>
                       <div style={{ fontSize:11, color:t.muted, marginTop:2 }}>{fm.desc}</div>
@@ -1159,7 +1170,9 @@ export function QuizPage({
                            fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
                          }}
                        >
-                         <div style={{ fontSize: 22, marginBottom: 8 }}>{meta.icon}</div>
+                         <div style={{ marginBottom: 8, width:32, height:32, borderRadius:9, background: selected?`${t.green}22`:`${t.ink}08`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                           {Ic[meta.icon]?.("none", selected?t.green:t.muted, 18)}
+                         </div>
                          <div style={{ fontSize: 14, fontWeight: 700, color: selected ? t.green : t.ink, marginBottom: 4 }}>
                            {meta.label}
                          </div>
@@ -1179,7 +1192,7 @@ export function QuizPage({
                  boxShadow:"0 6px 20px rgba(255,255,255,0.12)" }}>
               {topic === "communication" && communicationActivity !== "quiz"
                 ? `Start ${COMMUNICATION_ACTIVITIES[communicationActivity].label} →`
-                : fmt==="daily" ? "Start Daily Challenge 📅" : "Start Quiz →"}
+                : fmt==="daily" ? "Start Daily Challenge" : "Start Quiz →"}
              </button>
            </div>
          )}
@@ -1204,13 +1217,15 @@ export function QuizPage({
 
   if (phase === "result") {
     const pct      = Math.round((score / qs.length) * 100);
-    const grade    = pct===100?"Perfect! 🎉":pct>=90?"Excellent":pct>=70?"Good work":pct>=50?"Decent":"Keep reading";
+    const grade    = pct===100?"Perfect":pct>=90?"Excellent":pct>=70?"Good work":pct>=50?"Decent":"Keep reading";
     const topicMeta = TOPIC_META[topic];
     return (
       <div className="life-quiz-page life-quiz-result-wrap" style={{ padding:"32px max(16px, var(--safe-left, 0px)) max(60px, var(--safe-bottom, 0px)) max(16px, var(--safe-right, 0px))", maxWidth:500, margin:"0 auto", boxSizing:"border-box" }}>
         {newAchs.length > 0 && (
         <div style={{ background:t.ink, borderRadius:14, padding:"16px 20px", marginBottom:20, display:"flex", alignItems:"center", gap:12 }}>
-            <span style={{ fontSize:24 }}>{newAchs[0].icon}</span>
+            <span style={{ width:40, height:40, borderRadius:12, background:"rgba(255,255,255,0.12)", display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              {Ic[newAchs[0].icon]?.("none", "#ffffff", 22)}
+            </span>
             <div>
               <div style={{ fontSize:12, color:"rgba(255,255,255,0.72)", fontFamily:"Georgia,serif" }}>Achievement Unlocked</div>
               <div style={{ fontSize:15, fontWeight:700, color:"#fff", fontFamily:"Georgia,serif" }}>{newAchs[0].label}</div>
@@ -1218,7 +1233,7 @@ export function QuizPage({
           </div>
         )}
         <div style={{ background:t.white, border:`1px solid ${t.border}`, borderRadius:20, padding:28, marginBottom:20, textAlign:"center", boxShadow:"0 4px 20px rgba(0,0,0,0.06)" }}>
-          <div style={{ width:64, height:64, borderRadius:20, background:topicMeta.bg, margin:"0 auto 16px", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div style={{ width:64, height:64, borderRadius:20, background:topicBg(topicMeta.col), margin:"0 auto 16px", display:"flex", alignItems:"center", justifyContent:"center" }}>
             {Ic[topicMeta.icon]?.("none", topicMeta.col, 28)}
           </div>
           <h2 style={{ margin:"0 0 4px", fontSize:24, fontWeight:800, color:t.ink, fontFamily:"Georgia,serif" }}>{grade}</h2>
@@ -1235,7 +1250,7 @@ export function QuizPage({
           <div style={{ display:"flex", justifyContent:"space-around" }}>
             <div><div style={{ fontSize:22, fontWeight:700, color:t.ink }}>{bestStreak}</div><div style={{ fontSize:10, color:t.muted, letterSpacing:1 }}>BEST STREAK</div></div>
             <div><div style={{ fontSize:22, fontWeight:700, color:t.ink }}>{qs.length-score}</div><div style={{ fontSize:10, color:t.muted, letterSpacing:1 }}>MISSED</div></div>
-            <div><div style={{ fontSize:22, fontWeight:700, color:DIFF_COLORS[diff] }}>{DIFF_META[diff]?.icon}</div><div style={{ fontSize:10, color:t.muted, letterSpacing:1, textTransform:"uppercase" }}>{diff}</div></div>
+            <div><div style={{ display:"flex", justifyContent:"center", marginBottom:4 }}>{Ic[DIFF_META[diff]?.icon]?.("none", getDiffColors(t)[diff], 22)}</div><div style={{ fontSize:10, color:t.muted, letterSpacing:1, textTransform:"uppercase" }}>{diff}</div></div>
           </div>
         </div>
 
@@ -1267,7 +1282,7 @@ export function QuizPage({
             style={{ flex:"1 1 140px", minWidth:0, background:t.white, border:`1.5px solid ${t.border}`, borderRadius:12, padding:"15px", color:t.mid, fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"Georgia,serif" }}>
             Change Setup
           </button>
-          <button onClick={() => { play("ok"); setNewAchs([]); startQuiz(); }}
+          <button onClick={() => { play("tritone"); setNewAchs([]); startQuiz(); }}
             style={{ flex:"2 1 180px", minWidth:0, background:t.green, border:"none", borderRadius:12, padding:"15px", color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"Georgia,serif" }}>
             Play Again →
           </button>
@@ -1306,7 +1321,7 @@ export function QuizPage({
     <div className="life-quiz-page" style={{ padding:"20px max(16px, var(--safe-left, 0px)) max(40px, var(--safe-bottom, 0px)) max(16px, var(--safe-right, 0px))", maxWidth:520, margin:"0 auto", boxSizing:"border-box" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:14, gap:12, flexWrap:"wrap" }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <div style={{ width:26, height:26, borderRadius:7, background:topicMeta.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div style={{ width:26, height:26, borderRadius:7, background:topicBg(topicMeta.col), display:"flex", alignItems:"center", justifyContent:"center" }}>
             {Ic[topicMeta.icon]?.("none",topicMeta.col,13)}
           </div>
           <span style={{ fontSize:12, color:t.muted, fontFamily:"Georgia,serif", fontStyle:"italic" }}>{topicMeta.label} · {DIFF_META[diff]?.label}</span>
@@ -1336,7 +1351,7 @@ export function QuizPage({
 
       {q.tag && (
         <div style={{ display:"flex", justifyContent:"center", marginBottom:10 }}>
-          <span style={{ fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", padding:"3px 10px", borderRadius:20, background:topicMeta.bg, color:topicMeta.col }}>
+          <span style={{ fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", padding:"3px 10px", borderRadius:20, background:topicBg(topicMeta.col), color:topicMeta.col }}>
             {q.tag}
           </span>
         </div>

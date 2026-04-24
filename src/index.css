@@ -32,6 +32,62 @@
 
   /* Bottom nav height — 0 on desktop, overridden on mobile */
   --life-bottom-nav-height: 0px;
+
+  /* ───────────────────────────────────────────────────────────────
+     RESPONSIVE DESIGN TOKENS (Phase 1 foundation)
+     Fluid, universal sizing via clamp(min, preferred-vw, max).
+     One rule scales smoothly from 320px (iPhone SE) → 430px
+     (Pro Max) → 768px (tablet) with no extra breakpoints.
+     Prefer these tokens over raw px for new code.
+     See docs/responsive-tokens.md for guidance.
+     ─────────────────────────────────────────────────────────────── */
+
+  /* Fluid spacing scale (≈4 → 48px). Use in padding/gap/margin. */
+  --life-space-1: clamp(4px,  0.9vw,  6px);
+  --life-space-2: clamp(6px,  1.5vw, 10px);
+  --life-space-3: clamp(10px, 2.4vw, 14px);
+  --life-space-4: clamp(14px, 3.4vw, 20px);
+  --life-space-5: clamp(20px, 4.8vw, 28px);
+  --life-space-6: clamp(28px, 6.4vw, 40px);
+
+  /* Fluid type scale (body ≈15→17px). Use for font-size. */
+  --life-text-xs:   clamp(11px, 2.6vw, 12px);
+  --life-text-sm:   clamp(12px, 3.1vw, 13px);
+  --life-text-base: clamp(14px, 3.8vw, 16px);
+  --life-text-lg:   clamp(16px, 4.4vw, 18px);
+  --life-text-xl:   clamp(18px, 5.2vw, 22px);
+  --life-text-2xl:  clamp(22px, 6.4vw, 28px);
+
+  /* Fluid line-heights paired with the type scale. */
+  --life-leading-tight:  1.25;
+  --life-leading-normal: 1.45;
+  --life-leading-loose:  1.6;
+
+  /* Fluid radius scale. Use for border-radius. */
+  --life-radius-sm: 6px;
+  --life-radius-md: 10px;
+  --life-radius-lg: 14px;
+  --life-radius-xl: clamp(16px, 3.2vw, 22px);
+
+  /* Tap target floor (Apple HIG: 44, Material: 48). 44 is safe default. */
+  --life-tap-target: 44px;
+
+  /* Surface / on-surface contrast pair. Any text or icon placed on
+     a themed surface should pull its color from --life-on-surface
+     (or --life-on-surface-muted) to guarantee readable contrast. */
+  --life-surface:            #0a0a0a;
+  --life-surface-raised:     #111111;
+  --life-on-surface:         #ededed;
+  --life-on-surface-muted:   #a1a1a1;
+  --life-on-surface-subtle:  #6b6b6b;
+}
+
+body.life-dark {
+  --life-surface:           #000000;
+  --life-surface-raised:    #0a0a0a;
+  --life-on-surface:        #fafafa;
+  --life-on-surface-muted:  #a1a1a1;
+  --life-on-surface-subtle: #6b6b6b;
 }
 
 body.life-dark {
@@ -394,11 +450,11 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(74, 140, 92, 0.15);
 }
 
-/* ─── Page transition: a touch more refined ────────────────────────────── */
-/* ─── Page transitions: Vercel-style clean fade-up (no blur = matte) ─── */
+/* ─── Page transitions: iOS-style subtle lift + fade (spring-tailed) ─── */
 @keyframes life-page-in-refined {
-  0%   { opacity: 0; transform: translateY(10px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0%   { opacity: 0; transform: translateY(12px) scale(0.995); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 @keyframes life-page-out {
   0%   { opacity: 1; transform: translateY(0); }
@@ -406,7 +462,13 @@ textarea:focus {
 }
 @media (prefers-reduced-motion: no-preference) {
   [data-page-tag] {
-    animation: life-page-in-refined 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: life-page-in-refined 0.32s cubic-bezier(0.22, 1.02, 0.36, 1) both;
+    will-change: transform, opacity;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-page-tag] {
+    animation: none;
   }
 }
 
@@ -897,15 +959,9 @@ canvas {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Page content fade-in */
-[data-page-tag] {
-  animation: life-page-in 0.18s ease-out both;
-}
-
-@keyframes life-page-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* Page content fade-in — canonical rule lives above (life-page-in-refined).
+   The old duplicate `[data-page-tag]` animation rule was removed to stop
+   it from overriding the refined transition curve. */
 
 .life-settings-page,
 .life-profile-page {
@@ -1184,83 +1240,85 @@ body.life-dark .life-main-scroll {
   }
 }
 
-/* Parchment paper texture for the reading view
-   Uses a subtle layered SVG noise filter + linear gradients to simulate
-   real aged paper. Applied to the reading tab container and individual
-   page content. Dark mode uses a darker skin-toned parchment.
-    */
+/* Paper texture for the reading view.
+   Uses an inline SVG `feTurbulence` filter (no asset file, no network) to
+   produce real grainy paper noise + subtle radial vignettes for depth.
+   Replaces the earlier horizontal-stripe "fibers" which read as gift-wrap
+   rather than paper. Base color is intentionally a *dull* off-white — not
+   bright white — so it feels like real paper under warm light.
+   Dark mode darkens the base so the texture isn't blinding at night. */
 .life-reader-parchment {
-  background-color: #f7f1e3;
+  background-color: #ebe7dd;
   background-image:
-    /* subtle horizontal fibers */
-    repeating-linear-gradient(
-      0deg,
-      rgba(139, 110, 74, 0.015) 0px,
-      rgba(139, 110, 74, 0.015) 1px,
-      transparent 1px,
-      transparent 3px
-    ),
-    /* warm page glow */
+    /* 1. Procedural paper grain (SVG turbulence). Low alpha, multiply. */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.28  0 0 0 0 0.18  0 0 0 0.18 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+    /* 2. Warm page glow (top-left light) */
     radial-gradient(
       ellipse at 20% 10%,
-      rgba(255, 250, 230, 0.5) 0%,
+      rgba(255, 248, 228, 0.35) 0%,
       transparent 55%
     ),
+    /* 3. Subtle darker edge shadow (bottom-right) */
     radial-gradient(
-      ellipse at 80% 90%,
-      rgba(220, 195, 150, 0.16) 0%,
+      ellipse at 80% 95%,
+      rgba(170, 150, 115, 0.14) 0%,
       transparent 60%
     ),
-    /* base paper tint */
+    /* 4. Base paper tint — dull off-white, not bright */
     linear-gradient(
       180deg,
-      #f9f3e3 0%,
-      #f4ead2 100%
+      #ede9df 0%,
+      #e5e0d3 100%
     );
+  background-size:
+    240px 240px,
+    auto,
+    auto,
+    auto;
   background-blend-mode: multiply, normal, normal, normal;
   box-shadow:
-    inset 0 0 38px rgba(160, 130, 85, 0.08),
-    inset 0 0 90px rgba(140, 110, 70, 0.04);
+    inset 0 0 38px rgba(130, 110, 80, 0.10),
+    inset 0 0 90px rgba(100, 85, 60, 0.05);
 }
 
-/* Dark mode — darker skin-toned parchment */
+/* Dark mode — darker paper so the texture doesn't blind at night. */
 body.life-dark .life-reader-parchment {
-  background-color: #2a2420;
+  background-color: #1e1c19;
   background-image:
-    repeating-linear-gradient(
-      0deg,
-      rgba(80, 60, 40, 0.12) 0px,
-      rgba(80, 60, 40, 0.12) 1px,
-      transparent 1px,
-      transparent 3px
-    ),
+    /* Same turbulence grain but tuned brighter so it shows on dark ink. */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.85  0 0 0 0 0.78  0 0 0 0 0.62  0 0 0 0.10 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
     radial-gradient(
       ellipse at 20% 10%,
-      rgba(80, 65, 45, 0.35) 0%,
+      rgba(70, 60, 45, 0.30) 0%,
       transparent 55%
     ),
     radial-gradient(
-      ellipse at 80% 90%,
-      rgba(55, 42, 28, 0.4) 0%,
+      ellipse at 80% 95%,
+      rgba(30, 22, 15, 0.45) 0%,
       transparent 60%
     ),
     linear-gradient(
       180deg,
-      #2d2520 0%,
-      #241d18 100%
+      #22201c 0%,
+      #1a1815 100%
     );
-  background-blend-mode: multiply, normal, normal, normal;
+  background-size:
+    240px 240px,
+    auto,
+    auto,
+    auto;
+  background-blend-mode: screen, normal, normal, normal;
   box-shadow:
-    inset 0 0 38px rgba(20, 15, 10, 0.4),
-    inset 0 0 90px rgba(0, 0, 0, 0.25);
+    inset 0 0 38px rgba(10, 8, 5, 0.5),
+    inset 0 0 90px rgba(0, 0, 0, 0.35);
 }
 
-/* Soft text color inside the parchment — stays readable in both modes */
+/* Soft text color inside the paper — stays readable on the darker base. */
 body.life-dark .life-reader-parchment,
 body.life-dark .life-reader-parchment p,
 body.life-dark .life-reader-parchment h1,
 body.life-dark .life-reader-parchment h2 {
-  color: #e8ddc6;
+  color: #e6dfcd;
 }
 
 /* Enhanced Animations  */
@@ -5661,6 +5719,11 @@ input[type="date"] {
   to   { opacity: 1;   transform: translateY(0)    scale(1); }
 }
 
+@keyframes ios-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 /* ────────────────────────────────────────────────────────────────────────────
    2. iOS CONTINUOUS CORNER CURVES (squircle approximation)
       Apple uses superellipse corners — harder than standard border-radius
@@ -7168,3 +7231,81 @@ select:focus-visible {
   outline-offset: 1px !important;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════
+   ── FIX: Universal responsive utility classes (Phase 1 foundation) ─
+   Additive utilities built on the responsive design tokens defined in
+   :root. Safe to adopt incrementally — nothing here overrides existing
+   component rules. See docs/responsive-tokens.md.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Tap-target floor. Apply to icon-only buttons, nav chevrons, small
+   pill buttons, and any interactive element under the 44×44 HIG floor.
+   The inline-flex centering ensures the visible glyph stays centered
+   even when the hit box is larger than the glyph itself. */
+.life-tap-target {
+  min-width: var(--life-tap-target);
+  min-height: var(--life-tap-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+/* Readable text on a themed surface. Pairs with --life-surface tokens
+   so text/icons auto-adapt when the surface token changes. */
+.life-on-surface        { color: var(--life-on-surface); }
+.life-on-surface-muted  { color: var(--life-on-surface-muted); }
+.life-on-surface-subtle { color: var(--life-on-surface-subtle); }
+
+.life-surface {
+  background: var(--life-surface);
+  color: var(--life-on-surface);
+}
+.life-surface-raised {
+  background: var(--life-surface-raised);
+  color: var(--life-on-surface);
+}
+
+/* Image/avatar aspect-ratio utilities — prevents squished avatars and
+   stretched hero images, the most common "picture clash" on small
+   phones. Always pair with a width (or max-width) on the element. */
+.life-aspect-square { aspect-ratio: 1 / 1; }
+.life-aspect-video  { aspect-ratio: 16 / 9; }
+.life-aspect-4x3    { aspect-ratio: 4 / 3; }
+
+.life-img-cover,
+.life-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.life-avatar {
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--life-surface-raised);
+}
+
+/* Fluid type helpers — apply directly when you don't want to pick a
+   component class. Prefer component-scoped rules when possible. */
+.life-text-xs   { font-size: var(--life-text-xs); }
+.life-text-sm   { font-size: var(--life-text-sm); }
+.life-text-base { font-size: var(--life-text-base); }
+.life-text-lg   { font-size: var(--life-text-lg); }
+.life-text-xl   { font-size: var(--life-text-xl); }
+.life-text-2xl  { font-size: var(--life-text-2xl); }
+
+/* Fluid spacing helpers for quick container padding. */
+.life-p-1 { padding: var(--life-space-1); }
+.life-p-2 { padding: var(--life-space-2); }
+.life-p-3 { padding: var(--life-space-3); }
+.life-p-4 { padding: var(--life-space-4); }
+.life-p-5 { padding: var(--life-space-5); }
+.life-gap-1 { gap: var(--life-space-1); }
+.life-gap-2 { gap: var(--life-space-2); }
+.life-gap-3 { gap: var(--life-space-3); }
+.life-gap-4 { gap: var(--life-space-4); }

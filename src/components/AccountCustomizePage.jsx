@@ -157,25 +157,25 @@ export function AccountCustomizePage({
         style={{
           background: "none",
           border: "none",
-          color: t.muted,
-          fontSize: 13,
+          color: "#0A84FF",
+          fontSize: 17,
           cursor: "pointer",
           fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
-          marginBottom: 20,
+          marginBottom: 14,
           display: "flex",
           alignItems: "center",
-          gap: 6,
-          padding: 0,
+          gap: 2,
+          padding: "6px 0",
           WebkitTapHighlightColor: "transparent",
         }}
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="15 18 9 12 15 6" />
+        <svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polyline points="10 2 2 10 10 18" />
         </svg>
-        Back to Profile
+        <span style={{ marginLeft: 4 }}>Profile</span>
       </button>
 
-      <h2 style={{ fontSize: 24, fontWeight: 800, color: t.ink, margin: "0 0 20px", letterSpacing: -0.3 }}>
+      <h2 style={{ fontSize: 34, fontWeight: 700, color: t.ink, margin: "4px 0 22px", letterSpacing: "-0.02em" }}>
         Account
       </h2>
 

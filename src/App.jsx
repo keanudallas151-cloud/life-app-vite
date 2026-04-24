@@ -1,12 +1,15 @@
 // v1.0.1 - auth fixes: DOB validation, 3s loading, Firebase migration follow-up
 import {
+  confirmPasswordReset,
   createUserWithEmailAndPassword,
+  deleteUser,
   onAuthStateChanged,
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
+  verifyPasswordResetCode,
 } from "firebase/auth";
 import {
   Suspense,
@@ -45,7 +48,7 @@ import { LS } from "./systems/storage";
 import { C, S, useTheme, THEME_MODES } from "./systems/theme";
 import { useMomentum } from "./systems/useMomentum";
 import { useQuizStats } from "./systems/useQuizStats";
-import { useSound } from "./systems/useSound";
+import { useSound, useSoundDelegation } from "./systems/useSound";
 import { useUserData } from "./systems/useUserData";
 
 import { AccountCustomizePage } from "./components/AccountCustomizePage";
@@ -111,22 +114,22 @@ const PREF_DEFAULTS = {
 const SWIPE_HORIZONTAL_BIAS = 1.5;
 const SECRET_SIENNA_SEARCH_CODE = "160705kc";
 
-// Maps notification type/activity to an emoji icon
-function notifIcon(n) {
-  if (n.templateKey === "newMessage") return "💬";
-  if (n.templateKey === "newMatch") return "🤝";
-  if (n.templateKey === "profileUpdated") return "👤";
-  if (n.templateKey === "streakCelebration") return "🔥";
-  if (n.templateKey === "supportAcknowledged") return "🛟";
-  if (n.templateKey === "welcomeConfirmed") return "👋";
-  if (n.activity === "audio") return "🎙️";
-  if (n.targetPage === "home") return "👋";
-  if (n.targetPage === "where_to_start") return "📚";
-  if (n.targetPage === "daily_growth") return "🌱";
-  if (n.targetPage === "quiz") return "🧠";
-  if (n.targetPage === "leaderboard") return "🏆";
-  if (n.targetPage === "profile") return "👤";
-  return "✨";
+// Maps notification type/activity to an iOS-style SVG icon.
+function notifIconKey(n) {
+  if (n.templateKey === "newMessage") return "chat";
+  if (n.templateKey === "newMatch") return "users";
+  if (n.templateKey === "profileUpdated") return "user";
+  if (n.templateKey === "streakCelebration") return "flame";
+  if (n.templateKey === "supportAcknowledged") return "shield";
+  if (n.templateKey === "welcomeConfirmed") return "sparkle";
+  if (n.activity === "audio") return "mic";
+  if (n.targetPage === "home") return "home";
+  if (n.targetPage === "where_to_start") return "library";
+  if (n.targetPage === "daily_growth") return "leaf";
+  if (n.targetPage === "quiz") return "brain";
+  if (n.targetPage === "leaderboard") return "trophy";
+  if (n.targetPage === "profile") return "user";
+  return "sparkle";
 }
 
 function SwipeableNotification({ n, theme, dark, onTap, onDelete }) {
@@ -283,7 +286,7 @@ function SwipeableNotification({ n, theme, dark, onTap, onDelete }) {
         }}
       >
         <div style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
-          {/* Icon bubble */}
+          {/* Icon bubble — iOS-style rounded tinted chip */}
           <div
             style={{
               width: 36,
@@ -294,11 +297,14 @@ function SwipeableNotification({ n, theme, dark, onTap, onDelete }) {
                 : "rgba(61,90,76,0.1)",
               display: "grid",
               placeItems: "center",
-              fontSize: 16,
               flexShrink: 0,
             }}
           >
-            {notifIcon(n)}
+            {Ic[notifIconKey(n)]?.(
+              "none",
+              dark ? "#e8e8e8" : "#3d5a4c",
+              18,
+            )}
           </div>
 
           {/* Text */}
@@ -404,8 +410,13 @@ export default function LifeApp() {
   const [rpShowPass, setRpShowPass] = useState(false);
   const [rpShowPass2, setRpShowPass2] = useState(false);
   const [rpErr, setRpErr] = useState("");
+  // Delete-account confirm sheet (iOS-style modal instead of native confirm)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteInProgress, setDeleteInProgress] = useState(false);
+  const deleteCancelRef = useRef(null);
   const postAuthScreenRef = useRef(null);
   const passwordRecoveryRef = useRef(false);
+  const passwordResetOobCodeRef = useRef(null);
   // Snapshots the form values at the moment errors are set.
   // We only clear an error when that specific field's CURRENT value
   // differs from its snapshot (i.e. the user actually edited it),
@@ -528,6 +539,45 @@ export default function LifeApp() {
       return undefined;
     }
 
+    // Detect Firebase password-reset link (mode=resetPassword&oobCode=…) on load.
+    if (typeof window !== "undefined") {
+      try {
+        const search = window.location.search || "";
+        const readParam = (name) => {
+          const m = new RegExp(`[?&]${name}=([^&#]*)`).exec(search);
+          return m ? decodeURIComponent(m[1]) : null;
+        };
+        const mode = readParam("mode");
+        const oobCode = readParam("oobCode");
+        if (mode === "resetPassword" && oobCode) {
+          verifyPasswordResetCode(auth, oobCode)
+            .then(() => {
+              passwordResetOobCodeRef.current = oobCode;
+              passwordRecoveryRef.current = true;
+              setScreen("reset_password");
+              // Clean the URL so a refresh doesn't re-trigger with a stale code.
+              try {
+                window.history.replaceState(
+                  null,
+                  "",
+                  window.location.pathname,
+                );
+              } catch {
+                /* ignore */
+              }
+            })
+            .catch(() => {
+              setRpErr(
+                "This reset link is invalid or has expired. Request a new email from the sign-in screen.",
+              );
+              setScreen("signin");
+            });
+        }
+      } catch {
+        /* ignore URL parse errors */
+      }
+    }
+
     let active = true;
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -627,6 +677,10 @@ export default function LifeApp() {
     mode: uiPrefs.soundMode,
     scope: uiPrefs.soundScope,
   });
+  // Opt-in: any element with `data-sound="name"` plays that sound on press.
+  // Intentionally narrow — use only when a specific element deserves its own
+  // unique sound without duplicating the existing onClick play() call.
+  useSoundDelegation(play);
   const cloud = useUserData(userIdForData);
 
   const emailDeliverySyncKeyRef = useRef("");
@@ -835,12 +889,6 @@ export default function LifeApp() {
   );
 
   const [categoryPageData, setCategoryPageData] = useState(null);
-
-  useEffect(() => {
-    if (page === "tools_todo") {
-      setPage("tools_lockin");
-    }
-  }, [page, setPage]);
 
   const handleFolderSelect = useCallback(
     (key, node) => {
@@ -1477,9 +1525,65 @@ export default function LifeApp() {
   };
 
   const doResetPassword = async () => {
+    if (authLoading) return;
     setRpErr("");
-    setRpErr("Use the reset link from your email to choose a new password.");
-    play("err");
+
+    if (rpPass.length < 8) {
+      setRpErr("Password must be at least 8 characters.");
+      play("err");
+      return;
+    }
+    if (
+      !/[A-Z]/.test(rpPass) ||
+      !/[a-z]/.test(rpPass) ||
+      !/\d/.test(rpPass) ||
+      !/[^A-Za-z0-9]/.test(rpPass)
+    ) {
+      setRpErr("Use upper/lowercase letters, a number, and a symbol.");
+      play("err");
+      return;
+    }
+    if (rpPass !== rpPass2) {
+      setRpErr("Passwords do not match.");
+      play("err");
+      return;
+    }
+
+    const oobCode = passwordResetOobCodeRef.current;
+    if (!auth || !oobCode) {
+      setRpErr(
+        "This reset link is invalid or has expired. Request a new email from the sign-in screen.",
+      );
+      play("err");
+      return;
+    }
+
+    setAuthLoading(true);
+    try {
+      await confirmPasswordReset(auth, oobCode, rpPass);
+      passwordResetOobCodeRef.current = null;
+      passwordRecoveryRef.current = false;
+      setRpPass("");
+      setRpPass2("");
+      play("ok");
+      setScreen("signin");
+    } catch (error) {
+      const code = String(error?.code || "");
+      if (code === "auth/expired-action-code" || code === "auth/invalid-action-code") {
+        setRpErr(
+          "This reset link is invalid or has expired. Request a new email from the sign-in screen.",
+        );
+      } else if (code === "auth/weak-password") {
+        setRpErr("Password is too weak. Use upper/lowercase, a number, and a symbol.");
+      } else {
+        setRpErr(
+          String(error?.message || "Could not update password. Please try again."),
+        );
+      }
+      play("err");
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   const doRegister = async () => {
@@ -1601,6 +1705,59 @@ export default function LifeApp() {
     setSiSocialErr("");
   };
 
+  const doDeleteAccount = () => {
+    // Open the iOS-style confirm sheet; the actual deletion happens
+    // in performDeleteAccount after the user confirms.
+    setDeleteConfirmOpen(true);
+  };
+
+  const performDeleteAccount = async () => {
+    setDeleteInProgress(true);
+    try {
+      const currentUser = auth?.currentUser;
+      // Best-effort: wipe local-only keys for this user first so a partial failure
+      // still clears client-side data.
+      try {
+        LS.del(`tsd_${uid}`);
+        LS.del(`bk_${uid}`);
+        LS.del(`nt_${uid}`);
+        LS.del(`rd_${uid}`);
+        LS.del(`tools_todos_${uid}`);
+        LS.del(`tools_lockin_${uid}`);
+        LS.del(`prefs_${uid}`);
+        LS.del(`onboarded_${uid}`);
+      } catch {
+        /* ignore LS wipe errors */
+      }
+      if (currentUser) {
+        await deleteUser(currentUser);
+      }
+      play("ok");
+      setDeleteConfirmOpen(false);
+      await doSignOut();
+    } catch (error) {
+      const code = String(error?.code || "");
+      if (code === "auth/requires-recent-login") {
+        setDeleteConfirmOpen(false);
+        if (typeof window !== "undefined") {
+          window.alert(
+            "For security, please sign in again and then retry deleting your account.",
+          );
+        }
+        await doSignOut();
+        return;
+      }
+      play("err");
+      if (typeof window !== "undefined") {
+        window.alert(
+          String(error?.message || "Could not delete your account. Please try again."),
+        );
+      }
+    } finally {
+      setDeleteInProgress(false);
+    }
+  };
+
   const handleSelect = (key, node) => {
     const alreadyRead = readKeys.includes(key);
     setSelKey(key);
@@ -1677,7 +1834,7 @@ export default function LifeApp() {
   }, [screen, setPage]);
 
   const goHome = () => {
-    play("home");
+    play("home_return");
     setPage("home");
   };
   const toggleBk = () => {
@@ -1815,9 +1972,9 @@ export default function LifeApp() {
         }}
       >
         <style>{`
-        @keyframes life-pulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.08); opacity: 0.9; }
+        @keyframes life-pulse-bounce {
+          0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+          50%      { transform: translateY(-6px) scale(1.08); opacity: 0.95; }
         }
         @keyframes life-fade-in {
           from { opacity: 0; transform: translateY(12px); }
@@ -1831,6 +1988,13 @@ export default function LifeApp() {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-6px); }
         }
+        @media (prefers-reduced-motion: reduce) {
+          [data-life-loading-logo],
+          [data-life-loading-dot] {
+            animation: none !important;
+            transform: none !important;
+          }
+        }
       `}</style>
         <div
           style={{
@@ -1839,6 +2003,7 @@ export default function LifeApp() {
           }}
         >
           <div
+            data-life-loading-logo
             style={{
               width: 90,
               height: 90,
@@ -1850,7 +2015,7 @@ export default function LifeApp() {
               margin: "0 auto 20px",
               boxShadow: `0 8px 32px ${C.green}44`,
               animation:
-                "life-pulse 2s ease-in-out infinite, life-bounce 3s ease-in-out infinite",
+                "life-pulse-bounce 2.4s cubic-bezier(0.34,1.1,0.64,1) infinite",
               position: "relative",
             }}
           >
@@ -1919,6 +2084,7 @@ export default function LifeApp() {
             {[0, 0.15, 0.3].map((delay, i) => (
               <span
                 key={i}
+                data-life-loading-dot
                 style={{
                   width: 10,
                   height: 10,
@@ -1949,7 +2115,7 @@ export default function LifeApp() {
         data-page-tag="#privacy_policy_page"
         style={{
           height: "100%",
-          background: "#0a0a0a",
+          background: t.skin,
           padding: "max(40px, env(safe-area-inset-top)) 20px 48px",
           overflowY: "auto",
           WebkitOverflowScrolling: "touch",
@@ -1965,7 +2131,7 @@ export default function LifeApp() {
             style={{
               background: "none",
               border: "none",
-              color: "#50c878",
+              color: t.green,
               fontSize: 16,
               fontWeight: 400,
               cursor: "pointer",
@@ -1997,13 +2163,13 @@ export default function LifeApp() {
             fontWeight: 600,
             letterSpacing: "0.04em",
             textTransform: "uppercase",
-            color: "#50c878",
+            color: t.green,
           }}>Legal</p>
           <h1
             style={{
               fontSize: 34,
               fontWeight: 700,
-              color: "#ededed",
+              color: t.ink,
               letterSpacing: "-0.035em",
               lineHeight: 1.05,
               margin: "0 0 24px",
@@ -2040,8 +2206,8 @@ export default function LifeApp() {
             <div
               key={title}
               style={{
-                background: C.white,
-                border: `1px solid ${C.border}`,
+                background: t.white,
+                border: `1px solid ${t.border}`,
                 borderRadius: 14,
                 padding: "20px 22px",
                 marginBottom: 12,
@@ -2052,7 +2218,7 @@ export default function LifeApp() {
                   margin: "0 0 8px",
                   fontSize: 16,
                   fontWeight: 700,
-                  color: C.ink,
+                  color: t.ink,
                 }}
               >
                 {title}
@@ -2061,7 +2227,7 @@ export default function LifeApp() {
                 style={{
                   margin: 0,
                   fontSize: 14,
-                  color: C.mid,
+                  color: t.mid,
                   lineHeight: 1.7,
                 }}
               >
@@ -2071,7 +2237,7 @@ export default function LifeApp() {
           ))}
           <p
             style={{
-              color: C.muted,
+              color: t.muted,
               fontSize: 11,
               fontStyle: "italic",
               marginTop: 20,
@@ -2091,7 +2257,7 @@ export default function LifeApp() {
         data-page-tag="#terms_condition_page"
         style={{
           height: "100%",
-          background: "#0a0a0a",
+          background: t.skin,
           padding: "max(40px, env(safe-area-inset-top)) 20px 48px",
           overflowY: "auto",
           WebkitOverflowScrolling: "touch",
@@ -2107,7 +2273,7 @@ export default function LifeApp() {
             style={{
               background: "none",
               border: "none",
-              color: "#50c878",
+              color: t.green,
               fontSize: 16,
               fontWeight: 400,
               cursor: "pointer",
@@ -2125,12 +2291,12 @@ export default function LifeApp() {
             </svg>
             Back
           </button>
-          <p style={{ margin: "0 0 6px", fontSize: 13, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", color: "#50c878" }}>Legal</p>
+          <p style={{ margin: "0 0 6px", fontSize: 13, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", color: t.green }}>Legal</p>
           <h1
             style={{
               fontSize: 34,
               fontWeight: 700,
-              color: "#ededed",
+              color: t.ink,
               letterSpacing: "-0.035em",
               lineHeight: 1.05,
               margin: "0 0 24px",
@@ -2171,8 +2337,8 @@ export default function LifeApp() {
             <div
               key={title}
               style={{
-                background: C.white,
-                border: `1px solid ${C.border}`,
+                background: t.white,
+                border: `1px solid ${t.border}`,
                 borderRadius: 14,
                 padding: "20px 22px",
                 marginBottom: 12,
@@ -2183,7 +2349,7 @@ export default function LifeApp() {
                   margin: "0 0 8px",
                   fontSize: 16,
                   fontWeight: 700,
-                  color: C.ink,
+                  color: t.ink,
                 }}
               >
                 {title}
@@ -2192,7 +2358,7 @@ export default function LifeApp() {
                 style={{
                   margin: 0,
                   fontSize: 14,
-                  color: C.mid,
+                  color: t.mid,
                   lineHeight: 1.7,
                 }}
               >
@@ -2202,7 +2368,7 @@ export default function LifeApp() {
           ))}
           <p
             style={{
-              color: C.muted,
+              color: t.muted,
               fontSize: 11,
               fontStyle: "italic",
               marginTop: 20,
@@ -2585,7 +2751,18 @@ export default function LifeApp() {
                     gap: 10,
                   }}
                 >
-                  <span style={{ fontSize: 32 }}>🔔</span>
+                  <div
+                    style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 16,
+                      background: alpha(t.ink, 0.06),
+                      display: "grid",
+                      placeItems: "center",
+                    }}
+                  >
+                    {Ic.bell("none", alpha(t.ink, 0.4), 26)}
+                  </div>
                   <p
                     style={{
                       margin: 0,
@@ -2891,7 +3068,43 @@ export default function LifeApp() {
             flexShrink: 0,
           }}
         >
-          <span style={{ fontSize: 16 }}>{dark ? "☀️" : "🌙"}</span>
+          {dark ? (
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke={t.ink}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="4" />
+              <line x1="12" y1="2" x2="12" y2="4" />
+              <line x1="12" y1="20" x2="12" y2="22" />
+              <line x1="4.93" y1="4.93" x2="6.34" y2="6.34" />
+              <line x1="17.66" y1="17.66" x2="19.07" y2="19.07" />
+              <line x1="2" y1="12" x2="4" y2="12" />
+              <line x1="20" y1="12" x2="22" y2="12" />
+              <line x1="4.93" y1="19.07" x2="6.34" y2="17.66" />
+              <line x1="17.66" y1="6.34" x2="19.07" y2="4.93" />
+            </svg>
+          ) : (
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke={t.ink}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          )}
         </button>
         {/* P9c: Notification Bell — hidden on mobile (shown in bottom nav) */}
         <button
@@ -3120,7 +3333,7 @@ export default function LifeApp() {
             zIndex: 40,
             transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
             transition:
-              "transform 0.28s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s ease",
+              "transform 0.42s cubic-bezier(0.34,1.1,0.64,1), box-shadow 0.3s ease",
             display: "flex",
             flexDirection: "column",
           }}
@@ -4051,6 +4264,7 @@ export default function LifeApp() {
               <div data-page-tag="#post_it">
                 <Suspense fallback={<RouteFallback />}>
                   <PostItFeed
+                    t={t}
                     play={play}
                     user={user}
                     onMomentumEvent={(event) => {
@@ -4286,6 +4500,7 @@ export default function LifeApp() {
                 uid={uid}
                 LS={LS}
                 trackMomentumEvent={trackMomentumEvent}
+                onDeleteAccount={doDeleteAccount}
               />
             )}
 
@@ -4351,6 +4566,77 @@ export default function LifeApp() {
                   onReadingModeChange={setReaderModeActive}
                 />
               </Suspense>
+            )}
+
+            {page === "reading" && !selContent && (
+              <div
+                data-page-tag="#reading_empty"
+                style={{
+                  padding: "64px 28px",
+                  maxWidth: 520,
+                  margin: "0 auto",
+                  textAlign: "center",
+                  fontFamily:
+                    "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
+                }}
+              >
+                <div
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 20,
+                    background: alpha(t.ink, 0.06),
+                    margin: "0 auto 16px",
+                    display: "grid",
+                    placeItems: "center",
+                  }}
+                  aria-hidden="true"
+                >
+                  {Ic.book("none", alpha(t.ink, 0.5), 30)}
+                </div>
+                <p
+                  style={{
+                    margin: "0 0 8px",
+                    fontSize: 17,
+                    fontWeight: 600,
+                    color: t.ink,
+                  }}
+                >
+                  No topic open yet
+                </p>
+                <p
+                  style={{
+                    margin: "0 0 20px",
+                    fontSize: 15,
+                    color: t.muted,
+                    lineHeight: 1.55,
+                  }}
+                >
+                  Pick a topic from the library to start reading.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    play("tap");
+                    setPage("where_to_start");
+                  }}
+                  style={{
+                    height: 48,
+                    padding: "0 22px",
+                    borderRadius: 14,
+                    background: t.green,
+                    color: "#000",
+                    fontSize: 16,
+                    fontWeight: 600,
+                    border: "none",
+                    cursor: "pointer",
+                    WebkitTapHighlightColor: "transparent",
+                    boxShadow: `0 4px 16px ${t.green}40`,
+                  }}
+                >
+                  Open library
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -4458,6 +4744,152 @@ export default function LifeApp() {
           </button>
         </div>
       )}
+
+      {deleteConfirmOpen && (
+        <DeleteAccountConfirm
+          t={t}
+          busy={deleteInProgress}
+          onCancel={() => { if (!deleteInProgress) setDeleteConfirmOpen(false); }}
+          onConfirm={performDeleteAccount}
+          cancelRef={deleteCancelRef}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * iOS-style confirm sheet for account deletion.
+ * - Centred modal with destructive red button
+ * - Focus auto-lands on Cancel (safe default)
+ * - Escape dismisses, simple focus cycle between the two buttons
+ */
+function DeleteAccountConfirm({ t, busy, onCancel, onConfirm, cancelRef }) {
+  const confirmRef = useRef(null);
+
+  useEffect(() => {
+    // Autofocus the safe action
+    const id = setTimeout(() => {
+      cancelRef.current?.focus?.();
+    }, 0);
+    const onKey = (e) => {
+      if (e.key === "Escape" && !busy) {
+        e.preventDefault();
+        onCancel?.();
+        return;
+      }
+      if (e.key === "Tab") {
+        const from = e.target;
+        e.preventDefault();
+        if (from === cancelRef.current) confirmRef.current?.focus?.();
+        else cancelRef.current?.focus?.();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      clearTimeout(id);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [busy, onCancel, cancelRef]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="life-delete-account-title"
+      aria-describedby="life-delete-account-desc"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9000,
+        background: "rgba(0,0,0,0.48)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "max(20px, var(--safe-left)) max(20px, var(--safe-right))",
+        animation: "ios-fade-in 0.2s ease-out both",
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget && !busy) onCancel?.(); }}
+    >
+      <div
+        style={{
+          background: t.white,
+          color: t.ink,
+          borderRadius: 20,
+          border: `1px solid ${t.border}`,
+          maxWidth: 340,
+          width: "100%",
+          padding: "22px 22px 16px",
+          textAlign: "center",
+          fontFamily:
+            "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
+          boxShadow: "0 24px 60px rgba(0,0,0,0.35)",
+          animation: "ios-modal-in 0.26s cubic-bezier(0.22,1,0.36,1) both",
+        }}
+      >
+        <h2
+          id="life-delete-account-title"
+          style={{ margin: "0 0 6px", fontSize: 17, fontWeight: 700 }}
+        >
+          Delete your account?
+        </h2>
+        <p
+          id="life-delete-account-desc"
+          style={{
+            margin: "0 0 18px",
+            fontSize: 13,
+            lineHeight: 1.5,
+            color: t.muted,
+          }}
+        >
+          This permanently removes your sign-in and cannot be undone.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <button
+            ref={confirmRef}
+            type="button"
+            onClick={onConfirm}
+            disabled={busy}
+            style={{
+              appearance: "none",
+              border: "none",
+              borderRadius: 12,
+              padding: "12px 14px",
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: busy ? "default" : "pointer",
+              background: "#FF453A",
+              color: "#fff",
+              opacity: busy ? 0.7 : 1,
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            {busy ? "Deleting…" : "Delete Account"}
+          </button>
+          <button
+            ref={cancelRef}
+            type="button"
+            onClick={onCancel}
+            disabled={busy}
+            style={{
+              appearance: "none",
+              border: `1px solid ${t.border}`,
+              borderRadius: 12,
+              padding: "12px 14px",
+              fontSize: 15,
+              fontWeight: 500,
+              cursor: busy ? "default" : "pointer",
+              background: "transparent",
+              color: t.ink,
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
