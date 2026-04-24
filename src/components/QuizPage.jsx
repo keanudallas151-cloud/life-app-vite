@@ -583,17 +583,13 @@ function SwipeBadgeDeck({ badges, stats, readKeys, totalTopics, t }) {
             <div style={{
               position: "absolute", inset: 0, borderRadius: 28, pointerEvents: "none",
               background: dragX > 0
-                ? "linear-gradient(to right, rgba(80,200,120,0.12), transparent)"
-                : "linear-gradient(to left, rgba(229,72,77,0.12), transparent)",
+                ? "linear-gradient(to right, rgba(255,255,255,0.08), transparent)"
+                : "linear-gradient(to left, rgba(255,255,255,0.08), transparent)",
               display: "flex", alignItems: "center",
               justifyContent: dragX > 0 ? "flex-start" : "flex-end",
               padding: "0 24px",
             }}>
-              <span
-                role="img"
-                aria-label={dragX > 0 ? "Swipe right to go back" : "Swipe left to advance"}
-                style={{ fontSize: 36, opacity: Math.min(Math.abs(dragX) / 80, 1) }}
-              >
+              <span style={{ fontSize: 24, opacity: Math.min(Math.abs(dragX) / 80, 1), color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>
                 {dragX > 0 ? "←" : "→"}
               </span>
             </div>
@@ -601,66 +597,27 @@ function SwipeBadgeDeck({ badges, stats, readKeys, totalTopics, t }) {
         </div>
       </div>
 
-      {/* Navigation */}
-      <div style={{ display: "flex", alignItems: "center", gap: 20, marginTop: 28 }}>
-        <button
-          type="button"
-          onClick={() => go("left")}
-          disabled={idx === 0}
-          style={{
-            width: 52, height: 52, borderRadius: "50%",
-            background: idx === 0 ? t.light : t.white,
-            border: `1.5px solid ${idx === 0 ? t.border : t.green + "55"}`,
-            color: idx === 0 ? t.muted : t.ink,
-            fontSize: 20, cursor: idx === 0 ? "default" : "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "all 0.2s ease",
-            boxShadow: idx === 0 ? "none" : `0 4px 12px rgba(0,0,0,0.3)`,
-          }}
-        >
-          ←
-        </button>
-
-        {/* Dot indicators */}
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          {resolvedBadges.map((b, i) => (
-            <button
-              key={b.id}
-              type="button"
-              onClick={() => { setAnimDir(i > idx ? "right" : "left"); setTimeout(() => { setIdx(i); setAnimDir(null); }, 260); }}
-              style={{
-                width: i === idx ? 20 : 6,
-                height: 6, borderRadius: 3,
-                background: i === idx ? (b.unlocked ? b.color : t.ink) : (b.unlocked ? t.green + "66" : t.border),
-                border: "none", cursor: "pointer", padding: 0,
-                transition: "all 0.25s cubic-bezier(0.22,1,0.36,1)",
-              }}
-            />
-          ))}
-        </div>
-
-        <button
-          type="button"
-          onClick={() => go("right")}
-          disabled={idx === total - 1}
-          style={{
-            width: 52, height: 52, borderRadius: "50%",
-            background: idx === total - 1 ? t.light : t.white,
-            border: `1.5px solid ${idx === total - 1 ? t.border : t.green + "55"}`,
-            color: idx === total - 1 ? t.muted : t.ink,
-            fontSize: 20, cursor: idx === total - 1 ? "default" : "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "all 0.2s ease",
-            boxShadow: idx === total - 1 ? "none" : `0 4px 12px rgba(0,0,0,0.3)`,
-          }}
-        >
-          →
-        </button>
+      {/* Navigation - Dot indicators only */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 28 }}>
+        {resolvedBadges.map((b, i) => (
+          <button
+            key={b.id}
+            type="button"
+            onClick={() => { setAnimDir(i > idx ? "right" : "left"); setTimeout(() => { setIdx(i); setAnimDir(null); }, 260); }}
+            style={{
+              width: i === idx ? 20 : 6,
+              height: 6, borderRadius: 3,
+              background: i === idx ? (b.unlocked ? b.color : t.ink) : (b.unlocked ? t.green + "66" : t.border),
+              border: "none", cursor: "pointer", padding: 0,
+              transition: "all 0.25s cubic-bezier(0.22,1,0.36,1)",
+            }}
+          />
+        ))}
       </div>
 
       {/* Swipe hint */}
       <p style={{ margin: "14px 0 0", fontSize: 11, color: t.muted, textAlign: "center", letterSpacing: 0.3 }}>
-        Swipe or tap arrows to explore • {idx + 1} of {total}
+        Swipe to explore • {idx + 1} of {total}
       </p>
     </div>
   );

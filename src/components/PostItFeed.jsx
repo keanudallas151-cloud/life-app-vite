@@ -854,8 +854,8 @@ export function PostItFeed({ play, user, onMomentumEvent, t: theme }) {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div
             style={{
-              width: 42,
-              height: 42,
+              width: 50,
+              height: 50,
               borderRadius: "50%",
               background: `linear-gradient(135deg, ${t.green} 0%, #3a9e60 100%)`,
               display: "flex",
@@ -864,21 +864,18 @@ export function PostItFeed({ play, user, onMomentumEvent, t: theme }) {
               flexShrink: 0,
             }}
           >
-            <span style={{ fontSize: 20 }}>💡</span>
+            <span style={{ fontSize: 24 }}>💡</span>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
-                fontSize: 15,
+                fontSize: 22,
                 fontWeight: 800,
-                color: t.ink,
-                letterSpacing: -0.2,
+                color: C.ink,
+                letterSpacing: -0.5,
               }}
             >
-              r/life
-            </div>
-            <div style={{ fontSize: 11, color: t.muted, marginTop: 1 }}>
-              12.4k members · Your daily growth community
+              Life.
             </div>
           </div>
           <button

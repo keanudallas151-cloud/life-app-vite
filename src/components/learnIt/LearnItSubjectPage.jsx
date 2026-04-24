@@ -356,47 +356,58 @@ function GameModal({ children, onClose, color, title, t, play }) {
   }, []);
 
   return (
-    <>
-      <div
-        onClick={onClose}
-        style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.72)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 900 }}
-      />
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      zIndex: 1000,
+      background: t?.skin || "#0a0a0a",
+      display: "flex",
+      flexDirection: "column",
+      overflow: "hidden",
+    }}>
+      {/* Header */}
       <div style={{
-        position: "fixed",
-        left: 0, right: 0, bottom: 0,
-        maxHeight: "92dvh",
-        background: t?.white || "#111111",
-        borderRadius: "22px 22px 0 0",
-        borderTop: `1px solid ${color}40`,
-        zIndex: 901,
         display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-        animation: "gameSheetUp 0.38s cubic-bezier(0.34,1.1,0.64,1) both",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "16px 20px",
+        borderBottom: `1px solid ${t?.border || "rgba(255,255,255,0.07)"}`,
+        background: t?.white || "#111111",
       }}>
-        <style>{`@keyframes gameSheetUp { from { transform: translateY(100%); opacity: 0.6; } to { transform: translateY(0); opacity: 1; } } @keyframes questionIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
-        {/* Pull handle */}
-        <div style={{ width: 40, height: 5, background: t?.border || "rgba(255,255,255,0.18)", borderRadius: 999, margin: "12px auto 0" }} />
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px 12px", borderBottom: `1px solid ${t?.border || "rgba(255,255,255,0.07)"}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 3, height: 20, borderRadius: 999, background: color, marginRight: 2, flexShrink: 0 }} />
-            <span style={{ fontSize: 17, fontWeight: 700, color: t?.ink || "#ededed", fontFamily: FONT, letterSpacing: "-0.02em" }}>{title}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => { play?.("back"); onClose(); }}
-            aria-label="Close"
-            title="Close"
-            style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "none", cursor: "pointer", color: t?.muted || "#a1a1a1", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONT, fontSize: 16, WebkitTapHighlightColor: "transparent" }}
-          >✕</button>
+        <button
+          type="button"
+          onClick={() => { play?.("back"); onClose(); }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: color || t?.green,
+            fontSize: 16,
+            fontWeight: 600,
+            fontFamily: FONT,
+            padding: 0,
+            WebkitTapHighlightColor: "transparent",
+          }}
+        >
+          <svg width="10" height="18" viewBox="0 0 10 18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 1 1 9 9 17" />
+          </svg>
+          Back
+        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, justifyContent: "center", marginLeft: "-50px" }}>
+          <div style={{ width: 3, height: 20, borderRadius: 999, background: color, flexShrink: 0 }} />
+          <span style={{ fontSize: 17, fontWeight: 700, color: t?.ink || "#ededed", fontFamily: FONT, letterSpacing: "-0.02em" }}>{title}</span>
         </div>
-        {/* Content */}
-        <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
-          {children}
-        </div>
+        <div style={{ width: 50 }} />
       </div>
-    </>
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
+        {children}
+      </div>
+    </div>
   );
 }
 
