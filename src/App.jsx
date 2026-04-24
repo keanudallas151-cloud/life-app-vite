@@ -3267,7 +3267,7 @@ export default function LifeApp() {
             zIndex: 40,
             transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
             transition:
-              "transform 0.28s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s ease",
+              "transform 0.42s cubic-bezier(0.34,1.1,0.64,1), box-shadow 0.3s ease",
             display: "flex",
             flexDirection: "column",
           }}

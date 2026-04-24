@@ -212,6 +212,18 @@ export function HomePage({
               type="button"
               onClick={onGetStarted}
               className="life-card-hover"
+              onPointerDown={(e) => {
+                e.currentTarget.style.transform = "scale(0.96)";
+              }}
+              onPointerUp={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+              }}
+              onPointerCancel={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+              }}
+              onPointerLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+              }}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -231,6 +243,9 @@ export function HomePage({
                 boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
                 minHeight: 52,
                 minWidth: 220,
+                WebkitTapHighlightColor: "transparent",
+                transition:
+                  "transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease",
               }}
             >
               Let&apos;s Start!
@@ -244,6 +259,18 @@ export function HomePage({
               type="button"
               onClick={onOpenIncomeIdeas}
               className="life-card-hover"
+              onPointerDown={(e) => {
+                e.currentTarget.style.transform = "scale(0.96)";
+              }}
+              onPointerUp={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+              }}
+              onPointerCancel={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+              }}
+              onPointerLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+              }}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -263,6 +290,9 @@ export function HomePage({
                 boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
                 minHeight: 52,
                 minWidth: 220,
+                WebkitTapHighlightColor: "transparent",
+                transition:
+                  "transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease",
               }}
             >
               Let&apos;s Make Money
