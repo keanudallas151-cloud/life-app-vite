@@ -4,7 +4,7 @@ import { THEME_MODES } from "../systems/theme";
 
 const PREF_DEFAULTS = {
   soundEnabled: true,
-  soundVolume: 58,
+  soundVolume: 50,
   soundMode: "focused",
   soundScope: "balanced",
   textScale: 100,
@@ -118,7 +118,7 @@ export default function SettingsPage({
       {/* Back row — iOS convention: SF Blue chevron + previous screen name */}
       <button
         onClick={() => {
-          play("back");
+          play("sheet_close");
           setPage("profile");
         }}
         style={{
@@ -255,7 +255,7 @@ export default function SettingsPage({
                   label: "Open Account Page",
                   desc: "Review your profile details and account surface",
                   onClick: () => {
-                    play("tap");
+                    play("sheet_open");
                     setPage("account_customize");
                   },
                 },
@@ -268,7 +268,7 @@ export default function SettingsPage({
                   label: "Privacy Policy",
                   desc: "Read how your data and app usage are handled",
                   onClick: () => {
-                    play("tap");
+                    play("sheet_open");
                     setPage("privacy_policy");
                   },
                 },
@@ -276,7 +276,7 @@ export default function SettingsPage({
                   label: "Terms & Conditions",
                   desc: "Review the current platform terms",
                   onClick: () => {
-                    play("tap");
+                    play("sheet_open");
                     setPage("terms_conditions");
                   },
                 },
@@ -290,7 +290,7 @@ export default function SettingsPage({
                   desc: "Reset app preferences back to the default settings",
                   onClick: () => {
                     updateUiPrefs(PREF_DEFAULTS);
-                    play("ok");
+                    play("success");
                   },
                 },
                 {
@@ -298,7 +298,7 @@ export default function SettingsPage({
                   desc: "Clear reading progress and start your tracking from zero",
                   onClick: () => {
                     setReadKeys([]);
-                    play("ok");
+                    play("success");
                   },
                 },
                 {
@@ -312,7 +312,7 @@ export default function SettingsPage({
                       points: 2,
                       meta: { action: "tailor_reset" },
                     });
-                    play("ok");
+                    play("success");
                   },
                 },
                 onDeleteAccount && {
@@ -320,6 +320,7 @@ export default function SettingsPage({
                   desc: "Remove your account and associated data",
                   danger: true,
                   onClick: () => onDeleteAccount(),
+                  sound: "destructive",
                 },
               ],
             },

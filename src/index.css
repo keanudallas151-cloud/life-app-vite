@@ -32,6 +32,62 @@
 
   /* Bottom nav height — 0 on desktop, overridden on mobile */
   --life-bottom-nav-height: 0px;
+
+  /* ───────────────────────────────────────────────────────────────
+     RESPONSIVE DESIGN TOKENS (Phase 1 foundation)
+     Fluid, universal sizing via clamp(min, preferred-vw, max).
+     One rule scales smoothly from 320px (iPhone SE) → 430px
+     (Pro Max) → 768px (tablet) with no extra breakpoints.
+     Prefer these tokens over raw px for new code.
+     See docs/responsive-tokens.md for guidance.
+     ─────────────────────────────────────────────────────────────── */
+
+  /* Fluid spacing scale (≈4 → 48px). Use in padding/gap/margin. */
+  --life-space-1: clamp(4px,  0.9vw,  6px);
+  --life-space-2: clamp(6px,  1.5vw, 10px);
+  --life-space-3: clamp(10px, 2.4vw, 14px);
+  --life-space-4: clamp(14px, 3.4vw, 20px);
+  --life-space-5: clamp(20px, 4.8vw, 28px);
+  --life-space-6: clamp(28px, 6.4vw, 40px);
+
+  /* Fluid type scale (body ≈15→17px). Use for font-size. */
+  --life-text-xs:   clamp(11px, 2.6vw, 12px);
+  --life-text-sm:   clamp(12px, 3.1vw, 13px);
+  --life-text-base: clamp(14px, 3.8vw, 16px);
+  --life-text-lg:   clamp(16px, 4.4vw, 18px);
+  --life-text-xl:   clamp(18px, 5.2vw, 22px);
+  --life-text-2xl:  clamp(22px, 6.4vw, 28px);
+
+  /* Fluid line-heights paired with the type scale. */
+  --life-leading-tight:  1.25;
+  --life-leading-normal: 1.45;
+  --life-leading-loose:  1.6;
+
+  /* Fluid radius scale. Use for border-radius. */
+  --life-radius-sm: 6px;
+  --life-radius-md: 10px;
+  --life-radius-lg: 14px;
+  --life-radius-xl: clamp(16px, 3.2vw, 22px);
+
+  /* Tap target floor (Apple HIG: 44, Material: 48). 44 is safe default. */
+  --life-tap-target: 44px;
+
+  /* Surface / on-surface contrast pair. Any text or icon placed on
+     a themed surface should pull its color from --life-on-surface
+     (or --life-on-surface-muted) to guarantee readable contrast. */
+  --life-surface:            #0a0a0a;
+  --life-surface-raised:     #111111;
+  --life-on-surface:         #ededed;
+  --life-on-surface-muted:   #a1a1a1;
+  --life-on-surface-subtle:  #6b6b6b;
+}
+
+body.life-dark {
+  --life-surface:           #000000;
+  --life-surface-raised:    #0a0a0a;
+  --life-on-surface:        #fafafa;
+  --life-on-surface-muted:  #a1a1a1;
+  --life-on-surface-subtle: #6b6b6b;
 }
 
 body.life-dark {
@@ -7173,3 +7229,81 @@ select:focus-visible {
   outline-offset: 1px !important;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════
+   ── FIX: Universal responsive utility classes (Phase 1 foundation) ─
+   Additive utilities built on the responsive design tokens defined in
+   :root. Safe to adopt incrementally — nothing here overrides existing
+   component rules. See docs/responsive-tokens.md.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Tap-target floor. Apply to icon-only buttons, nav chevrons, small
+   pill buttons, and any interactive element under the 44×44 HIG floor.
+   The inline-flex centering ensures the visible glyph stays centered
+   even when the hit box is larger than the glyph itself. */
+.life-tap-target {
+  min-width: var(--life-tap-target);
+  min-height: var(--life-tap-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+/* Readable text on a themed surface. Pairs with --life-surface tokens
+   so text/icons auto-adapt when the surface token changes. */
+.life-on-surface        { color: var(--life-on-surface); }
+.life-on-surface-muted  { color: var(--life-on-surface-muted); }
+.life-on-surface-subtle { color: var(--life-on-surface-subtle); }
+
+.life-surface {
+  background: var(--life-surface);
+  color: var(--life-on-surface);
+}
+.life-surface-raised {
+  background: var(--life-surface-raised);
+  color: var(--life-on-surface);
+}
+
+/* Image/avatar aspect-ratio utilities — prevents squished avatars and
+   stretched hero images, the most common "picture clash" on small
+   phones. Always pair with a width (or max-width) on the element. */
+.life-aspect-square { aspect-ratio: 1 / 1; }
+.life-aspect-video  { aspect-ratio: 16 / 9; }
+.life-aspect-4x3    { aspect-ratio: 4 / 3; }
+
+.life-img-cover,
+.life-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.life-avatar {
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--life-surface-raised);
+}
+
+/* Fluid type helpers — apply directly when you don't want to pick a
+   component class. Prefer component-scoped rules when possible. */
+.life-text-xs   { font-size: var(--life-text-xs); }
+.life-text-sm   { font-size: var(--life-text-sm); }
+.life-text-base { font-size: var(--life-text-base); }
+.life-text-lg   { font-size: var(--life-text-lg); }
+.life-text-xl   { font-size: var(--life-text-xl); }
+.life-text-2xl  { font-size: var(--life-text-2xl); }
+
+/* Fluid spacing helpers for quick container padding. */
+.life-p-1 { padding: var(--life-space-1); }
+.life-p-2 { padding: var(--life-space-2); }
+.life-p-3 { padding: var(--life-space-3); }
+.life-p-4 { padding: var(--life-space-4); }
+.life-p-5 { padding: var(--life-space-5); }
+.life-gap-1 { gap: var(--life-space-1); }
+.life-gap-2 { gap: var(--life-space-2); }
+.life-gap-3 { gap: var(--life-space-3); }
+.life-gap-4 { gap: var(--life-space-4); }

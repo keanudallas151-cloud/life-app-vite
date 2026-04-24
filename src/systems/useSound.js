@@ -28,6 +28,8 @@ const VOL = 0.27;
 
 const TYPE_COOLDOWN_MS = {
   tap: 60,
+  tap_soft: 60,
+  tap_firm: 70,
   ok: 80,
   open: 110,
   back: 110,
@@ -41,6 +43,30 @@ const TYPE_COOLDOWN_MS = {
   wrong: 170,
   correct: 120,
   home: 180,
+  // ─── iOS-style palette (Phase: sound variety) ─────────────────────
+  toggle_on: 90,
+  toggle_off: 90,
+  sheet_open: 140,
+  sheet_close: 140,
+  select: 70,
+  deselect: 70,
+  success: 240,
+  warn: 240,
+  destructive: 240,
+  refresh: 160,
+  swipe: 90,
+  send: 200,
+  receive: 220,
+  long_press: 180,
+  submit: 200,
+  unlock: 200,
+  lock: 200,
+  notif: 280,
+  primary: 110,
+  secondary: 90,
+  home_return: 220,
+  lobby_enter: 240,
+  tritone: 300,
 };
 
 const SOUND_MODE_DENSITY = {
@@ -88,6 +114,87 @@ const NAV_BACK_VARIANTS = [
   // Variant 3: descending three-step (E5 → C5 → A4)
   { notes: [659.25, 523.25, 440], times: [0, 0.035, 0.07], dur: 0.1, wave: "sine", detune: 0, peak: 0.052 },
 ];
+
+// ─── iOS-STYLE EXTENDED PALETTE ──────────────────────────────────────────
+// Each type is a small chime variant (same shape the existing `playChime`
+// understands) or a short noise burst for toggle-clicks/whooshes. Keeping
+// everything procedural means zero network, zero assets, zero licensing.
+// Tunings lean on the soft pentatonic (C/D/E/G/A) and short envelopes
+// (<160 ms) so taps never feel heavy or "game-y".
+
+// Rows 1–3: toggle / select — tiny tinted clicks.
+const V_TOGGLE_ON   = { notes: [880],            times: [0],           dur: 0.07, wave: "triangle", detune: 40,  peak: 0.05 };
+const V_TOGGLE_OFF  = { notes: [660],            times: [0],           dur: 0.07, wave: "triangle", detune: -40, peak: 0.05 };
+const V_SELECT      = { notes: [1046.5],         times: [0],           dur: 0.05, wave: "sine",     detune: 0,   peak: 0.045 };
+const V_DESELECT    = { notes: [784],            times: [0],           dur: 0.05, wave: "sine",     detune: 0,   peak: 0.04  };
+
+// Sheet / modal — quick glide up or down.
+const V_SHEET_OPEN  = { notes: [523.25, 784],    times: [0, 0.04],     dur: 0.14, wave: "sine",     detune: 20,  peak: 0.06 };
+const V_SHEET_CLOSE = { notes: [784, 523.25],    times: [0, 0.04],     dur: 0.14, wave: "sine",     detune: -20, peak: 0.055 };
+
+// Feedback — success bloom, soft warn, destructive thud.
+const V_SUCCESS     = { notes: [659.25, 880, 1046.5], times: [0, 0.06, 0.12], dur: 0.14, wave: "sine",     detune: 0,  peak: 0.07 };
+const V_WARN        = { notes: [440, 392],       times: [0, 0.07],     dur: 0.14, wave: "triangle", detune: 0,   peak: 0.06 };
+const V_DESTRUCTIVE = { notes: [196, 165],       times: [0, 0.08],     dur: 0.18, wave: "triangle", detune: -40, peak: 0.065 };
+
+// Flow — refresh tick, swipe glide, submit punch.
+const V_REFRESH     = { notes: [698.46, 880],    times: [0, 0.03],     dur: 0.09, wave: "sine",     detune: 0,   peak: 0.05 };
+const V_SWIPE       = { notes: [523.25, 587.33], times: [0, 0.04],     dur: 0.09, wave: "sine",     detune: 0,   peak: 0.045 };
+const V_SUBMIT      = { notes: [587.33, 880],    times: [0, 0.05],     dur: 0.12, wave: "sine",     detune: 10,  peak: 0.065 };
+const V_PRIMARY     = { notes: [587.33, 740],    times: [0, 0.04],     dur: 0.1,  wave: "sine",     detune: 0,   peak: 0.06 };
+const V_SECONDARY   = { notes: [523.25],         times: [0],           dur: 0.07, wave: "sine",     detune: 0,   peak: 0.05 };
+
+// Messaging — send (rising puff), receive (gentle ping), tri-tone (3 notes).
+const V_SEND        = { notes: [523.25, 880],    times: [0, 0.05],     dur: 0.13, wave: "triangle", detune: 30,  peak: 0.06 };
+const V_RECEIVE     = { notes: [880, 1174.66],   times: [0, 0.05],     dur: 0.13, wave: "sine",     detune: 0,   peak: 0.058 };
+const V_TRITONE     = { notes: [659.25, 830.61, 1046.5], times: [0, 0.08, 0.16], dur: 0.14, wave: "sine", detune: 0, peak: 0.065 };
+const V_NOTIF       = { notes: [1046.5, 1318.51], times: [0, 0.09],    dur: 0.16, wave: "sine",     detune: 0,   peak: 0.06 };
+
+// Lock/unlock/long-press — low-register thunks and chirps.
+const V_LOCK        = { notes: [261.63, 196],    times: [0, 0.05],     dur: 0.14, wave: "triangle", detune: -20, peak: 0.06 };
+const V_UNLOCK      = { notes: [196, 261.63, 329.63], times: [0, 0.04, 0.08], dur: 0.13, wave: "sine", detune: 0, peak: 0.06 };
+const V_LONG_PRESS  = { notes: [349.23, 392],    times: [0, 0.06],     dur: 0.16, wave: "triangle", detune: 0,   peak: 0.055 };
+
+// Home-return — a warm, grounding four-note descent. Distinct from the
+// generic back-chime so "returning to the lobby" always feels unique.
+const V_HOME_RETURN = { notes: [783.99, 659.25, 523.25, 392], times: [0, 0.045, 0.09, 0.14], dur: 0.12, wave: "sine", detune: 0, peak: 0.065 };
+
+// Lobby-enter — bright pentatonic climb, used when arriving at the home
+// surface from an auth/landing/onboarding flow. Distinct from nav-forward.
+const V_LOBBY_ENTER = { notes: [440, 523.25, 659.25, 880], times: [0, 0.04, 0.08, 0.14], dur: 0.14, wave: "sine", detune: 0, peak: 0.07 };
+
+// Light/firm tap variants — pair with the existing "tap" which maps to
+// the nav-forward chime. These give rows/buttons genuinely distinct feel.
+const V_TAP_SOFT    = { notes: [1046.5],         times: [0],           dur: 0.05, wave: "sine",     detune: 0,   peak: 0.04 };
+const V_TAP_FIRM    = { notes: [659.25, 880],    times: [0, 0.03],     dur: 0.09, wave: "sine",     detune: 0,   peak: 0.06 };
+
+const EXTRA_VARIANTS = {
+  toggle_on: V_TOGGLE_ON,
+  toggle_off: V_TOGGLE_OFF,
+  select: V_SELECT,
+  deselect: V_DESELECT,
+  sheet_open: V_SHEET_OPEN,
+  sheet_close: V_SHEET_CLOSE,
+  success: V_SUCCESS,
+  warn: V_WARN,
+  destructive: V_DESTRUCTIVE,
+  refresh: V_REFRESH,
+  swipe: V_SWIPE,
+  submit: V_SUBMIT,
+  primary: V_PRIMARY,
+  secondary: V_SECONDARY,
+  send: V_SEND,
+  receive: V_RECEIVE,
+  tritone: V_TRITONE,
+  notif: V_NOTIF,
+  lock: V_LOCK,
+  unlock: V_UNLOCK,
+  long_press: V_LONG_PRESS,
+  tap_soft: V_TAP_SOFT,
+  tap_firm: V_TAP_FIRM,
+  home_return: V_HOME_RETURN,
+  lobby_enter: V_LOBBY_ENTER,
+};
 
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -334,6 +441,16 @@ export function useSound(settings = {}) {
           return;
         }
 
+        // ──── iOS-STYLE EXTENDED PALETTE ────
+        // Direct 1:1 variant mapping — each type gets its own distinct
+        // chime so a toggle feels different from a sheet open, a success
+        // from a primary-button submit, etc. "Not overdoing it" is
+        // preserved via per-type cooldowns + master volume.
+        if (EXTRA_VARIANTS[type]) {
+          playChime(EXTRA_VARIANTS[type], master);
+          return;
+        }
+
         // ──── Quiz/feedback tones (err / correct / wrong) ────
         const ac = getAC();
         if (!ac) return;
@@ -391,4 +508,46 @@ export function useSound(settings = {}) {
   );
 
   return play;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GLOBAL [data-sound] DELEGATION
+// ═══════════════════════════════════════════════════════════════════════════
+// Mounts ONE document-level click listener that fires play(el.dataset.sound)
+// for any ancestor of the tapped element that has data-sound set. This is
+// the "cover every button cheaply" layer: contributors can add variety to a
+// button by dropping `data-sound="toggle_on"` on it, without needing a
+// handler or the play() reference in scope.
+//
+// Rules:
+//   • Runs in the capture phase so it fires even if the inner handler
+//     stops propagation.
+//   • Silently no-ops if `disabled`, `aria-disabled="true"`, or
+//     `data-sound="none"`.
+//   • Uses closest("[data-sound]") so the attribute can sit on the
+//     wrapping <button> even when the click target is a child <svg>.
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function useSoundDelegation(play) {
+  useEffect(() => {
+    if (typeof document === "undefined" || typeof play !== "function") return;
+    const onPointer = (e) => {
+      try {
+        const root = e.target;
+        if (!root || typeof root.closest !== "function") return;
+        const el = root.closest("[data-sound]");
+        if (!el) return;
+        if (el.disabled) return;
+        if (el.getAttribute("aria-disabled") === "true") return;
+        const name = el.getAttribute("data-sound");
+        if (!name || name === "none") return;
+        play(name);
+      } catch {
+        /* fail silent — UI sound must never crash the app */
+      }
+    };
+    // `pointerdown` so the feedback fires on press, matching iOS feel.
+    document.addEventListener("pointerdown", onPointer, { capture: true, passive: true });
+    return () => document.removeEventListener("pointerdown", onPointer, { capture: true });
+  }, [play]);
 }

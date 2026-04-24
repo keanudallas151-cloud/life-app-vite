@@ -924,7 +924,7 @@ export function QuizPage({
   }, [initialActivity, initialTopic]);
 
   const startQuiz = useCallback(() => {
-    play("ok");
+    play("tritone");
     if (topic === "communication" && communicationActivity !== "quiz") {
       const current = LS.get(COMMUNICATION_ACTIVITY_KEY, []);
       LS.set(
@@ -1325,7 +1325,7 @@ export function QuizPage({
             style={{ flex:"1 1 140px", minWidth:0, background:t.white, border:`1.5px solid ${t.border}`, borderRadius:12, padding:"15px", color:t.mid, fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"Georgia,serif" }}>
             Change Setup
           </button>
-          <button onClick={() => { play("ok"); setNewAchs([]); startQuiz(); }}
+          <button onClick={() => { play("tritone"); setNewAchs([]); startQuiz(); }}
             style={{ flex:"2 1 180px", minWidth:0, background:t.green, border:"none", borderRadius:12, padding:"15px", color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"Georgia,serif" }}>
             Play Again →
           </button>

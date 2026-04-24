@@ -48,7 +48,7 @@ import { LS } from "./systems/storage";
 import { C, S, useTheme, THEME_MODES } from "./systems/theme";
 import { useMomentum } from "./systems/useMomentum";
 import { useQuizStats } from "./systems/useQuizStats";
-import { useSound } from "./systems/useSound";
+import { useSound, useSoundDelegation } from "./systems/useSound";
 import { useUserData } from "./systems/useUserData";
 
 import { AccountCustomizePage } from "./components/AccountCustomizePage";
@@ -677,6 +677,10 @@ export default function LifeApp() {
     mode: uiPrefs.soundMode,
     scope: uiPrefs.soundScope,
   });
+  // Opt-in: any element with `data-sound="name"` plays that sound on press.
+  // Intentionally narrow — use only when a specific element deserves its own
+  // unique sound without duplicating the existing onClick play() call.
+  useSoundDelegation(play);
   const cloud = useUserData(userIdForData);
 
   const emailDeliverySyncKeyRef = useRef("");
@@ -1830,7 +1834,7 @@ export default function LifeApp() {
   }, [screen, setPage]);
 
   const goHome = () => {
-    play("home");
+    play("home_return");
     setPage("home");
   };
   const toggleBk = () => {
