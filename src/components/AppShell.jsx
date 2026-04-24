@@ -65,20 +65,29 @@ export function SS({
 }) {
   const th = theme || C;
   const iosfont = "-apple-system, SF Pro Display, Helvetica Neue, Arial, sans-serif";
+
+  const handleChevronClick = (e) => {
+    e.stopPropagation();
+    playFn("tap");
+    setOpen(!open);
+  };
+
+  const handleContainerClick = () => {
+    playFn("tap");
+    if (onLabelClick) {
+      setOpen(true);
+      onLabelClick();
+    } else {
+      setOpen(!open);
+    }
+  };
+
   return (
     <div data-page-tag={tag} style={{ margin: "2px 8px" }}>
       {/* Folder header row */}
       <button
         type="button"
-        onClick={() => {
-          playFn("tap");
-          if (onLabelClick) {
-            setOpen(true);
-            onLabelClick();
-            return;
-          }
-          setOpen(!open);
-        }}
+        onClick={handleContainerClick}
         style={{
           display: "flex",
           alignItems: "center",
@@ -130,19 +139,36 @@ export function SS({
           {label}
         </span>
 
-        {/* Chevron */}
-        <svg
-          width="14" height="14" viewBox="0 0 16 16" fill="none"
-          stroke={open ? th.green : th.muted}
-          strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+        {/* Chevron - clickable independently */}
+        <span
+          onClick={handleChevronClick}
           style={{
-            transform: open ? "rotate(90deg)" : "rotate(0deg)",
-            transition: "transform 0.22s cubic-bezier(0.25,1,0.5,1), stroke 0.18s ease",
-            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "4px",
+            minWidth: 28,
+            minHeight: 28,
+            borderRadius: 6,
+            cursor: "pointer",
+            transition: "background 0.18s ease",
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
         >
-          <polyline points="5,3 11,8 5,13"/>
-        </svg>
+          <svg
+            width="14" height="14" viewBox="0 0 16 16" fill="none"
+            stroke={open ? th.green : th.muted}
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            style={{
+              transform: open ? "rotate(90deg)" : "rotate(0deg)",
+              transition: "transform 0.22s cubic-bezier(0.25,1,0.5,1), stroke 0.18s ease",
+              flexShrink: 0,
+            }}
+          >
+            <polyline points="5,3 11,8 5,13"/>
+          </svg>
+        </span>
       </button>
 
       {/* Animated children */}
