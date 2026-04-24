@@ -4936,3 +4936,667 @@ textarea:focus-visible {
   transition: transform 0.1s ease !important;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GLOBAL PAGE POLISH — Homepage, DailyGrowth, Goals, Settings, SignIn
+   Deep iOS upgrade pass — typography, spacing, animation, interaction
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ────────────────────────────────────────────────────────────────────────────
+   1. TYPOGRAPHY SYSTEM — SF Pro everywhere
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Apply SF Pro to all headings and body text globally */
+[data-page-tag] h1,
+[data-page-tag] h2,
+[data-page-tag] h3,
+[data-page-tag] h4,
+[data-page-tag] p,
+[data-page-tag] span,
+[data-page-tag] label,
+[data-page-tag] button:not(.life-sidebar-link):not(.life-bottom-nav-item) {
+  font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* Keep Georgia only for the intentional editorial/quote elements */
+[data-page-tag="#dashboard_home"] blockquote,
+[data-page-tag="#dashboard_home"] .life-home-hero h1 {
+  font-family: Georgia, "Times New Roman", serif !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   2. HOME PAGE — quick-action cards, hero, buttons
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#dashboard_home"] {
+  /* Subtle animated background shimmer */
+  position: relative;
+}
+
+/* Hero headline — tighter tracking */
+[data-page-tag="#dashboard_home"] .life-home-hero h1 {
+  letter-spacing: -0.04em !important;
+  line-height: 0.9 !important;
+}
+
+/* Quick-action 2×2 grid cards — iOS grouped list feel */
+[data-page-tag="#dashboard_home"] .life-card-hover {
+  border-radius: 18px !important;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease,
+    background 0.15s ease !important;
+  min-height: 88px !important;
+}
+
+[data-page-tag="#dashboard_home"] .life-card-hover:active {
+  transform: scale(0.96) !important;
+}
+
+/* "Jump back in" section label */
+[data-page-tag="#dashboard_home"] p[style*="letterSpacing: 2"] {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  opacity: 0.55 !important;
+}
+
+/* CTA buttons on hero — iOS pill style */
+[data-page-tag="#dashboard_home"] button[style*="borderRadius: 999"] {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.01em !important;
+  min-height: 52px !important;
+  transition:
+    transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.18s ease,
+    background 0.15s ease !important;
+}
+
+[data-page-tag="#dashboard_home"] button[style*="borderRadius: 999"]:active {
+  transform: scale(0.95) !important;
+}
+
+/* Resume-reading card — iOS list row style */
+[data-page-tag="#dashboard_home"] [style*="borderRadius: 18"] {
+  border-radius: 18px !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   3. DAILY GROWTH PAGE
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#daily_growth"] {
+  animation: ios-fade-scale-in 0.3s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* Stat cards (streak, weekly rhythm) */
+[data-page-tag="#daily_growth"] [style*="borderRadius: 14"] {
+  border-radius: 16px !important;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* Streak number — large iOS-style display */
+[data-page-tag="#daily_growth"] [style*="fontSize: 28"][style*="fontWeight: 800"] {
+  font-size: 32px !important;
+  font-family: -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1 !important;
+}
+
+/* Weekly day chips */
+[data-page-tag="#daily_growth"] [style*="borderRadius: 10"] {
+  border-radius: 10px !important;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  min-width: 38px !important;
+}
+
+/* Growth item row buttons — iOS list row */
+[data-page-tag="#daily_growth"] button[style*="borderRadius: 14"] {
+  border-radius: 18px !important;
+  padding: 16px 18px !important;
+  min-height: 72px !important;
+  transition:
+    transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.18s ease,
+    background 0.15s ease !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+[data-page-tag="#daily_growth"] button[style*="borderRadius: 14"]:active {
+  transform: scale(0.975) !important;
+}
+
+/* Icon pill on growth items */
+[data-page-tag="#daily_growth"] [style*="borderRadius: 10"][style*="width: 38"] {
+  border-radius: 12px !important;
+  width: 42px !important;
+  height: 42px !important;
+}
+
+/* "Next Up" highlight card */
+[data-page-tag="#daily_growth"] [style*="borderRadius: 16"] {
+  border-radius: 20px !important;
+}
+
+/* "Continue today's growth" button — iOS green pill */
+[data-page-tag="#daily_growth"] button[style*="background: t.green"],
+[data-page-tag="#daily_growth"] button[style*="background: rgb(80, 200, 120)"],
+[data-page-tag="#daily_growth"] button[style*="borderRadius: 12"][style*="color: t.white"] {
+  border-radius: 12px !important;
+  min-height: 46px !important;
+  font-weight: 600 !important;
+  font-size: 15px !important;
+  letter-spacing: -0.01em !important;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* Progress strip */
+[data-page-tag="#daily_growth"] [style*="borderRadius: 12"][style*="greenLt"] {
+  border-radius: 14px !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   4. GOAL SETTING PAGE
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#goal_setting"] {
+  animation: ios-fade-scale-in 0.3s cubic-bezier(0.25, 1, 0.5, 1) both;
+  font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* Form inputs */
+[data-page-tag="#goal_setting"] input,
+[data-page-tag="#goal_setting"] textarea,
+[data-page-tag="#goal_setting"] select {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 16px !important;
+  border-radius: 14px !important;
+  min-height: 50px !important;
+  -webkit-appearance: none !important;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease !important;
+}
+
+[data-page-tag="#goal_setting"] input:focus,
+[data-page-tag="#goal_setting"] textarea:focus {
+  box-shadow: 0 0 0 3px rgba(80, 200, 120, 0.15) !important;
+  outline: none !important;
+}
+
+/* Goal cards */
+[data-page-tag="#goal_setting"] [style*="borderRadius"] {
+  border-radius: 18px !important;
+}
+
+/* Add Goal button */
+[data-page-tag="#goal_setting"] button[style*="background"][style*="green"] {
+  border-radius: 14px !important;
+  min-height: 50px !important;
+  font-weight: 600 !important;
+  font-size: 15px !important;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+[data-page-tag="#goal_setting"] button[style*="background"][style*="green"]:active {
+  transform: scale(0.95) !important;
+}
+
+/* Progress slider */
+[data-page-tag="#goal_setting"] input[type="range"] {
+  -webkit-appearance: none !important;
+  height: 6px !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,0.12) !important;
+  outline: none !important;
+  border: none !important;
+  min-height: unset !important;
+}
+
+[data-page-tag="#goal_setting"] input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 50% !important;
+  background: #50c878 !important;
+  box-shadow: 0 2px 8px rgba(80, 200, 120, 0.4) !important;
+  cursor: pointer !important;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+[data-page-tag="#goal_setting"] input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.2) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   5. SETTINGS PAGE — iOS grouped settings list
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#setting_preferences"] {
+  animation: ios-fade-scale-in 0.28s cubic-bezier(0.25, 1, 0.5, 1) both;
+  font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* Section headings */
+.life-settings-page h3,
+.life-settings-page h4 {
+  font-family: -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* Settings row buttons */
+.life-settings-page button {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  -webkit-tap-highlight-color: transparent !important;
+  transition: background 0.12s ease, transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.life-settings-page button:active {
+  transform: scale(0.97) !important;
+}
+
+/* Slider inputs in settings */
+.life-settings-page input[type="range"] {
+  -webkit-appearance: none !important;
+  height: 6px !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,0.12) !important;
+  outline: none !important;
+  border: none !important;
+}
+
+.life-settings-page input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 50% !important;
+  background: #50c878 !important;
+  box-shadow: 0 2px 8px rgba(80, 200, 120, 0.45) !important;
+  cursor: pointer !important;
+}
+
+/* Back button in settings */
+.life-settings-page > div > button:first-child {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
+  color: #50c878 !important;
+  transition: opacity 0.15s ease !important;
+}
+
+.life-settings-page > div > button:first-child:active {
+  opacity: 0.5 !important;
+  transform: scale(1) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   6. SIGN IN / REGISTER PAGES — iOS auth screen quality
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#sign_in_page"],
+[data-page-tag="#register_page"] {
+  font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+}
+
+.life-auth-shell input {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 16px !important;
+  border-radius: 14px !important;
+  min-height: 52px !important;
+  -webkit-appearance: none !important;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease !important;
+  letter-spacing: 0 !important;
+}
+
+.life-auth-shell input:focus {
+  box-shadow: 0 0 0 3px rgba(80, 200, 120, 0.18) !important;
+}
+
+.life-auth-shell button[type="submit"],
+.life-auth-shell button[type="button"][style*="background"] {
+  border-radius: 14px !important;
+  min-height: 52px !important;
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease !important;
+}
+
+.life-auth-shell button[type="submit"]:active,
+.life-auth-shell button[type="button"][style*="background"]:active {
+  transform: scale(0.96) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   7. SIDEBAR — full iOS polish
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Sidebar header — cleaner */
+.life-sidebar-header {
+  border-bottom: 0.5px solid rgba(255,255,255,0.08) !important;
+}
+
+/* Sidebar body scrollbar */
+.life-sidebar-body {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(80,200,120,0.2) transparent !important;
+}
+
+/* User info card in sidebar */
+.life-sidebar-progress-card {
+  border-radius: 16px !important;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.life-sidebar-progress-card:active {
+  transform: scale(0.975) !important;
+}
+
+/* Sidebar section labels */
+.life-sidebar-section-header button {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   8. QUIZ PAGE
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#quiz_page"] {
+  font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  animation: ios-fade-scale-in 0.3s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* Answer option buttons */
+[data-page-tag="#quiz_page"] button {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  -webkit-tap-highlight-color: transparent !important;
+  border-radius: 16px !important;
+  transition:
+    transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease !important;
+}
+
+[data-page-tag="#quiz_page"] button:active {
+  transform: scale(0.96) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   9. LEADERBOARD PAGE
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#leaderboard_page"] {
+  font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  animation: ios-fade-scale-in 0.28s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* Rank cards */
+[data-page-tag="#leaderboard_page"] [style*="borderRadius"] {
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   10. PROFILE PAGE
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#profile_page"] {
+  font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  animation: ios-fade-scale-in 0.28s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+[data-page-tag="#profile_page"] button {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  -webkit-tap-highlight-color: transparent !important;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease !important;
+}
+
+[data-page-tag="#profile_page"] button:active {
+  transform: scale(0.96) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   11. READER PAGE — iOS book reader feel
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#ebook_reader"] {
+  animation: ios-fade-scale-in 0.3s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   12. WHERE TO START / CATEGORIES — iOS grouped list
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#where_to_start"],
+[data-page-tag="#categories_page"],
+[data-page-tag="#category_hub"] {
+  font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  animation: ios-fade-scale-in 0.28s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+[data-page-tag="#where_to_start"] button,
+[data-page-tag="#categories_page"] button,
+[data-page-tag="#category_hub"] button {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  -webkit-tap-highlight-color: transparent !important;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease !important;
+}
+
+[data-page-tag="#where_to_start"] button:active,
+[data-page-tag="#categories_page"] button:active,
+[data-page-tag="#category_hub"] button:active {
+  transform: scale(0.97) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   13. GLOBAL — page transition animation on all pages
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag] {
+  animation: ios-page-enter 0.28s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+@keyframes ios-page-enter {
+  from { opacity: 0; transform: translateY(6px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   14. MOMENTUM HUB
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#momentum_hub"] {
+  font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+}
+
+[data-page-tag="#momentum_hub"] button {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   15. GLOBAL INPUT IMPROVEMENTS
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Remove ugly iOS tap highlight globally */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Improve all text inputs globally */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+textarea {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Date input fix for iOS */
+input[type="date"] {
+  font-size: 16px !important;
+  min-height: 44px !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   16. NOTIFICATION PANEL
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.life-notif-panel {
+  border-radius: 22px 22px 0 0 !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+}
+
+/* Notification rows */
+.life-notif-panel [style*="borderBottom"] {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  transition: background 0.12s ease !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   17. TOAST / SNACKBAR
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.life-toast {
+  border-radius: 16px !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.01em !important;
+  box-shadow:
+    0 4px 20px rgba(0,0,0,0.25),
+    0 1px 4px rgba(0,0,0,0.15) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   18. SKELETON LOADERS — iOS shimmer
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.life-skeleton {
+  border-radius: 10px !important;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(255,255,255,0.09) 50%,
+    rgba(255,255,255,0.04) 100%
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: ios-shimmer-sweep 1.6s ease infinite !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   19. LANDING PAGE — iOS splash quality
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#landing_page"] {
+  font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+}
+
+[data-page-tag="#landing_page"] button {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   20. POST-IT FEED — sticky notes iOS style
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#post_it_feed"] {
+  font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  animation: ios-page-enter 0.28s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   21. PROGRESS DASHBOARD
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#progress_dashboard"] {
+  font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  animation: ios-page-enter 0.28s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   22. TOOLS LOCK-IN PAGE — focus timer
+   ──────────────────────────────────────────────────────────────────────────── */
+
+[data-page-tag="#tools_lockin_page"] {
+  font-family: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  animation: ios-page-enter 0.28s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* Timer display */
+[data-page-tag="#tools_lockin_page"] [style*="fontSize: 6"],
+[data-page-tag="#tools_lockin_page"] [style*="font-size: 6"] {
+  font-variant-numeric: tabular-nums !important;
+  letter-spacing: -0.04em !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   23. GLOBAL CARD HOVER UPGRADE — more iOS spring
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@media (hover: hover) {
+  .life-card-hover:hover {
+    transform: translateY(-2px) scale(1.008) !important;
+    box-shadow:
+      0 8px 24px rgba(0,0,0,0.12),
+      0 2px 8px rgba(0,0,0,0.06) !important;
+  }
+}
+
+.life-card-hover:active {
+  transform: scale(0.972) !important;
+  transition: transform 0.08s ease !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   24. HAPTIC FEEDBACK CLASS — visual pop for tap events
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@keyframes ios-haptic-pop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(0.94); }
+  70%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+.ios-haptic-pop {
+  animation: ios-haptic-pop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   25. SIDEBAR — iOS glassmorphism upgrade
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@supports (backdrop-filter: blur(20px)) {
+  .life-sidebar {
+    backdrop-filter: blur(24px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+    background: rgba(10,10,10,0.88) !important;
+  }
+
+  body.life-dark .life-sidebar {
+    background: rgba(0,0,0,0.92) !important;
+  }
+}
+
+/* Sidebar item active highlight */
+.life-sidebar-link[style*="background"] {
+  border-radius: 12px !important;
+}
+

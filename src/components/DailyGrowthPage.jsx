@@ -132,28 +132,36 @@ export function DailyGrowthPage({ t, play, setPage, onMomentumEvent }) {
     setActiveItem(item);
   };
 
+  const iosfont = "-apple-system, SF Pro Display, Helvetica Neue, Arial, sans-serif";
+
   return (
     <div
       data-page-tag="#daily_growth"
-      style={{ padding: "48px 28px", maxWidth: 560, margin: "0 auto" }}
+      style={{ padding: "28px 20px 48px", maxWidth: 560, margin: "0 auto", fontFamily: iosfont }}
     >
+      <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 600, letterSpacing: "0.07em", textTransform: "uppercase", color: t.green, fontFamily: iosfont }}>
+        Daily
+      </p>
       <h2
         style={{
-          fontSize: 26,
+          fontSize: 32,
           fontWeight: 700,
           color: t.ink,
-          margin: "0 0 10px",
+          margin: "0 0 6px",
+          letterSpacing: "-0.03em",
+          lineHeight: 1.08,
+          fontFamily: iosfont,
         }}
       >
-        Daily Growth
+        Growth
       </h2>
       <p
         style={{
           color: t.muted,
-          fontSize: 15,
-          lineHeight: 1.8,
-          margin: "0 0 20px",
-          fontStyle: "italic",
+          fontSize: 14,
+          lineHeight: 1.6,
+          margin: "0 0 22px",
+          fontFamily: iosfont,
         }}
       >
         Small daily actions that compound into life-changing results.

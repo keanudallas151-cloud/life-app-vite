@@ -86,6 +86,8 @@ import { SignInPage } from "./components/SignInPage";
 import { ThemePickerPage } from "./components/ThemePickerPage";
 import { ToolsLockInPage } from "./components/ToolsLockInPage";
 import { ToolsOrganizedPage } from "./components/ToolsOrganizedPage";
+import { LearnItPage } from "./components/learnIt/LearnItPage";
+import { LearnItSubjectPage } from "./components/learnIt/LearnItSubjectPage";
 import { VerifyEmailPage } from "./components/VerifyEmailPage";
 import { WhereToStartPage } from "./components/WhereToStartPage";
 import { signInWithGoogle } from "./services/firebaseAuth";
@@ -871,6 +873,8 @@ export default function LifeApp() {
       sidebar_experience: "Experience — Life.",
       tools_lockin: "Lock In — Life.",
       tools_organized: "Organized — Life.",
+      learn_it: "Learn-It — Life.",
+      learn_it_subject: "Learn-It — Life.",
       premium: "Premium — Life.",
       discord_networking: "Networking Group — Life.",
       account_customize: "Account — Life.",
@@ -914,6 +918,7 @@ export default function LifeApp() {
   const [lifeOpen, setLifeOpen] = useState(true);
   const [libOpen, setLibOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [learnItSubject, setLearnItSubject] = useState(null); // "english" | "finance" | "demeanor"
   const [socialsOpen, setSocialsOpen] = useState(false);
   const [guidedOpen, setGuidedOpen] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
@@ -3531,6 +3536,29 @@ export default function LifeApp() {
                 }}
                 active={page === "tools_organized"}
               />
+              <SS
+                theme={t}
+                playFn={play}
+                label="Learn-It"
+                open={page === "learn_it" || page === "learn_it_subject"}
+                setOpen={(v) => { if (v) { play("tap"); setPage("learn_it"); } }}
+                tag="#learn_it"
+                active={page === "learn_it" || page === "learn_it_subject"}
+              >
+                {["english","finance","demeanor"].map(sub => (
+                  <SL
+                    key={sub}
+                    theme={t}
+                    label={sub.charAt(0).toUpperCase() + sub.slice(1)}
+                    onClick={() => {
+                      play("tap");
+                      setLearnItSubject(sub);
+                      setPage("learn_it_subject");
+                    }}
+                    active={page === "learn_it_subject" && learnItSubject === sub}
+                  />
+                ))}
+              </SS>
             </SS>
             <SS
               theme={t}
@@ -3961,6 +3989,26 @@ export default function LifeApp() {
 
             {page === "tools_organized" && (
               <ToolsOrganizedPage t={t} uid={uid} setPage={setPage} />
+            )}
+
+            {page === "learn_it" && (
+              <LearnItPage
+                t={t}
+                play={play}
+                onSelectSubject={(sub) => {
+                  setLearnItSubject(sub);
+                  setPage("learn_it_subject");
+                }}
+              />
+            )}
+
+            {page === "learn_it_subject" && (
+              <LearnItSubjectPage
+                t={t}
+                play={play}
+                subject={learnItSubject}
+                onBack={() => setPage("learn_it")}
+              />
             )}
 
             {page === "secret_sienna" && secretSiennaUnlocked && (
