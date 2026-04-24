@@ -2947,33 +2947,50 @@ export default function LifeApp() {
             </div>
           </button>
         </div>
-        <div style={{ flex: 1, minWidth: 0, margin: "0 4px", position: "relative" }}>
+        <div
+          className={`ios-search-bar-wrap${search ? " has-value" : ""}`}
+          style={{
+            flex: 1,
+            minWidth: 0,
+            margin: "0 4px",
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            height: 36,
+            background: dark ? "rgba(118,118,128,0.24)" : "rgba(118,118,128,0.12)",
+            borderRadius: 10,
+            padding: "0 8px",
+            transition: "background 0.2s ease",
+          }}
+        >
+          {/* Magnifying glass — SF Symbols style */}
           <svg
-            className="life-search-icon"
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
+            width="15"
+            height="15"
+            viewBox="0 0 15 15"
             fill="none"
+            aria-hidden
             style={{
-              position: "absolute",
-              left: 12,
-              top: "50%",
-              transform: "translateY(-50%)",
+              flexShrink: 0,
+              marginLeft: 2,
+              marginRight: 6,
+              color: dark ? "rgba(235,235,245,0.6)" : "rgba(60,60,67,0.6)",
               pointerEvents: "none",
-              zIndex: 2,
             }}
           >
-            <circle cx="6" cy="6" r="4.5" stroke={t.muted} strokeWidth="1.5" />
+            <circle cx="6.25" cy="6.25" r="4.75" stroke="currentColor" strokeWidth="1.6" />
             <line
-              x1="9.5"
-              y1="9.5"
-              x2="13"
-              y2="13"
-              stroke={t.muted}
-              strokeWidth="1.5"
+              x1="9.75"
+              y1="9.75"
+              x2="13.25"
+              y2="13.25"
+              stroke="currentColor"
+              strokeWidth="1.6"
               strokeLinecap="round"
             />
           </svg>
+
+          {/* The input itself */}
           <input
             ref={searchInputRef}
             type="text"
@@ -2988,63 +3005,61 @@ export default function LifeApp() {
               setShowSearch(true);
             }}
             onFocus={() => setShowSearch(true)}
-            placeholder="Search topics…"
+            placeholder="Search topics"
+            className="ios-search-input"
             style={{
+              flex: 1,
+              minWidth: 0,
               width: "100%",
-              background: t.light,
-              border: `1px solid ${t.border}`,
-              borderRadius: 20,
-              padding: "9px 34px 9px 36px",
-              color: t.ink,
-              fontSize: 13,
+              background: "transparent",
+              border: "none",
               outline: "none",
-              fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
-              boxSizing: "border-box",
-              transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-            onMouseEnter={(e) => {
-              if (!search)
-                e.currentTarget.style.background = dark ? "#333" : "#e8e4dc";
-            }}
-            onMouseLeave={(e) => {
-              if (!search) e.currentTarget.style.background = t.light;
+              padding: 0,
+              margin: 0,
+              color: t.ink,
+              fontSize: 15,
+              fontFamily: "-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif",
+              letterSpacing: "-0.01em",
+              lineHeight: 1.2,
+              minHeight: 0,
+              height: 34,
             }}
           />
+
+          {/* Clear button — iOS filled circle X */}
           {search && (
             <button
+              type="button"
               className="life-search-clear"
               onClick={() => {
+                play?.("tap");
                 setSearch("");
                 setShowSearch(false);
+                searchInputRef.current?.focus();
               }}
+              aria-label="Clear search"
               style={{
-                position: "absolute",
-                right: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "none",
+                flexShrink: 0,
+                width: 17,
+                height: 17,
+                borderRadius: "50%",
+                background: dark ? "rgba(235,235,245,0.35)" : "rgba(60,60,67,0.35)",
                 border: "none",
                 cursor: "pointer",
-                color: t.muted,
-                fontSize: 18,
-                width: 36,
-                height: 36,
+                padding: 0,
+                marginRight: 2,
+                marginLeft: 6,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                borderRadius: "50%",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = t.light;
-                e.currentTarget.style.color = t.ink;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = t.muted;
+                transition: "background 0.15s ease",
+                WebkitTapHighlightColor: "transparent",
               }}
             >
-              ×
+              <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden>
+                <line x1="2" y1="2" x2="7" y2="7" stroke={dark ? "#111" : "#fff"} strokeWidth="1.6" strokeLinecap="round" />
+                <line x1="7" y1="2" x2="2" y2="7" stroke={dark ? "#111" : "#fff"} strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
             </button>
           )}
         </div>

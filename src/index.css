@@ -7349,3 +7349,67 @@ select:focus-visible {
 .life-gap-2 { gap: var(--life-space-2); }
 .life-gap-3 { gap: var(--life-space-3); }
 .life-gap-4 { gap: var(--life-space-4); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOPBAR iOS SEARCH BAR — exact UISearchBar styling (UIKit equivalent)
+   Modelled on Mail, Messages, App Store search fields.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Override the global [data-page-tag] input rule for THIS search specifically */
+.ios-search-bar-wrap .ios-search-input,
+.life-topbar input[type="text"] {
+  font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 15px !important;
+  height: 34px !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: inherit !important;
+  border-radius: 0 !important;
+  letter-spacing: -0.01em !important;
+  box-shadow: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 100% !important;
+}
+
+/* Placeholder in iOS gray */
+.ios-search-bar-wrap .ios-search-input::placeholder {
+  color: rgba(60, 60, 67, 0.6);
+  opacity: 1;
+  font-weight: 400;
+}
+
+body.life-dark .ios-search-bar-wrap .ios-search-input::placeholder {
+  color: rgba(235, 235, 245, 0.6);
+}
+
+/* Subtle focus brighten — iOS doesn't change border, it brightens the fill */
+.ios-search-bar-wrap:focus-within {
+  background: rgba(118, 118, 128, 0.18) !important;
+}
+
+body.life-dark .ios-search-bar-wrap:focus-within {
+  background: rgba(118, 118, 128, 0.32) !important;
+}
+
+/* Focus outline off — iOS doesn't show one on search */
+.ios-search-bar-wrap .ios-search-input:focus-visible {
+  outline: none !important;
+}
+
+/* Clear button hover */
+.ios-search-bar-wrap .life-search-clear:hover {
+  background: rgba(60, 60, 67, 0.55) !important;
+}
+
+body.life-dark .ios-search-bar-wrap .life-search-clear:hover {
+  background: rgba(235, 235, 245, 0.55) !important;
+}
+
+.ios-search-bar-wrap .life-search-clear:active {
+  transform: scale(0.9);
+}
