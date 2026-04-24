@@ -99,10 +99,31 @@ function normalizeNotifications(list, fallback = getDefaultNotifications()) {
     .slice(0, MAX_NOTIFICATIONS);
 }
 
+const getSeedFlagKey = (uid) => `life_notifications_seeded_${uid || "_"}`;
+
 export function loadNotificationsFor(uid) {
-  return normalizeNotifications(
-    LS.get(getNotificationStorageKey(uid), getDefaultNotifications()),
-  );
+  const storageKey = getNotificationStorageKey(uid);
+  const seedKey = getSeedFlagKey(uid);
+  const alreadySeeded = LS.get(seedKey, false);
+
+  // If we've seeded defaults for this user before, respect whatever is now in
+  // storage — even if they cleared all notifs (empty array is a valid state).
+  if (alreadySeeded) {
+    const stored = LS.get(storageKey, null);
+    return normalizeNotifications(Array.isArray(stored) ? stored : [], []);
+  }
+
+  // First time for this user: seed defaults, persist, and mark as seeded.
+  const stored = LS.get(storageKey, null);
+  if (Array.isArray(stored) && stored.length > 0) {
+    // Legacy user — already has notifs saved from pre-seed-flag days. Mark them as seeded.
+    LS.set(seedKey, true);
+    return normalizeNotifications(stored, []);
+  }
+  const defaults = getDefaultNotifications();
+  LS.set(storageKey, defaults);
+  LS.set(seedKey, true);
+  return normalizeNotifications(defaults, []);
 }
 
 export function saveNotificationsFor(uid, list) {

@@ -2935,14 +2935,14 @@ export default function LifeApp() {
               <span
                 style={{
                   color: "#fff",
-                  fontSize: 18,
-                  fontWeight: 800,
+                  fontSize: 20,
+                  fontWeight: 700,
                   fontFamily: "Georgia, serif",
-                  letterSpacing: "-1px",
+                  letterSpacing: "-0.02em",
                   lineHeight: 1,
                 }}
               >
-                l.
+                L
               </span>
             </div>
           </button>

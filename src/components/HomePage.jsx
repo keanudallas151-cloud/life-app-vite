@@ -130,25 +130,30 @@ export function HomePage({
           <h1
             style={{
               margin: "0 0 18px",
-              fontSize: "clamp(3.6rem, 16vw, 6.4rem)",
+              fontSize: "clamp(5.2rem, 38vw, 10rem)",
               fontWeight: 800,
               color: t.ink,
-              fontFamily:
-                "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
-              letterSpacing: "-0.04em",
-              lineHeight: 0.92,
+              fontFamily: '"New York", Georgia, "Times New Roman", serif',
+              letterSpacing: "-0.045em",
+              lineHeight: 0.9,
+              whiteSpace: "nowrap",
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "center",
+              gap: "0.25em",
             }}
           >
-            Life
+            <span>Life</span>
             <span
+              aria-hidden
               style={{
                 display: "inline-block",
-                width: "0.3em",
-                height: "0.3em",
+                width: "0.22em",
+                height: "0.22em",
                 background: t.ink,
                 borderRadius: "50%",
-                marginLeft: "0.5em",
-                verticalAlign: "0.08em",
+                alignSelf: "flex-end",
+                marginBottom: "0.15em",
               }}
             />
           </h1>
@@ -212,94 +217,70 @@ export function HomePage({
             <button
               type="button"
               onClick={onGetStarted}
-              className="life-card-hover"
-              onPointerDown={(e) => {
-                e.currentTarget.style.transform = "scale(0.96)";
-              }}
-              onPointerUp={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-              }}
-              onPointerCancel={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-              }}
-              onPointerLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-              }}
+              onPointerDown={(e) => { e.currentTarget.style.transform = "scale(0.97)"; }}
+              onPointerUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onPointerCancel={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onPointerLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 10,
+                gap: 8,
                 width: "100%",
-                padding: "16px 32px",
-                background: "transparent",
-                color: t.ink,
-                border: `1.5px solid ${t.green}`,
-                borderRadius: 999,
-                fontSize: 16,
-                fontWeight: 700,
-                letterSpacing: 0.3,
-                fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
+                padding: "0 24px",
+                background: t.green,
+                color: "#000",
+                border: "none",
+                borderRadius: 14,
+                fontSize: 17,
+                fontWeight: 600,
+                letterSpacing: "-0.01em",
+                fontFamily: "-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif",
                 cursor: "pointer",
-                boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
-                minHeight: 52,
-                minWidth: 220,
+                boxShadow: `0 4px 16px ${t.green}45, 0 1px 0 rgba(255,255,255,0.15) inset`,
+                minHeight: 54,
                 WebkitTapHighlightColor: "transparent",
-                transition:
-                  "transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease",
+                transition: "transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease, background 0.15s ease",
               }}
             >
-              Let&apos;s Start!
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={t.ink} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
+              Let&apos;s Start
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
               </svg>
             </button>
 
             <button
               type="button"
               onClick={onOpenIncomeIdeas}
-              className="life-card-hover"
-              onPointerDown={(e) => {
-                e.currentTarget.style.transform = "scale(0.96)";
-              }}
-              onPointerUp={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-              }}
-              onPointerCancel={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-              }}
-              onPointerLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-              }}
+              onPointerDown={(e) => { e.currentTarget.style.transform = "scale(0.97)"; }}
+              onPointerUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onPointerCancel={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onPointerLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 10,
+                gap: 8,
                 width: "100%",
-                padding: "16px 32px",
-                background: "transparent",
+                padding: "0 24px",
+                background: "rgba(120,120,128,0.16)",
                 color: t.ink,
-                border: `1.5px solid ${t.green}`,
-                borderRadius: 999,
-                fontSize: 16,
-                fontWeight: 700,
-                letterSpacing: 0.3,
-                fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
+                border: "none",
+                borderRadius: 14,
+                fontSize: 17,
+                fontWeight: 600,
+                letterSpacing: "-0.01em",
+                fontFamily: "-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif",
                 cursor: "pointer",
-                boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
-                minHeight: 52,
-                minWidth: 220,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                minHeight: 54,
                 WebkitTapHighlightColor: "transparent",
-                transition:
-                  "transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease",
+                transition: "transform 0.15s cubic-bezier(0.34,1.56,0.64,1), background 0.15s ease",
               }}
             >
               Let&apos;s Make Money
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={t.ink} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={t.ink} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
               </svg>
             </button>
           </div>
