@@ -1807,7 +1807,7 @@ export default function LifeApp() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontFamily: "Georgia,serif",
+          fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
         }}
       >
         <style>{`
@@ -1878,7 +1878,7 @@ export default function LifeApp() {
               fontSize: 28,
               fontWeight: 700,
               color: C.ink,
-              fontFamily: "Georgia,serif",
+              fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
             }}
           >
             Life
@@ -2438,7 +2438,7 @@ export default function LifeApp() {
         background: t.skin,
         display: "flex",
         flexDirection: "column",
-        fontFamily: "Georgia,serif",
+        fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
         color: t.ink,
         overflow: "hidden",
       }}
@@ -2754,7 +2754,7 @@ export default function LifeApp() {
                   color: "#fff",
                   fontSize: 16,
                   fontWeight: 800,
-                  fontFamily: "Georgia,serif",
+                  fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
                   letterSpacing: "-0.5px",
                   lineHeight: 1,
                 }}
@@ -2815,7 +2815,7 @@ export default function LifeApp() {
               color: t.ink,
               fontSize: 13,
               outline: "none",
-              fontFamily: "Georgia,serif",
+              fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
               boxSizing: "border-box",
               transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
@@ -3034,7 +3034,7 @@ export default function LifeApp() {
                   borderBottom: `1px solid ${t.light}`,
                   padding: "14px 24px",
                   cursor: "pointer",
-                  fontFamily: "Georgia,serif",
+                  fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
                 }}
                 onMouseEnter={(e) =>
                   (e.currentTarget.style.background = t.light)
@@ -3266,7 +3266,7 @@ export default function LifeApp() {
                   color: t.ink,
                   padding: "0 12px",
                   fontSize: 13,
-                  fontFamily: "Georgia,serif",
+                  fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
                   boxSizing: "border-box",
                 }}
               />
@@ -3299,7 +3299,7 @@ export default function LifeApp() {
                       fontWeight: 700,
                       letterSpacing: 0.3,
                       cursor: "pointer",
-                      fontFamily: "Georgia,serif",
+                      fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
                     }}
                   >
                     {label}
@@ -3368,7 +3368,7 @@ export default function LifeApp() {
                           borderRadius: 12,
                           padding: "10px 12px",
                           cursor: "pointer",
-                          fontFamily: "Georgia,serif",
+                          fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
                         }}
                       >
                         <div
@@ -3465,7 +3465,7 @@ export default function LifeApp() {
                         borderRadius: 14,
                         padding: "12px 12px",
                         cursor: "pointer",
-                        fontFamily: "Georgia,serif",
+                        fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
                       }}
                     >
                       <div
@@ -3801,7 +3801,7 @@ export default function LifeApp() {
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: "pointer",
-                fontFamily: "Georgia,serif",
+                fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -4084,7 +4084,7 @@ export default function LifeApp() {
                     fontSize: 26,
                     fontWeight: 800,
                     color: t.ink,
-                    fontFamily: "Georgia,serif",
+                    fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
                   }}
                 >
                   Networking Group
@@ -4095,7 +4095,7 @@ export default function LifeApp() {
                     fontSize: 14,
                     color: t.mid,
                     lineHeight: 1.75,
-                    fontFamily: "Georgia,serif",
+                    fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
                   }}
                 >
                   Connect with other Life. members on Discord. Share wins, ask
@@ -4119,7 +4119,7 @@ export default function LifeApp() {
                     borderRadius: 14,
                     fontSize: 16,
                     fontWeight: 700,
-                    fontFamily: "Georgia,serif",
+                    fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
                     textDecoration: "none",
                     cursor: "pointer",
                     boxShadow: "0 4px 16px rgba(88,101,242,0.35)",
@@ -4414,7 +4414,7 @@ export default function LifeApp() {
                 color: "#fff",
                 fontSize: 18,
                 fontWeight: 800,
-                fontFamily: "Georgia,serif",
+                fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
               }}
             >
               l.

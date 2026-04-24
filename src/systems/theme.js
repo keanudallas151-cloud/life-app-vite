@@ -46,7 +46,7 @@ export const LIGHT = {
   greenLt:  "#e6f7ee",  // green tint bg (light)
   ink:      "#111111",  // primary text: near-black
   mid:      "#3a3a3a",  // body text: dark gray
-  muted:    "#6e6e6e",  // subtle text: readable mid-gray (4.5:1 on #f0f0f0)
+  muted:    "#595959",  // subtle text: #595959 on #f0f0f0 achieves ~4.6:1 (WCAG AA)
   border:   "#cccccc",  // hairline border: clearly visible on gray bg
   light:    "#e4e4e4",  // elevated tint (progress tracks, input bg)
   gold:     "#f5a623",  // warning accent (unchanged)

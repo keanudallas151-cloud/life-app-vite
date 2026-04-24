@@ -44,7 +44,7 @@ export function RouteFallback() {
         color: C.muted,
         fontSize: 13,
         fontStyle: "italic",
-        fontFamily: "Georgia,serif",
+        fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
       }}
     >
       Loading…
