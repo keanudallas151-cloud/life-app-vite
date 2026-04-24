@@ -1,5 +1,6 @@
 // v1.0.1 - auth fixes: DOB validation, 3s loading, Firebase migration follow-up
 import {
+  confirmPasswordReset,
   createUserWithEmailAndPassword,
   deleteUser,
   onAuthStateChanged,
@@ -8,6 +9,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
+  verifyPasswordResetCode,
 } from "firebase/auth";
 import {
   Suspense,
@@ -407,6 +409,7 @@ export default function LifeApp() {
   const [rpErr, setRpErr] = useState("");
   const postAuthScreenRef = useRef(null);
   const passwordRecoveryRef = useRef(false);
+  const passwordResetOobCodeRef = useRef(null);
   // Snapshots the form values at the moment errors are set.
   // We only clear an error when that specific field's CURRENT value
   // differs from its snapshot (i.e. the user actually edited it),
@@ -527,6 +530,45 @@ export default function LifeApp() {
       setUser(null);
       setScreen("landing");
       return undefined;
+    }
+
+    // Detect Firebase password-reset link (mode=resetPassword&oobCode=…) on load.
+    if (typeof window !== "undefined") {
+      try {
+        const search = window.location.search || "";
+        const readParam = (name) => {
+          const m = new RegExp(`[?&]${name}=([^&#]*)`).exec(search);
+          return m ? decodeURIComponent(m[1]) : null;
+        };
+        const mode = readParam("mode");
+        const oobCode = readParam("oobCode");
+        if (mode === "resetPassword" && oobCode) {
+          verifyPasswordResetCode(auth, oobCode)
+            .then(() => {
+              passwordResetOobCodeRef.current = oobCode;
+              passwordRecoveryRef.current = true;
+              setScreen("reset_password");
+              // Clean the URL so a refresh doesn't re-trigger with a stale code.
+              try {
+                window.history.replaceState(
+                  null,
+                  "",
+                  window.location.pathname,
+                );
+              } catch {
+                /* ignore */
+              }
+            })
+            .catch(() => {
+              setRpErr(
+                "This reset link is invalid or has expired. Request a new email from the sign-in screen.",
+              );
+              setScreen("signin");
+            });
+        }
+      } catch {
+        /* ignore URL parse errors */
+      }
     }
 
     let active = true;
@@ -1478,9 +1520,65 @@ export default function LifeApp() {
   };
 
   const doResetPassword = async () => {
+    if (authLoading) return;
     setRpErr("");
-    setRpErr("Use the reset link from your email to choose a new password.");
-    play("err");
+
+    if (rpPass.length < 8) {
+      setRpErr("Password must be at least 8 characters.");
+      play("err");
+      return;
+    }
+    if (
+      !/[A-Z]/.test(rpPass) ||
+      !/[a-z]/.test(rpPass) ||
+      !/\d/.test(rpPass) ||
+      !/[^A-Za-z0-9]/.test(rpPass)
+    ) {
+      setRpErr("Use upper/lowercase letters, a number, and a symbol.");
+      play("err");
+      return;
+    }
+    if (rpPass !== rpPass2) {
+      setRpErr("Passwords do not match.");
+      play("err");
+      return;
+    }
+
+    const oobCode = passwordResetOobCodeRef.current;
+    if (!auth || !oobCode) {
+      setRpErr(
+        "This reset link is invalid or has expired. Request a new email from the sign-in screen.",
+      );
+      play("err");
+      return;
+    }
+
+    setAuthLoading(true);
+    try {
+      await confirmPasswordReset(auth, oobCode, rpPass);
+      passwordResetOobCodeRef.current = null;
+      passwordRecoveryRef.current = false;
+      setRpPass("");
+      setRpPass2("");
+      play("ok");
+      setScreen("signin");
+    } catch (error) {
+      const code = String(error?.code || "");
+      if (code === "auth/expired-action-code" || code === "auth/invalid-action-code") {
+        setRpErr(
+          "This reset link is invalid or has expired. Request a new email from the sign-in screen.",
+        );
+      } else if (code === "auth/weak-password") {
+        setRpErr("Password is too weak. Use upper/lowercase, a number, and a symbol.");
+      } else {
+        setRpErr(
+          String(error?.message || "Could not update password. Please try again."),
+        );
+      }
+      play("err");
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   const doRegister = async () => {
