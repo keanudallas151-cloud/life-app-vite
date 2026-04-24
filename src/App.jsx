@@ -4500,6 +4500,73 @@ export default function LifeApp() {
                 />
               </Suspense>
             )}
+
+            {page === "reading" && !selContent && (
+              <div
+                data-page-tag="#reading_empty"
+                style={{
+                  padding: "64px 28px",
+                  maxWidth: 520,
+                  margin: "0 auto",
+                  textAlign: "center",
+                  fontFamily:
+                    "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 52,
+                    marginBottom: 16,
+                    lineHeight: 1,
+                  }}
+                  aria-hidden="true"
+                >
+                  📖
+                </div>
+                <p
+                  style={{
+                    margin: "0 0 8px",
+                    fontSize: 17,
+                    fontWeight: 600,
+                    color: t.ink,
+                  }}
+                >
+                  No topic open yet
+                </p>
+                <p
+                  style={{
+                    margin: "0 0 20px",
+                    fontSize: 15,
+                    color: t.muted,
+                    lineHeight: 1.55,
+                  }}
+                >
+                  Pick a topic from the library to start reading.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    play("tap");
+                    setPage("where_to_start");
+                  }}
+                  style={{
+                    height: 48,
+                    padding: "0 22px",
+                    borderRadius: 14,
+                    background: t.green,
+                    color: "#000",
+                    fontSize: 16,
+                    fontWeight: 600,
+                    border: "none",
+                    cursor: "pointer",
+                    WebkitTapHighlightColor: "transparent",
+                    boxShadow: `0 4px 16px ${t.green}40`,
+                  }}
+                >
+                  Open library
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
