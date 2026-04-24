@@ -1949,7 +1949,7 @@ export default function LifeApp() {
         data-page-tag="#privacy_policy_page"
         style={{
           height: "100%",
-          background: "#0a0a0a",
+          background: t.skin,
           padding: "max(40px, env(safe-area-inset-top)) 20px 48px",
           overflowY: "auto",
           WebkitOverflowScrolling: "touch",
@@ -1965,7 +1965,7 @@ export default function LifeApp() {
             style={{
               background: "none",
               border: "none",
-              color: "#50c878",
+              color: t.green,
               fontSize: 16,
               fontWeight: 400,
               cursor: "pointer",
@@ -1997,13 +1997,13 @@ export default function LifeApp() {
             fontWeight: 600,
             letterSpacing: "0.04em",
             textTransform: "uppercase",
-            color: "#50c878",
+            color: t.green,
           }}>Legal</p>
           <h1
             style={{
               fontSize: 34,
               fontWeight: 700,
-              color: "#ededed",
+              color: t.ink,
               letterSpacing: "-0.035em",
               lineHeight: 1.05,
               margin: "0 0 24px",
@@ -2040,8 +2040,8 @@ export default function LifeApp() {
             <div
               key={title}
               style={{
-                background: C.white,
-                border: `1px solid ${C.border}`,
+                background: t.white,
+                border: `1px solid ${t.border}`,
                 borderRadius: 14,
                 padding: "20px 22px",
                 marginBottom: 12,
@@ -2052,7 +2052,7 @@ export default function LifeApp() {
                   margin: "0 0 8px",
                   fontSize: 16,
                   fontWeight: 700,
-                  color: C.ink,
+                  color: t.ink,
                 }}
               >
                 {title}
@@ -2061,7 +2061,7 @@ export default function LifeApp() {
                 style={{
                   margin: 0,
                   fontSize: 14,
-                  color: C.mid,
+                  color: t.mid,
                   lineHeight: 1.7,
                 }}
               >
@@ -2071,7 +2071,7 @@ export default function LifeApp() {
           ))}
           <p
             style={{
-              color: C.muted,
+              color: t.muted,
               fontSize: 11,
               fontStyle: "italic",
               marginTop: 20,
@@ -2091,7 +2091,7 @@ export default function LifeApp() {
         data-page-tag="#terms_condition_page"
         style={{
           height: "100%",
-          background: "#0a0a0a",
+          background: t.skin,
           padding: "max(40px, env(safe-area-inset-top)) 20px 48px",
           overflowY: "auto",
           WebkitOverflowScrolling: "touch",
@@ -2107,7 +2107,7 @@ export default function LifeApp() {
             style={{
               background: "none",
               border: "none",
-              color: "#50c878",
+              color: t.green,
               fontSize: 16,
               fontWeight: 400,
               cursor: "pointer",
@@ -2125,12 +2125,12 @@ export default function LifeApp() {
             </svg>
             Back
           </button>
-          <p style={{ margin: "0 0 6px", fontSize: 13, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", color: "#50c878" }}>Legal</p>
+          <p style={{ margin: "0 0 6px", fontSize: 13, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", color: t.green }}>Legal</p>
           <h1
             style={{
               fontSize: 34,
               fontWeight: 700,
-              color: "#ededed",
+              color: t.ink,
               letterSpacing: "-0.035em",
               lineHeight: 1.05,
               margin: "0 0 24px",
@@ -2171,8 +2171,8 @@ export default function LifeApp() {
             <div
               key={title}
               style={{
-                background: C.white,
-                border: `1px solid ${C.border}`,
+                background: t.white,
+                border: `1px solid ${t.border}`,
                 borderRadius: 14,
                 padding: "20px 22px",
                 marginBottom: 12,
@@ -2183,7 +2183,7 @@ export default function LifeApp() {
                   margin: "0 0 8px",
                   fontSize: 16,
                   fontWeight: 700,
-                  color: C.ink,
+                  color: t.ink,
                 }}
               >
                 {title}
@@ -2192,7 +2192,7 @@ export default function LifeApp() {
                 style={{
                   margin: 0,
                   fontSize: 14,
-                  color: C.mid,
+                  color: t.mid,
                   lineHeight: 1.7,
                 }}
               >
@@ -2202,7 +2202,7 @@ export default function LifeApp() {
           ))}
           <p
             style={{
-              color: C.muted,
+              color: t.muted,
               fontSize: 11,
               fontStyle: "italic",
               marginTop: 20,
