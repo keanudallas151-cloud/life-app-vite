@@ -272,13 +272,53 @@ function DiscoverCard({
               width: "100%",
               aspectRatio: "3/4",
               background:
-                "linear-gradient(160deg, #0f0f0f 0%, #1c1c1e 60%, #111 100%)",
-              display: "grid",
-              placeItems: "center",
+                "linear-gradient(160deg, #111214 0%, #16191e 60%, #0d0f11 100%)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 14,
             }}
           >
-            <div>
-              <Avatar src="" name={profile.full_name} size={90} t={t} />
+            {/* iOS squircle avatar — smaller, tasteful */}
+            <div
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 18,
+                background:
+                  "linear-gradient(135deg, rgba(80,200,120,0.18) 0%, rgba(80,200,120,0.08) 100%)",
+                border: "1px solid rgba(80,200,120,0.22)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 26,
+                fontWeight: 700,
+                color: "rgba(80,200,120,0.9)",
+                fontFamily:
+                  "-apple-system,'SF Pro Display','Helvetica Neue',Arial,sans-serif",
+                letterSpacing: "-0.02em",
+                userSelect: "none",
+              }}
+            >
+              {(profile.full_name || "?")
+                .split(" ")
+                .map((w) => w[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase()}
+            </div>
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 600,
+                color: "rgba(255,255,255,0.7)",
+                fontFamily:
+                  "-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif",
+                letterSpacing: "-0.01em",
+              }}
+            >
+              {profile.full_name}
             </div>
             <div
               aria-hidden="true"
@@ -286,7 +326,7 @@ function DiscoverCard({
                 position: "absolute",
                 inset: 0,
                 background:
-                  "linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.7) 100%)",
+                  "linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.75) 100%)",
               }}
             />
           </div>
@@ -597,38 +637,48 @@ export function InventorsInvestorsSwipePage({
           </h2>
         </div>
 
-        {/* Persistent inbox button */}
+        {/* Persistent inbox button — iOS-style 44×44 tap target */}
         <button
           type="button"
           onClick={onOpenMessages}
           aria-label="Open messages"
           style={{
             position: "relative",
-            minWidth: 52,
-            minHeight: 52,
-            borderRadius: 18,
+            width: 44,
+            height: 44,
+            minHeight: 44,
+            borderRadius: 14,
             border: `1px solid ${t.border}`,
             background: t.white,
             cursor: "pointer",
             display: "grid",
             placeItems: "center",
-            boxShadow: `0 4px 14px ${alpha(t.ink, 0.06)}`,
+            boxShadow: `0 2px 8px ${alpha(t.ink, 0.06)}`,
             flexShrink: 0,
+            WebkitTapHighlightColor: "transparent",
+            transition: "transform 0.15s cubic-bezier(0.34,1.56,0.64,1)",
           }}
+          onTouchStart={(e) => { e.currentTarget.style.transform = "scale(0.92)"; }}
+          onTouchEnd={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onTouchCancel={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+          onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.92)"; }}
+          onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
         >
-          <span style={{ fontSize: 22 }}>💬</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={t.mid} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
           {pendingMessageCount ? (
             <span
               style={{
                 position: "absolute",
-                top: 6,
-                right: 6,
-                minWidth: 18,
-                height: 18,
+                top: 5,
+                right: 5,
+                minWidth: 16,
+                height: 16,
                 borderRadius: 999,
                 background: t.green,
                 color: "#fff",
-                fontSize: 10,
+                fontSize: 9,
                 fontWeight: 800,
                 display: "grid",
                 placeItems: "center",
@@ -697,11 +747,12 @@ export function InventorsInvestorsSwipePage({
             style={{
               padding: "7px 12px",
               borderRadius: 999,
-              background: alpha(t.red, 0.06),
-              border: `1px solid ${alpha(t.red, 0.12)}`,
-              color: t.mid,
+              background: alpha(t.ink, 0.06),
+              border: `1px solid ${alpha(t.ink, 0.1)}`,
+              color: t.muted,
               fontSize: 11,
-              fontWeight: 700,
+              fontWeight: 600,
+              letterSpacing: "0.01em",
             }}
           >
             {activeFilter
@@ -769,8 +820,8 @@ export function InventorsInvestorsSwipePage({
               display: "grid",
               gridTemplateColumns: "auto 1fr 1fr auto",
               alignItems: "center",
-              gap: 14,
-              marginTop: 22,
+              gap: 10,
+              marginTop: 18,
               maxWidth: 440,
               marginLeft: "auto",
               marginRight: "auto",
@@ -783,17 +834,25 @@ export function InventorsInvestorsSwipePage({
               onClick={onStartChat}
               aria-label="Message"
               style={{
-                width: 48,
-                height: 48,
+                width: 44,
+                height: 44,
+                minHeight: 44,
                 borderRadius: 999,
                 border: `1px solid ${t.border}`,
                 background: t.white,
                 cursor: "pointer",
-                fontSize: 20,
+                fontSize: 18,
                 display: "grid",
                 placeItems: "center",
-                boxShadow: `0 4px 14px ${alpha(t.ink, 0.08)}`,
+                boxShadow: `0 2px 10px ${alpha(t.ink, 0.08)}`,
+                WebkitTapHighlightColor: "transparent",
+                transition: "transform 0.15s cubic-bezier(0.34,1.56,0.64,1)",
               }}
+              onTouchStart={(e) => { e.currentTarget.style.transform = "scale(0.92)"; }}
+              onTouchEnd={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onTouchCancel={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.92)"; }}
+              onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
             >
               💬
             </button>
@@ -804,16 +863,26 @@ export function InventorsInvestorsSwipePage({
               onClick={handleStarterPass}
               aria-label="Pass"
               style={{
-                minHeight: 56,
-                borderRadius: 18,
-                border: `2px solid ${alpha(t.red, 0.32)}`,
+                height: 52,
+                minHeight: 52,
+                borderRadius: 16,
+                border: `1.5px solid ${alpha(t.red, 0.28)}`,
                 background: alpha(t.red, 0.07),
                 color: t.red,
-                fontWeight: 800,
-                fontSize: 16,
+                fontWeight: 700,
+                fontSize: 15,
                 cursor: "pointer",
-                letterSpacing: 0.4,
+                letterSpacing: "-0.01em",
+                fontFamily:
+                  "-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif",
+                WebkitTapHighlightColor: "transparent",
+                transition: "transform 0.15s cubic-bezier(0.34,1.56,0.64,1)",
               }}
+              onTouchStart={(e) => { e.currentTarget.style.transform = "scale(0.96)"; }}
+              onTouchEnd={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onTouchCancel={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.96)"; }}
+              onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
             >
               ✗ Pass
             </button>
@@ -824,17 +893,27 @@ export function InventorsInvestorsSwipePage({
               onClick={handleStarterInterested}
               aria-label="Interested"
               style={{
-                minHeight: 56,
-                borderRadius: 18,
+                height: 52,
+                minHeight: 52,
+                borderRadius: 16,
                 border: "none",
                 background: t.green,
-                color: "#fff",
-                fontWeight: 800,
-                fontSize: 16,
+                color: "#000",
+                fontWeight: 700,
+                fontSize: 15,
                 cursor: "pointer",
-                letterSpacing: 0.4,
-                boxShadow: `0 8px 24px ${alpha(t.green, 0.3)}`,
+                letterSpacing: "-0.01em",
+                fontFamily:
+                  "-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif",
+                boxShadow: `0 6px 20px ${alpha(t.green, 0.3)}`,
+                WebkitTapHighlightColor: "transparent",
+                transition: "transform 0.15s cubic-bezier(0.34,1.56,0.64,1)",
               }}
+              onTouchStart={(e) => { e.currentTarget.style.transform = "scale(0.96)"; }}
+              onTouchEnd={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onTouchCancel={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.96)"; }}
+              onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
             >
               ♥ Interested
             </button>
@@ -845,17 +924,25 @@ export function InventorsInvestorsSwipePage({
               onClick={onReport}
               aria-label="Report"
               style={{
-                width: 48,
-                height: 48,
+                width: 44,
+                height: 44,
+                minHeight: 44,
                 borderRadius: 999,
                 border: `1px solid ${t.border}`,
                 background: t.white,
                 cursor: "pointer",
-                fontSize: 18,
+                fontSize: 16,
                 display: "grid",
                 placeItems: "center",
-                boxShadow: `0 4px 14px ${alpha(t.ink, 0.08)}`,
+                boxShadow: `0 2px 10px ${alpha(t.ink, 0.08)}`,
+                WebkitTapHighlightColor: "transparent",
+                transition: "transform 0.15s cubic-bezier(0.34,1.56,0.64,1)",
               }}
+              onTouchStart={(e) => { e.currentTarget.style.transform = "scale(0.92)"; }}
+              onTouchEnd={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onTouchCancel={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.92)"; }}
+              onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
             >
               ⚑
             </button>
