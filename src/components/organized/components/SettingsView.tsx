@@ -450,6 +450,9 @@ export function SettingsView({
                             <p className="text-xs text-muted-foreground">
                               Button sounds stay on for every tap
                             </p>
+                            <span className="organized-sound-locked-badge">
+                              Locked on
+                            </span>
                           </div>
                         </div>
                         <Switch
