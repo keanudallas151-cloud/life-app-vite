@@ -2845,7 +2845,7 @@ export default function LifeApp() {
           paddingTop: "var(--safe-top, 0px)",
           backdropFilter: "saturate(1.4) blur(16px)",
           WebkitBackdropFilter: "saturate(1.4) blur(16px)",
-          boxShadow: "0 1px 0 rgba(0,0,0,0.04), 0 8px 24px rgba(61,90,76,0.06)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.14)",
         }}
       >
         <div
@@ -3803,7 +3803,7 @@ export default function LifeApp() {
               <SL
                 theme={t}
                 label="Focus Timer"
-                icon="clock"
+                icon="timer"
                 onClick={() => {
                   play("tap");
                   setSidebarOpen(false);
@@ -4458,6 +4458,10 @@ export default function LifeApp() {
                 user={user}
                 play={play}
                 onSystemNotify={pushSystemNotification}
+                onBack={() => {
+                  play("back");
+                  setPage("home");
+                }}
               />
             )}
 

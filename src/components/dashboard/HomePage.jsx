@@ -409,38 +409,48 @@ export function HomePage({
                 position: "absolute",
                 top: 12,
                 right: 12,
-                width: 24,
-                height: 24,
+                width: 28,
+                height: 28,
+                minHeight: 28,
                 borderRadius: 999,
-                background: `${t.muted}10`,
-                border: `1px solid ${t.border}`,
+                background: "rgba(255,255,255,0.06)",
+                border: "none",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: t.mid,
+                color: t.muted,
                 padding: 0,
                 zIndex: 2,
-                transition: "background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.12s ease",
+                transition: "background 0.15s ease, transform 0.12s cubic-bezier(0.34,1.56,0.64,1)",
+                WebkitTapHighlightColor: "transparent",
+              }}
+              onTouchStart={(e) => {
+                e.currentTarget.style.background = "rgba(255,255,255,0.12)";
+                e.currentTarget.style.transform = "scale(0.9)";
+              }}
+              onTouchEnd={(e) => {
+                e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+                e.currentTarget.style.transform = "scale(1)";
+              }}
+              onTouchCancel={(e) => {
+                e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+                e.currentTarget.style.transform = "scale(1)";
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = `${t.muted}18`;
-                e.currentTarget.style.color = t.ink;
-                e.currentTarget.style.borderColor = `${t.muted}2a`;
+                e.currentTarget.style.background = "rgba(255,255,255,0.10)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = `${t.muted}10`;
-                e.currentTarget.style.color = t.mid;
-                e.currentTarget.style.borderColor = t.border;
+                e.currentTarget.style.background = "rgba(255,255,255,0.06)";
               }}
               onMouseDown={(e) => {
-                e.currentTarget.style.transform = "scale(0.92)";
+                e.currentTarget.style.transform = "scale(0.9)";
               }}
               onMouseUp={(e) => {
                 e.currentTarget.style.transform = "scale(1)";
               }}
             >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>

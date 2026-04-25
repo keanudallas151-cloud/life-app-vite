@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useInventorsInvestorsData } from "../../hooks/useInventorsInvestorsData";
 import {
   clearDraft,
@@ -289,7 +289,7 @@ function MatchOverlay({ t, matchState, onClose, onOpenMessages }) {
   );
 }
 
-export function InventorsInvestors({ t, user, play, onSystemNotify }) {
+export function InventorsInvestors({ t, user, play, onSystemNotify, onBack }) {
   const {
     loading,
     saving,
@@ -333,6 +333,8 @@ export function InventorsInvestors({ t, user, play, onSystemNotify }) {
   const [activityFeed, setActivityFeed] = useState(() =>
     loadActivityFeed(userId),
   );
+  // Track whether we've done the initial view redirect so Back button works correctly
+  const didInitialRedirectRef = useRef(false);
 
   useEffect(() => {
     setActivityFeed(loadActivityFeed(userId));
@@ -411,9 +413,13 @@ export function InventorsInvestors({ t, user, play, onSystemNotify }) {
       return;
     }
 
-    const storedView = loadFeatureView(user.id);
-    if (!storedView || storedView === "landing" || view === "landing") {
-      setView("swipe");
+    // Only redirect to swipe on initial mount (not when user explicitly navigates back)
+    if (!didInitialRedirectRef.current) {
+      didInitialRedirectRef.current = true;
+      const storedView = loadFeatureView(user.id);
+      if (!storedView || storedView === "landing") {
+        setView("swipe");
+      }
     }
   }, [loading, profile, roleChoice, selectedRole, user?.id, view]);
 
@@ -653,18 +659,63 @@ export function InventorsInvestors({ t, user, play, onSystemNotify }) {
                 width: "100%",
                 maxWidth: 720,
                 margin: "0 auto",
-                padding: "12px 18px 0",
+                padding: "4px 18px 0",
               }}
             >
-              <SecondaryButton
-                t={t}
+              {/* iOS-style back button — chevron + label, no background box */}
+              <button
+                type="button"
                 onClick={() => {
-                  play?.("tap");
-                  setView("landing");
+                  play?.("back");
+                  onBack?.();
+                }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: t.green,
+                  fontSize: 17,
+                  fontWeight: 400,
+                  fontFamily:
+                    "-apple-system,'SF Pro Text','Helvetica Neue',Arial,sans-serif",
+                  padding: "8px 4px",
+                  minHeight: 44,
+                  WebkitTapHighlightColor: "transparent",
+                  letterSpacing: "-0.01em",
+                }}
+                onTouchStart={(e) => {
+                  e.currentTarget.style.opacity = "0.55";
+                }}
+                onTouchEnd={(e) => {
+                  e.currentTarget.style.opacity = "1";
+                }}
+                onTouchCancel={(e) => {
+                  e.currentTarget.style.opacity = "1";
+                }}
+                onMouseDown={(e) => {
+                  e.currentTarget.style.opacity = "0.55";
+                }}
+                onMouseUp={(e) => {
+                  e.currentTarget.style.opacity = "1";
                 }}
               >
-                ← Back
-              </SecondaryButton>
+                <svg
+                  width="10"
+                  height="18"
+                  viewBox="0 0 10 18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="9 1 1 9 9 17" />
+                </svg>
+                <span>Home</span>
+              </button>
             </div>
             <ActivitySummaryBar
               t={t}
