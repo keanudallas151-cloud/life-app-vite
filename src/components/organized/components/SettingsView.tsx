@@ -227,16 +227,6 @@ export function SettingsView({
     toast.success(`Haptic feedback ${checked ? "enabled" : "disabled"}`);
   };
 
-  const handleSoundToggle = (checked: boolean) => {
-    if (!onSettingsChange || !settings) return;
-    if (settings.hapticFeedback) triggerHaptic("light");
-    playButtonSound();
-    onSettingsChange({ ...settings, buttonSounds: true });
-    toast.success(
-      checked ? "Button sounds enabled" : "Button sounds stay on by default",
-    );
-  };
-
   const handleVolumeChange = (value: number[]) => {
     if (!onSettingsChange || !settings) return;
     const newVolume = value[0];
@@ -465,7 +455,8 @@ export function SettingsView({
                         <Switch
                           id="sound-toggle"
                           checked={settings.buttonSounds ?? true}
-                          onCheckedChange={handleSoundToggle}
+                          disabled
+                          aria-label="Button sounds are always on"
                         />
                       </div>
 

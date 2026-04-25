@@ -81,22 +81,25 @@ function App() {
 
   useEffect(() => {
     if (settings?.buttonSounds === false) {
-      setSettings((current) => ({
-        showCompletedTasks: true,
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
-        swipeThreshold: 100,
-        animationSpeed: 0.3,
-        hapticFeedback: true,
-        soundVolume: 0.5,
-        theme: 'light',
-        notificationsEnabled: false,
-        notificationSound: 'chime',
-        notificationAdvance: 30,
-        notificationVolume: 0.7,
-        ...(current || {}),
-        buttonSounds: true,
-      }))
+      setSettings((current) =>
+        current
+          ? { ...current, buttonSounds: true }
+          : {
+              showCompletedTasks: true,
+              sortBy: 'createdAt',
+              sortOrder: 'desc',
+              swipeThreshold: 100,
+              animationSpeed: 0.3,
+              hapticFeedback: true,
+              soundVolume: 0.5,
+              theme: 'light',
+              notificationsEnabled: false,
+              notificationSound: 'chime',
+              notificationAdvance: 30,
+              notificationVolume: 0.7,
+              buttonSounds: true,
+            }
+      )
     }
   }, [settings?.buttonSounds, setSettings])
 
@@ -548,8 +551,8 @@ function App() {
   }
 
   const handleViewModeChange = (newMode: ViewMode) => {
-    playButtonSound(true)
     if (newMode === viewMode) return
+    playButtonSound(true)
     const viewOrder: ViewMode[] = ['list', 'calendar', 'stats', 'settings']
     const currentIndex = viewOrder.indexOf(viewMode || 'list')
     const newIndex = viewOrder.indexOf(newMode)
