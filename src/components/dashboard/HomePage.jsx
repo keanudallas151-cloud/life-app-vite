@@ -343,9 +343,9 @@ export function HomePage({
               aria-hidden
               style={{
                 position: "absolute",
-                left: 0,
-                top: -8,
-                fontSize: 32,
+                left: 25,
+                top: 0,
+                fontSize: 22,
                 color: t.green,
                 opacity: 0.45,
                 lineHeight: 1,
