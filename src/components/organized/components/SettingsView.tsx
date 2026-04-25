@@ -72,6 +72,16 @@ type ExpandedSection =
   | "legal"
   | null;
 
+const SECTION_TRANSITION = {
+  height: { duration: 0.32, ease: [0.25, 0.46, 0.45, 0.94] },
+  opacity: { duration: 0.18, ease: "easeOut" },
+} as const;
+
+const CHEVRON_TRANSITION = {
+  duration: 0.34,
+  ease: [0.34, 1.56, 0.64, 1],
+} as const;
+
 export function SettingsView({
   categories,
   onAddCategory,
@@ -220,9 +230,11 @@ export function SettingsView({
   const handleSoundToggle = (checked: boolean) => {
     if (!onSettingsChange || !settings) return;
     if (settings.hapticFeedback) triggerHaptic("light");
-    if (checked) playButtonSound();
-    onSettingsChange({ ...settings, buttonSounds: checked });
-    toast.success(`Button sounds ${checked ? "enabled" : "disabled"}`);
+    playButtonSound();
+    onSettingsChange({ ...settings, buttonSounds: true });
+    toast.success(
+      checked ? "Button sounds enabled" : "Button sounds stay on by default",
+    );
   };
 
   const handleVolumeChange = (value: number[]) => {
@@ -300,7 +312,7 @@ export function SettingsView({
               </div>
               <motion.div
                 animate={{ rotate: expandedSection === "appearance" ? 90 : 0 }}
-                transition={{ duration: 0.2 }}
+                transition={CHEVRON_TRANSITION}
               >
                 <CaretRight
                   className="h-5 w-5 text-muted-foreground"
@@ -315,8 +327,8 @@ export function SettingsView({
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
-                  className="overflow-hidden bg-muted/20"
+                  transition={SECTION_TRANSITION}
+                  className="organized-settings-section-panel overflow-hidden bg-muted/20"
                 >
                   <div className="px-4 py-4 space-y-3">
                     <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -328,7 +340,8 @@ export function SettingsView({
                           currentTheme === "light" ? "default" : "outline"
                         }
                         size="sm"
-                        className="flex flex-col items-center gap-1.5 h-auto py-3"
+                        aria-pressed={currentTheme === "light"}
+                        className="organized-choice-tile flex flex-col items-center gap-1.5 h-auto py-3"
                         onClick={() => handleThemeChange("light")}
                       >
                         <Sun className="h-4 w-4" weight="fill" />
@@ -339,7 +352,8 @@ export function SettingsView({
                           currentTheme === "dark" ? "default" : "outline"
                         }
                         size="sm"
-                        className="flex flex-col items-center gap-1.5 h-auto py-3"
+                        aria-pressed={currentTheme === "dark"}
+                        className="organized-choice-tile flex flex-col items-center gap-1.5 h-auto py-3"
                         onClick={() => handleThemeChange("dark")}
                       >
                         <Moon className="h-4 w-4" weight="fill" />
@@ -350,7 +364,8 @@ export function SettingsView({
                           currentTheme === "system" ? "default" : "outline"
                         }
                         size="sm"
-                        className="flex flex-col items-center gap-1.5 h-auto py-3"
+                        aria-pressed={currentTheme === "system"}
+                        className="organized-choice-tile flex flex-col items-center gap-1.5 h-auto py-3"
                         onClick={() => handleThemeChange("system")}
                       >
                         <Desktop className="h-4 w-4" weight="fill" />
@@ -379,7 +394,7 @@ export function SettingsView({
               </div>
               <motion.div
                 animate={{ rotate: expandedSection === "feedback" ? 90 : 0 }}
-                transition={{ duration: 0.2 }}
+                transition={CHEVRON_TRANSITION}
               >
                 <CaretRight
                   className="h-5 w-5 text-muted-foreground"
@@ -396,8 +411,8 @@ export function SettingsView({
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2, ease: "easeInOut" }}
-                    className="overflow-hidden bg-muted/20"
+                    transition={SECTION_TRANSITION}
+                    className="organized-settings-section-panel overflow-hidden bg-muted/20"
                   >
                     <div className="px-4 py-3 divide-y divide-border/50">
                       <div className="flex items-center justify-between py-3">
@@ -459,7 +474,7 @@ export function SettingsView({
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}
                           exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.2 }}
+                          transition={CHEVRON_TRANSITION}
                           className="py-3 space-y-3"
                         >
                           <div className="flex items-center justify-between">
@@ -523,7 +538,7 @@ export function SettingsView({
                 animate={{
                   rotate: expandedSection === "notifications" ? 90 : 0,
                 }}
-                transition={{ duration: 0.2 }}
+                transition={CHEVRON_TRANSITION}
               >
                 <CaretRight
                   className="h-5 w-5 text-muted-foreground"
@@ -540,8 +555,8 @@ export function SettingsView({
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2, ease: "easeInOut" }}
-                    className="overflow-hidden bg-muted/20"
+                    transition={SECTION_TRANSITION}
+                    className="organized-settings-section-panel overflow-hidden bg-muted/20"
                   >
                     <div className="px-4 py-3 divide-y divide-border/50">
                       <div className="flex items-center justify-between py-3">
@@ -583,7 +598,7 @@ export function SettingsView({
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}
                           exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.2 }}
+                          transition={CHEVRON_TRANSITION}
                           className="py-3 space-y-4"
                         >
                           <div className="space-y-3">
@@ -614,8 +629,12 @@ export function SettingsView({
                                         ? "default"
                                         : "outline"
                                     }
-                                    size="sm"
-                                    className="flex flex-col items-center gap-1 h-auto py-2.5 text-xs capitalize"
+                                     size="sm"
+                                    aria-pressed={
+                                      (settings.notificationSound ??
+                                        "chime") === sound
+                                    }
+                                    className="organized-choice-tile flex flex-col items-center gap-1 h-auto py-2.5 text-xs capitalize"
                                     onClick={() =>
                                       handleNotificationSoundChange(sound)
                                     }
@@ -668,7 +687,7 @@ export function SettingsView({
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
-                              transition={{ duration: 0.2 }}
+                              transition={CHEVRON_TRANSITION}
                               className="space-y-3"
                             >
                               <div className="flex items-center justify-between">
@@ -734,7 +753,7 @@ export function SettingsView({
                   animate={{
                     rotate: expandedSection === "categories" ? 90 : 0,
                   }}
-                  transition={{ duration: 0.2 }}
+                  transition={CHEVRON_TRANSITION}
                 >
                   <CaretRight
                     className="h-5 w-5 text-muted-foreground"
@@ -750,8 +769,8 @@ export function SettingsView({
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
-                  className="overflow-hidden bg-muted/20"
+                  transition={SECTION_TRANSITION}
+                  className="organized-settings-section-panel overflow-hidden bg-muted/20"
                 >
                     <div className="organized-categories-panel px-4 py-3 space-y-2 max-h-[500px] overflow-y-auto">
                     <div className="space-y-2">
@@ -850,7 +869,7 @@ export function SettingsView({
                 </span>
                 <motion.div
                   animate={{ rotate: expandedSection === "tags" ? 90 : 0 }}
-                  transition={{ duration: 0.2 }}
+                  transition={CHEVRON_TRANSITION}
                 >
                   <CaretRight
                     className="h-5 w-5 text-muted-foreground"
@@ -866,8 +885,8 @@ export function SettingsView({
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
-                  className="overflow-hidden bg-muted/20"
+                  transition={SECTION_TRANSITION}
+                  className="organized-settings-section-panel overflow-hidden bg-muted/20"
                 >
                     <div className="organized-tags-panel px-4 py-3 space-y-3 max-h-[400px] overflow-y-auto">
                     <div className="flex flex-wrap gap-2">

@@ -79,6 +79,27 @@ function App() {
     setGlobalVolume(volume)
   }, [settings?.soundVolume])
 
+  useEffect(() => {
+    if (settings?.buttonSounds === false) {
+      setSettings((current) => ({
+        showCompletedTasks: true,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+        swipeThreshold: 100,
+        animationSpeed: 0.3,
+        hapticFeedback: true,
+        soundVolume: 0.5,
+        theme: 'light',
+        notificationsEnabled: false,
+        notificationSound: 'chime',
+        notificationAdvance: 30,
+        notificationVolume: 0.7,
+        ...(current || {}),
+        buttonSounds: true,
+      }))
+    }
+  }, [settings?.buttonSounds, setSettings])
+
   const [filter, setFilter] = useState<FilterType>('all')
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [searchQuery, setSearchQuery] = useState('')
@@ -527,6 +548,8 @@ function App() {
   }
 
   const handleViewModeChange = (newMode: ViewMode) => {
+    playButtonSound(true)
+    if (newMode === viewMode) return
     const viewOrder: ViewMode[] = ['list', 'calendar', 'stats', 'settings']
     const currentIndex = viewOrder.indexOf(viewMode || 'list')
     const newIndex = viewOrder.indexOf(newMode)
@@ -902,7 +925,10 @@ function App() {
       <BottomNav
         viewMode={viewMode || 'list'}
         onViewModeChange={handleViewModeChange}
-        onAddTask={() => setAddTaskFormOpen(true)}
+        onAddTask={() => {
+          playButtonSound(true)
+          setAddTaskFormOpen(true)
+        }}
       />
       <AddTaskForm
         open={addTaskFormOpen}
