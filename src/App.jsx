@@ -4107,6 +4107,7 @@ export default function LifeApp() {
               <HomePage
                 t={t}
                 userName={user?.name || ""}
+                play={play}
                 onResume={(key) => {
                   const pack = MAP[key];
                   if (pack) handleSelect(pack.key, pack.node);

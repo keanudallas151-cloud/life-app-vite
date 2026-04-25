@@ -13,6 +13,8 @@ const browserGlobals = {
   clearTimeout: "readonly",
   setInterval: "readonly",
   clearInterval: "readonly",
+  requestAnimationFrame: "readonly",
+  cancelAnimationFrame: "readonly",
   Blob: "readonly",
   URL: "readonly",
   Audio: "readonly",
