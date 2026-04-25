@@ -39,11 +39,11 @@ export function ToolsOrganizedPage({ uid, setPage, setScreen }) {
   const overlay = (
     <div
       data-page-tag="#tools_organized_page"
-      className={`organized-feature${isScrolling ? " is-scrolling" : ""}`}
+      className={`organized-feature organized-mobile-native${isScrolling ? " is-scrolling" : ""}`}
       onScroll={() => {
         setIsScrolling(true);
         if (scrollTimerRef.current) window.clearTimeout(scrollTimerRef.current);
-        scrollTimerRef.current = window.setTimeout(() => setIsScrolling(false), 520);
+        scrollTimerRef.current = window.setTimeout(() => setIsScrolling(false), 360);
       }}
       style={{
         position: "fixed",
@@ -52,7 +52,7 @@ export function ToolsOrganizedPage({ uid, setPage, setScreen }) {
         background: "var(--background)",
         color: "var(--foreground)",
         overflow: "auto",
-        overscrollBehavior: "contain",
+        overscrollBehavior: "none",
         WebkitOverflowScrolling: "touch",
       }}
     >
