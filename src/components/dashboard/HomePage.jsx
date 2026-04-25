@@ -516,7 +516,7 @@ export function HomePage({
             <button
               type="button"
               onClick={() => onResume(resumeTopic.key)}
-              aria-label={`Continue reading ${resumeTopic.label}`}
+              aria-label={`Continue reading ${resumeTopic.label}. Swipe left to dismiss.`}
               style={{
                 width: "100%",
                 display: "flex",
@@ -577,7 +577,7 @@ export function HomePage({
               </div>
               <div
                 aria-hidden="true"
-                className={isDragging ? undefined : "life-resume-swipe-hint"}
+                className={isDragging ? "" : "life-resume-swipe-hint"}
                 style={{
                   display: "flex",
                   alignItems: "center",
