@@ -19,9 +19,12 @@ body.life-organized-active .organized-mobile-native {
   overflow-x: hidden !important;
   overscroll-behavior: none !important;
   scroll-behavior: auto !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
 }
 
-body.life-organized-active .organized-mobile-native * {
+body.life-organized-active .organized-mobile-native *,
+body.life-organized-active [data-slot="dialog-content"],
+body.life-organized-active [data-radix-popper-content-wrapper] * {
   -webkit-tap-highlight-color: transparent !important;
 }
 
@@ -39,15 +42,15 @@ body.life-organized-active .organized-mobile-native > .organized-back-btn {
   padding: 0 13px !important;
   border-radius: 9999px !important;
   border: 1px solid color-mix(in oklch, var(--border) 74%, transparent) !important;
-  background: color-mix(in oklch, var(--card) 88%, transparent) !important;
+  background: color-mix(in oklch, var(--card) 90%, transparent) !important;
   color: var(--primary) !important;
   box-shadow: none !important;
-  backdrop-filter: blur(10px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(10px) saturate(140%) !important;
+  backdrop-filter: blur(8px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(130%) !important;
   font-size: 17px !important;
   font-weight: 600 !important;
   opacity: 1 !important;
-  transition: opacity 180ms ease, transform 220ms cubic-bezier(0.34, 1.2, 0.64, 1) !important;
+  transition: opacity 160ms ease, transform 180ms cubic-bezier(0.34, 1.2, 0.64, 1) !important;
 }
 
 body.life-organized-active .organized-mobile-native.is-scrolling > .organized-back-btn {
@@ -60,7 +63,7 @@ body.life-organized-active .organized-mobile-native .organized-feature > div > d
   padding-top: calc(82px + env(safe-area-inset-top)) !important;
   padding-left: 16px !important;
   padding-right: 16px !important;
-  padding-bottom: calc(120px + env(safe-area-inset-bottom)) !important;
+  padding-bottom: calc(116px + env(safe-area-inset-bottom)) !important;
 }
 
 body.life-organized-active .organized-mobile-native .pl-\\[5\\.5rem\\] {
@@ -100,13 +103,13 @@ body.life-organized-active .organized-mobile-native header .organized-stat-chip 
   box-shadow: none !important;
 }
 
-/* Bottom nav: remove square/green blobs and keep only a simple iOS tab state. */
+/* Bottom nav: simple iOS tab state, no green blobs or boxed backing. */
 body.life-organized-active .organized-bottom-nav {
   border-top: 0 !important;
   background: color-mix(in oklch, var(--background) 94%, transparent) !important;
-  box-shadow: 0 -12px 28px color-mix(in oklch, var(--background) 72%, transparent) !important;
-  backdrop-filter: blur(14px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(150%) !important;
+  box-shadow: 0 -10px 24px color-mix(in oklch, var(--background) 68%, transparent) !important;
+  backdrop-filter: blur(12px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(145%) !important;
   padding-bottom: max(env(safe-area-inset-bottom), 8px) !important;
 }
 
@@ -132,7 +135,7 @@ body.life-organized-active .organized-nav-item {
   background: transparent !important;
   box-shadow: none !important;
   color: var(--muted-foreground) !important;
-  transition: color 140ms ease, transform 120ms ease !important;
+  transition: color 120ms ease, transform 100ms ease !important;
 }
 
 body.life-organized-active .organized-nav-item.is-active {
@@ -172,17 +175,17 @@ body.life-organized-active .organized-fab {
   border: 0 !important;
   outline: 0 !important;
   background: var(--primary) !important;
-  box-shadow: 0 8px 24px color-mix(in oklch, var(--primary) 32%, transparent) !important;
+  box-shadow: 0 8px 22px color-mix(in oklch, var(--primary) 28%, transparent) !important;
 }
 
-/* Add Task: force the form into a centered mobile bottom sheet. */
+/* Add Task: mobile-first sheet that works in portrait, landscape, and with keyboard. */
 body.life-organized-active [data-slot="dialog-overlay"] {
   position: fixed !important;
   inset: 0 !important;
   z-index: 10000 !important;
-  background: color-mix(in oklch, var(--background) 64%, transparent) !important;
-  backdrop-filter: blur(6px) !important;
-  -webkit-backdrop-filter: blur(6px) !important;
+  background: color-mix(in oklch, var(--background) 62%, transparent) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
 }
 
 body.life-organized-active [data-slot="dialog-content"]:has(#task-title) {
@@ -193,7 +196,7 @@ body.life-organized-active [data-slot="dialog-content"]:has(#task-title) {
   overflow-x: hidden !important;
 }
 
-@media (max-width: 639px) {
+@media (max-width: 932px), (pointer: coarse) {
   body.life-organized-active [data-slot="dialog-content"]:has(#task-title) {
     position: fixed !important;
     top: auto !important;
@@ -202,13 +205,13 @@ body.life-organized-active [data-slot="dialog-content"]:has(#task-title) {
     bottom: max(env(safe-area-inset-bottom), 8px) !important;
     width: min(430px, calc(100vw - 20px)) !important;
     max-width: calc(100vw - 20px) !important;
-    max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    max-height: min(82dvh, calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom))) !important;
     transform: translateX(-50%) !important;
-    border-radius: 26px !important;
-    padding: 18px 16px calc(16px + env(safe-area-inset-bottom)) !important;
+    border-radius: 24px !important;
+    padding: 16px 14px calc(14px + env(safe-area-inset-bottom)) !important;
     overflow-y: auto !important;
-    animation: organized-sheet-up 260ms cubic-bezier(0.22, 1, 0.36, 1) both !important;
-    box-shadow: 0 18px 40px color-mix(in oklch, var(--background) 78%, transparent) !important;
+    animation: organized-sheet-up 180ms cubic-bezier(0.22, 1, 0.36, 1) both !important;
+    box-shadow: 0 14px 34px color-mix(in oklch, var(--background) 72%, transparent) !important;
   }
 
   body.life-organized-active [data-slot="dialog-content"]:has(#task-title)::before {
@@ -218,7 +221,23 @@ body.life-organized-active [data-slot="dialog-content"]:has(#task-title) {
     height: 5px !important;
     border-radius: 9999px !important;
     background: color-mix(in oklch, var(--muted-foreground) 34%, transparent) !important;
-    margin: 0 auto 12px !important;
+    margin: 0 auto 10px !important;
+  }
+
+  body.life-organized-active [data-slot="dialog-content"]:has(#task-title) [data-slot="dialog-title"] {
+    font-size: 22px !important;
+    line-height: 1.15 !important;
+    text-align: center !important;
+  }
+
+  body.life-organized-active [data-slot="dialog-content"]:has(#task-title) [data-slot="dialog-description"] {
+    font-size: 15px !important;
+    line-height: 1.25 !important;
+    text-align: center !important;
+  }
+
+  body.life-organized-active [data-slot="dialog-content"]:has(#task-title) .space-y-3 {
+    gap: 10px !important;
   }
 
   body.life-organized-active [data-slot="dialog-content"]:has(#task-title) button {
@@ -233,14 +252,51 @@ body.life-organized-active [data-slot="dialog-content"]:has(#task-title) {
     font-size: 16px !important;
     border-radius: 14px !important;
   }
+
+  body.life-organized-active [data-slot="dialog-content"]:has(#task-title) .grid.grid-cols-2 {
+    gap: 10px !important;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  body.life-organized-active [data-slot="dialog-content"]:has(#task-title) {
+    top: max(env(safe-area-inset-top), 8px) !important;
+    bottom: max(env(safe-area-inset-bottom), 8px) !important;
+    width: min(640px, calc(100vw - 28px)) !important;
+    max-width: calc(100vw - 28px) !important;
+    max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    border-radius: 22px !important;
+  }
 }
 
 @keyframes organized-sheet-up {
-  from { opacity: 0; transform: translateX(-50%) translateY(28px); }
+  from { opacity: 0; transform: translateX(-50%) translateY(22px); }
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
-/* Stats: smaller, even, readable iOS cards. */
+/* Opaque popovers/selects: fixes see-through calendar/dropdowns. */
+body.life-organized-active [data-radix-popper-content-wrapper] {
+  z-index: 10050 !important;
+}
+
+body.life-organized-active [data-slot="popover-content"],
+body.life-organized-active [data-slot="select-content"] {
+  background: var(--popover, var(--card)) !important;
+  color: var(--popover-foreground, var(--card-foreground)) !important;
+  border: 1px solid color-mix(in oklch, var(--border) 86%, transparent) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 12px 28px color-mix(in oklch, var(--background) 70%, transparent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: hidden !important;
+}
+
+body.life-organized-active [data-slot="calendar"] {
+  background: var(--popover, var(--card)) !important;
+  color: var(--popover-foreground, var(--card-foreground)) !important;
+}
+
+/* Stats: centered, even iOS summary tiles. */
 body.life-organized-active .organized-mobile-native .grid.grid-cols-2.md\\:grid-cols-4 {
   gap: 12px !important;
 }
@@ -250,37 +306,61 @@ body.life-organized-active .organized-mobile-native .grid.grid-cols-2.md\\:grid-
 }
 
 body.life-organized-active .organized-mobile-native .grid.grid-cols-2.md\\:grid-cols-4 [data-slot="card"] {
-  min-height: 142px !important;
-  border-radius: 22px !important;
+  min-height: 164px !important;
+  border-radius: 24px !important;
   border-width: 1px !important;
   box-shadow: none !important;
   background: var(--card) !important;
 }
 
 body.life-organized-active .organized-mobile-native .grid.grid-cols-2.md\\:grid-cols-4 [data-slot="card-content"] {
-  min-height: 142px !important;
-  padding: 16px !important;
+  min-height: 164px !important;
+  padding: 18px 14px !important;
   display: flex !important;
   flex-direction: column !important;
-  justify-content: space-between !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: 8px !important;
+  position: relative !important;
+}
+
+body.life-organized-active .organized-mobile-native .grid.grid-cols-2.md\\:grid-cols-4 [data-slot="card-content"] > .flex:first-child {
+  width: auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+}
+
+body.life-organized-active .organized-mobile-native .grid.grid-cols-2.md\\:grid-cols-4 [data-slot="card-content"] > .flex:first-child > div:first-child {
+  width: 42px !important;
+  height: 42px !important;
+  margin: 0 !important;
+}
+
+body.life-organized-active .organized-mobile-native .grid.grid-cols-2.md\\:grid-cols-4 [data-slot="card-content"] > .flex:first-child [data-slot="badge"] {
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
 }
 
 body.life-organized-active .organized-mobile-native .grid.grid-cols-2.md\\:grid-cols-4 .text-3xl {
-  font-size: 42px !important;
+  font-size: 48px !important;
   line-height: 0.95 !important;
-  letter-spacing: -0.055em !important;
+  letter-spacing: -0.06em !important;
   margin: 0 !important;
 }
 
 body.life-organized-active .organized-mobile-native .grid.grid-cols-2.md\\:grid-cols-4 .text-xs {
-  font-size: 16px !important;
-  line-height: 1.08 !important;
-  font-weight: 700 !important;
+  font-size: 17px !important;
+  line-height: 1.06 !important;
+  font-weight: 750 !important;
   color: var(--foreground) !important;
+  max-width: 100% !important;
 }
 
 body.life-organized-active .organized-mobile-native .grid.grid-cols-2.md\\:grid-cols-4 [data-slot="badge"] {
-  font-size: 14px !important;
+  font-size: 13px !important;
   min-height: 24px !important;
   padding: 2px 8px !important;
 }
@@ -297,7 +377,7 @@ body.life-organized-active .organized-mobile-native .grid.grid-cols-7 > button >
   border-radius: 9999px !important;
 }
 
-/* Settings: compact grouped rows, no oversized gaps. */
+/* Settings: compact grouped rows, lighter effects. */
 body.life-organized-active .organized-settings-intro {
   display: none !important;
 }
@@ -321,6 +401,7 @@ body.life-organized-active .organized-settings-stack > [data-slot="card"] {
   background: transparent !important;
   box-shadow: none !important;
   overflow: visible !important;
+  contain: layout paint !important;
 }
 
 body.life-organized-active .organized-settings-row {
@@ -330,7 +411,7 @@ body.life-organized-active .organized-settings-row {
   background: var(--card) !important;
   border: 1px solid color-mix(in oklch, var(--border) 82%, transparent) !important;
   box-shadow: none !important;
-  transition: border-color 150ms ease, background-color 150ms ease, transform 120ms ease !important;
+  transition: border-color 110ms ease, background-color 110ms ease, transform 90ms ease !important;
 }
 
 body.life-organized-active .organized-settings-row > div:first-child {
@@ -358,6 +439,7 @@ body.life-organized-active .organized-settings-section-panel {
   background: var(--card) !important;
   border: 1px solid color-mix(in oklch, var(--border) 76%, transparent) !important;
   box-shadow: none !important;
+  contain: layout paint !important;
 }
 
 body.life-organized-active .organized-settings-section-panel > div {
@@ -376,7 +458,7 @@ body.life-organized-active .organized-choice-tile[aria-pressed="true"] {
   box-shadow: none !important;
 }
 
-/* Visually shorten the final legal settings row without rewriting the feature. */
+/* Visually shorten the final legal settings row without changing data or routing. */
 body.life-organized-active .organized-settings-stack > [data-slot="card"]:last-of-type .organized-settings-row > div:first-child > span {
   font-size: 0 !important;
 }
@@ -390,9 +472,10 @@ body.life-organized-active .organized-settings-stack > [data-slot="card"]:last-o
   letter-spacing: -0.035em !important;
 }
 
-/* iOS switch dimensions: 51 x 31 with a 27px thumb. */
+/* Correct iOS switches: keep thumb inside the track in both states. */
 body.life-organized-active button[data-slot="switch"],
 body.life-organized-active .organized-mobile-native button[data-slot="switch"] {
+  position: relative !important;
   inline-size: 51px !important;
   block-size: 31px !important;
   width: 51px !important;
@@ -402,16 +485,16 @@ body.life-organized-active .organized-mobile-native button[data-slot="switch"] {
   max-width: 51px !important;
   max-height: 31px !important;
   flex: 0 0 51px !important;
-  padding: 2px !important;
+  padding: 0 !important;
   border-radius: 9999px !important;
   border: 0 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
+  display: inline-block !important;
   background: color-mix(in oklch, var(--muted-foreground) 34%, transparent) !important;
-  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--border) 70%, transparent) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--border) 72%, transparent) !important;
+  overflow: hidden !important;
   transform: none !important;
-  transition: background-color 180ms ease !important;
+  transition: background-color 150ms ease !important;
+  opacity: 1 !important;
 }
 
 body.life-organized-active button[data-slot="switch"][data-state="checked"] {
@@ -419,6 +502,9 @@ body.life-organized-active button[data-slot="switch"][data-state="checked"] {
 }
 
 body.life-organized-active button[data-slot="switch"] [data-slot="switch-thumb"] {
+  position: absolute !important;
+  left: 2px !important;
+  top: 2px !important;
   inline-size: 27px !important;
   block-size: 27px !important;
   width: 27px !important;
@@ -428,10 +514,10 @@ body.life-organized-active button[data-slot="switch"] [data-slot="switch-thumb"]
   max-width: 27px !important;
   max-height: 27px !important;
   border-radius: 9999px !important;
-  background: var(--background) !important;
-  box-shadow: 0 2px 5px color-mix(in oklch, var(--background) 64%, transparent) !important;
+  background: var(--foreground) !important;
+  box-shadow: 0 1px 3px color-mix(in oklch, var(--background) 68%, transparent) !important;
   transform: translateX(0) !important;
-  transition: transform 180ms cubic-bezier(0.34, 1.2, 0.64, 1) !important;
+  transition: transform 150ms cubic-bezier(0.34, 1.15, 0.64, 1) !important;
 }
 
 body.life-organized-active button[data-slot="switch"][data-state="checked"] [data-slot="switch-thumb"] {
@@ -455,7 +541,7 @@ body.life-organized-active .organized-settings-section-panel p {
   line-height: 1.25 !important;
 }
 
-/* Legal modal: no horizontal scrolling; compact 3 x 2 tabs on normal phones. */
+/* Legal modal: no horizontal scrolling; compact grid tabs. */
 body.life-organized-active .organized-legal-overlay {
   padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom)) !important;
   align-items: center !important;
@@ -533,8 +619,8 @@ body.life-organized-active .organized-legal-prose {
   }
 }
 
-/* Performance: remove heavy hover animations/shadows on touch devices. */
-@media (hover: none) {
+/* Performance sweep: remove the expensive mobile effects causing jank. */
+@media (hover: none), (pointer: coarse) {
   body.life-organized-active .organized-feature [data-slot="card"]:hover,
   body.life-organized-active .organized-feature .bg-card:hover,
   body.life-organized-active .organized-fab:hover,
@@ -542,16 +628,20 @@ body.life-organized-active .organized-legal-prose {
     transform: none !important;
     box-shadow: none !important;
   }
+
+  body.life-organized-active .organized-feature * {
+    transition-duration: 110ms !important;
+    animation-duration: 160ms !important;
+  }
 }
 
 body.life-organized-active .organized-feature [data-slot="card"],
-body.life-organized-active .organized-feature .bg-card {
-  box-shadow: none !important;
-  transition: border-color 150ms ease, background-color 150ms ease, transform 120ms ease !important;
-}
-
+body.life-organized-active .organized-feature .bg-card,
 body.life-organized-active .organized-feature button {
-  transition-duration: 140ms !important;
+  box-shadow: none !important;
+  transition-property: border-color, background-color, color, transform, opacity !important;
+  transition-duration: 110ms !important;
+  will-change: auto !important;
 }
 `;
 
@@ -608,7 +698,7 @@ export function ToolsOrganizedPage({ uid, setPage, setScreen }) {
         scrollTimerRef.current = window.setTimeout(() => {
           isScrollingRef.current = false;
           setIsScrolling(false);
-        }, 260);
+        }, 220);
       }}
       style={{
         position: "fixed",
