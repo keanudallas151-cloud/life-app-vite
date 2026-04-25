@@ -83,7 +83,7 @@ export function SettingsView({
   settings,
   onSettingsChange,
 }: SettingsViewProps) {
-  const [expandedSection, setExpandedSection] = useState<ExpandedSection>("categories");
+  const [expandedSection, setExpandedSection] = useState<ExpandedSection>(null);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryColor, setNewCategoryColor] = useState(
     "oklch(0.55 0.18 250)",

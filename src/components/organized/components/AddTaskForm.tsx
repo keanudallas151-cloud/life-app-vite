@@ -48,6 +48,9 @@ type KeyDownLikeEvent = {
   key: string
 }
 
+const isUsableCategory = (category: Category) =>
+  Boolean(category.id && category.name && category.color)
+
 export function AddTaskForm({
   open,
   onOpenChange,
@@ -65,7 +68,7 @@ export function AddTaskForm({
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
   const [dueDatePopoverOpen, setDueDatePopoverOpen] = useState(false)
   const validCategories = useMemo(
-    () => categories.filter(cat => cat && cat.id && cat.name && cat.color),
+    () => categories.filter(isUsableCategory),
     [categories]
   )
 
