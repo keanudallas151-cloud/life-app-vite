@@ -1,3 +1,5 @@
+import '../mobile-native-fixes.css'
+
 import { motion } from 'framer-motion'
 import { CalendarBlank, ChartBar, Gear, ListBullets, Plus } from '@phosphor-icons/react'
 import { ViewMode } from '../types'
