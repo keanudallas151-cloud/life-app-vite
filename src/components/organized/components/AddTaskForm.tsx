@@ -198,7 +198,7 @@ export function AddTaskForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories
+                      {validCategories
                         .map((category) => (
                           <SelectItem key={category.id} value={category.id}>
                             <div className="flex items-center gap-2">
