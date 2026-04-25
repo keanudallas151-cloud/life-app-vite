@@ -448,7 +448,7 @@ export function SettingsView({
                               Button Sounds
                             </Label>
                             <p className="text-xs text-muted-foreground">
-                              Always on for every tap
+                              Button sounds stay on for every tap
                             </p>
                           </div>
                         </div>
