@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MAP } from "../../data/content";
 import { clearResumeTopic, getResumeTopic } from "../../systems/resumeReading";
 import { S } from "../../systems/theme";
@@ -53,6 +53,7 @@ export function HomePage({
   onOpenGoalSetting,
   onGetStarted,
   onOpenIncomeIdeas,
+  play,
 }) {
   const [dismissed, setDismissed] = useState(false);
   const { checked: habitChecked, toggle: toggleHabit } = useDailyHabits();
@@ -61,6 +62,52 @@ export function HomePage({
     if (!saved?.key || !MAP[saved.key]) return null;
     return { key: saved.key, label: MAP[saved.key].node?.label || saved.key };
   }, []);
+
+  // ── iOS swipe-to-dismiss state for Continue Reading card ──────────────
+  // phase: "idle" | "dragging" | "preparing" | "dismissing" | "snapping"
+  const [resumePhase, setResumePhase] = useState("idle");
+  const [resumeDragX, setResumeDragX] = useState(0);
+  const resumeCardRef = useRef(null);
+  const resumeDragRef = useRef({
+    active: false,
+    startX: 0,
+    startY: 0,
+    locked: null,
+    width: 0,
+    pointerId: null,
+  });
+  const resumeCollapseHeightRef = useRef(null);
+  const resumeSuppressClickRef = useRef(0);
+
+  const beginDismissResume = () => {
+    if (resumePhase === "preparing" || resumePhase === "dismissing") return;
+    const node = resumeCardRef.current;
+    if (!node) {
+      clearResumeTopic();
+      setDismissed(true);
+      return;
+    }
+    const h = node.offsetHeight;
+    const w = node.offsetWidth;
+    resumeCollapseHeightRef.current = h;
+    // Phase 1: lock current pixel max-height with no transition so the
+    // collapse animation has a measured starting value (max-height: none
+    // cannot animate to 0).
+    setResumePhase("preparing");
+    // Phase 2: next frame, swap to "dismissing" which applies the slide,
+    // fade, scale, then delayed height/margin collapse.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setResumePhase("dismissing");
+        setResumeDragX(-w * 1.2);
+      });
+    });
+    // Total ≈ 320ms slide + 250ms collapse; unmount just after.
+    setTimeout(() => {
+      clearResumeTopic();
+      setDismissed(true);
+    }, 620);
+  };
 
   const [greetHour, setGreetHour] = useState(() => new Date().getHours());
   useEffect(() => {
@@ -82,8 +129,96 @@ export function HomePage({
   const handleDismissResume = (e) => {
     e.stopPropagation();
     e.preventDefault();
-    clearResumeTopic();
-    setDismissed(true);
+    play?.("swipe");
+    beginDismissResume();
+  };
+
+  const onResumePointerDown = (e) => {
+    if (resumePhase !== "idle" && resumePhase !== "snapping") return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    // Don't start a swipe when the touch begins on the dismiss button.
+    if (e.target?.closest?.("[data-resume-dismiss]")) return;
+    resumeDragRef.current = {
+      active: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      locked: null,
+      width: resumeCardRef.current?.offsetWidth || 0,
+      pointerId: e.pointerId,
+    };
+  };
+
+  const onResumePointerMove = (e) => {
+    const d = resumeDragRef.current;
+    if (!d.active) return;
+    const dx = e.clientX - d.startX;
+    const dy = e.clientY - d.startY;
+    if (!d.locked) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      if (Math.abs(dy) > Math.abs(dx)) {
+        // Vertical intent — let the page scroll, abort this gesture.
+        d.active = false;
+        return;
+      }
+      d.locked = "x";
+      setResumePhase("dragging");
+      try {
+        e.currentTarget.setPointerCapture(d.pointerId);
+      } catch {
+        /* ignore */
+      }
+    }
+    // Rubber-band on rightward drag (card is dismiss-left only).
+    const x = dx > 0 ? dx * 0.3 : dx;
+    setResumeDragX(x);
+  };
+
+  const onResumePointerUp = () => {
+    const d = resumeDragRef.current;
+    if (!d.active && d.locked !== "x") return;
+    const wasLocked = d.locked === "x";
+    d.active = false;
+    d.locked = null;
+    if (!wasLocked) return;
+    const threshold = -(d.width * 0.4);
+    if (resumeDragX <= threshold) {
+      // Past the dismiss threshold — slide out.
+      resumeSuppressClickRef.current = Date.now();
+      play?.("swipe");
+      beginDismissResume();
+    } else {
+      // Snap back with iOS overshoot spring.
+      resumeSuppressClickRef.current = Date.now();
+      play?.("tap_soft");
+      setResumePhase("snapping");
+      setResumeDragX(0);
+      setTimeout(() => {
+        setResumePhase((p) => (p === "snapping" ? "idle" : p));
+      }, 430);
+    }
+  };
+
+  const onResumePointerCancel = () => {
+    const d = resumeDragRef.current;
+    if (d.locked === "x") {
+      d.active = false;
+      d.locked = null;
+      setResumePhase("snapping");
+      setResumeDragX(0);
+      setTimeout(() => {
+        setResumePhase((p) => (p === "snapping" ? "idle" : p));
+      }, 430);
+    } else {
+      d.active = false;
+    }
+  };
+
+  const onResumeClickCapture = (e) => {
+    // Suppress the inner button's click immediately after a horizontal drag.
+    if (Date.now() - resumeSuppressClickRef.current < 350) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
   };
 
   return (
@@ -321,16 +456,70 @@ export function HomePage({
       </div>
 
       <div style={{ padding: "28px 20px 0", maxWidth: 620, margin: "0 auto" }}>
-        {resumeTopic && !dismissed && (
+        {resumeTopic && !dismissed && (() => {
+          const isPreparing = resumePhase === "preparing";
+          const isDismissing = resumePhase === "dismissing";
+          const isDragging = resumePhase === "dragging";
+          const isSnapping = resumePhase === "snapping";
+          const collapsedH = resumeCollapseHeightRef.current;
+
+          // Per-phase transition string. iOS decelerate curve for dismiss,
+          // overshoot spring for snap-back, none while live-tracking the finger.
+          let transition = "none";
+          if (isDismissing) {
+            transition =
+              "transform 0.32s cubic-bezier(0.4,0,0.2,1)," +
+              "opacity 0.32s cubic-bezier(0.4,0,0.2,1)," +
+              "max-height 0.25s ease 0.32s," +
+              "margin-bottom 0.25s ease 0.32s," +
+              "border-width 0.25s ease 0.32s";
+          } else if (isSnapping) {
+            transition = "transform 0.42s cubic-bezier(0.34,1.56,0.64,1)";
+          }
+
+          // max-height drives the height-collapse step; only meaningful once
+          // we've measured the card (preparing/dismissing). Otherwise unset.
+          let maxHeight;
+          if (isDismissing) maxHeight = 0;
+          else if (isPreparing && collapsedH != null) maxHeight = `${collapsedH}px`;
+          else maxHeight = undefined;
+
+          const scale = isDismissing ? 0.92 : 1;
+          const rotate = (isDragging || isSnapping) ? resumeDragX / 800 : 0;
+          const transform = `translateX(${resumeDragX}px) rotate(${rotate}rad) scale(${scale})`;
+          const opacity = isDismissing ? 0 : 1;
+          // Subtly fade the green tint on the border as the user drags away.
+          const dragProgress = Math.min(1, Math.abs(resumeDragX) / 200);
+          const borderAlpha = isDragging || isSnapping
+            ? Math.max(0x10, 0x26 - Math.round(0x16 * dragProgress))
+            : 0x26;
+          const borderHex = borderAlpha.toString(16).padStart(2, "0");
+
+          return (
           <div
+            ref={resumeCardRef}
+            onPointerDown={onResumePointerDown}
+            onPointerMove={onResumePointerMove}
+            onPointerUp={onResumePointerUp}
+            onPointerCancel={onResumePointerCancel}
+            onClickCapture={onResumeClickCapture}
             style={{
               position: "relative",
-              marginBottom: 24,
+              marginBottom: isDismissing ? 0 : 24,
               background: t.white,
-              border: `1.5px solid ${t.green}26`,
+              border: `1.5px solid ${t.green}${borderHex}`,
               borderRadius: 18,
               boxShadow: S.sm,
               overflow: "hidden",
+              transform,
+              opacity,
+              maxHeight,
+              transition,
+              willChange: "transform, opacity, max-height",
+              touchAction: "pan-y",
+              WebkitTapHighlightColor: "transparent",
+              userSelect: "none",
+              WebkitUserSelect: "none",
             }}
           >
             <button
@@ -342,7 +531,7 @@ export function HomePage({
                 display: "flex",
                 alignItems: "center",
                 gap: 14,
-                padding: "16px 44px 16px 18px",
+                padding: "16px 52px 16px 18px",
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
@@ -405,15 +594,16 @@ export function HomePage({
               onClick={handleDismissResume}
               aria-label="Dismiss continue reading"
               title="Dismiss"
+              data-resume-dismiss=""
               style={{
                 position: "absolute",
-                top: 12,
-                right: 12,
-                width: 28,
-                height: 28,
-                minHeight: 28,
+                top: 8,
+                right: 8,
+                width: 20,
+                height: 20,
+                minHeight: 20,
                 borderRadius: 999,
-                background: "rgba(255,255,255,0.06)",
+                background: "rgba(161,161,161,0.15)",
                 border: "none",
                 cursor: "pointer",
                 display: "flex",
@@ -426,37 +616,38 @@ export function HomePage({
                 WebkitTapHighlightColor: "transparent",
               }}
               onTouchStart={(e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.12)";
-                e.currentTarget.style.transform = "scale(0.9)";
+                e.currentTarget.style.background = "rgba(161,161,161,0.28)";
+                e.currentTarget.style.transform = "scale(0.88)";
               }}
               onTouchEnd={(e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+                e.currentTarget.style.background = "rgba(161,161,161,0.15)";
                 e.currentTarget.style.transform = "scale(1)";
               }}
               onTouchCancel={(e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+                e.currentTarget.style.background = "rgba(161,161,161,0.15)";
                 e.currentTarget.style.transform = "scale(1)";
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.10)";
+                e.currentTarget.style.background = "rgba(161,161,161,0.22)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+                e.currentTarget.style.background = "rgba(161,161,161,0.15)";
               }}
               onMouseDown={(e) => {
-                e.currentTarget.style.transform = "scale(0.9)";
+                e.currentTarget.style.transform = "scale(0.88)";
               }}
               onMouseUp={(e) => {
                 e.currentTarget.style.transform = "scale(1)";
               }}
             >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
           </div>
-        )}
+          );
+        })()}
 
         <div
           style={{
