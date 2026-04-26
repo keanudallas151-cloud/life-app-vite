@@ -963,7 +963,7 @@ function WordGuessGame({ color, t, play }) {
           const isCompleted = ri < guesses.length;
           return (
             <div key={ri} style={{ display: "flex", gap: 6 }}>
-              {Array.from({ length: 5 }).map((__, ci) => {
+              {Array.from({ length: 5 }).map((_, ci) => {
                 const l = g[ci] || (ri === guesses.length ? current[ci] : "");
                 const state = g[ci] ? getLetterState(g[ci], ci, g) : "empty";
                 return (
@@ -1116,7 +1116,7 @@ function SentenceBuilderGame({ color, onClose, t, play }) {
   const [done, setDone] = useState(false);
   const [firstTry, setFirstTry] = useState(true);
   const q = SENTENCE_QS[qi];
-  const [shuffled] = useState(() => SENTENCE_QS.map(sq => [...sq.words].sort(() => Math.random() - 0.5)));
+  const [shuffled] = useState(() => SENTENCE_QS.map(sentenceQ => [...sentenceQ.words].sort(() => Math.random() - 0.5)));
   const [built, setBuilt] = useState([]);
   const [remaining, setRemaining] = useState(shuffled[0]);
   const [result, setResult] = useState(null);
@@ -1958,7 +1958,7 @@ function WordLadderGame({ color, t, play }) {
 
         {Array.from({ length: p.steps.length - currentStep - 1 }).map((_, i) => (
           <div key={i} style={{ display: "flex", gap: 5, opacity: 0.2 }}>
-            {p.steps[currentStep + 1 + i].split("").map((_l, li) => (
+            {p.steps[currentStep + 1 + i].split("").map((_, li) => (
               <div key={li} style={{
                 width: p.steps[0].length > 4 ? 44 : 52, height: p.steps[0].length > 4 ? 46 : 52,
                 borderRadius: 12, border: `2px solid ${t?.border || "rgba(255,255,255,0.12)"}`,
