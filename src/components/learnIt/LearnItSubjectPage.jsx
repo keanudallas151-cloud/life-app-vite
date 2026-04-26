@@ -730,7 +730,9 @@ function FlipCard({ game, color, lightColor, borderColor, index, onPlay }) {
 function GameModal({ children, onClose, color, title, t, play }) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
+    play?.("game_start");
     return () => { document.body.style.overflow = ""; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -820,7 +822,7 @@ function GameModal({ children, onClose, color, title, t, play }) {
       }}>
         <button
           type="button"
-          onClick={() => { play?.("back"); onClose(); }}
+          onClick={() => { play?.("back_game"); onClose(); }}
           style={{
             display: "flex",
             alignItems: "center",
@@ -886,13 +888,14 @@ function FillGapGame({ color, onClose, t, play }) {
     if (timeLeft <= 0) {
       setStreak(0);
       const p = play;
-      p?.("wrong");
+      p?.("timer_out");
       setTimeout(() => {
         if (qi + 1 >= FILL_GAP_QS.length) setDone(true);
         else { setQi(q2 => q2 + 1); setSelected(null); setTimeLeft(15); }
       }, 400);
       return;
     }
+    if (timeLeft <= 5) play?.("timer_tick");
     const timer = setTimeout(() => setTimeLeft(tl => tl - 1), 1000);
     return () => clearTimeout(timer);
   }, [timeLeft, selected, done, qi, play]);
@@ -902,15 +905,19 @@ function FillGapGame({ color, onClose, t, play }) {
     setSelected(opt);
     if (opt === q.answer) {
       setScore(s => s + 1);
-      setStreak(s => s + 1);
-      play?.("correct");
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      if (newStreak >= 5)      play?.("streak_5");
+      else if (newStreak >= 3) play?.("streak_3");
+      else if (newStreak >= 2) play?.("streak_2");
+      else                     play?.("coin");
       setShowCorrect(true);
       setTimeout(() => setShowCorrect(false), 700);
     } else {
       setStreak(0);
       setShake(true);
       setTimeout(() => setShake(false), 400);
-      play?.("wrong");
+      play?.("word_wrong");
     }
     setTimeout(() => {
       if (qi + 1 >= FILL_GAP_QS.length) setDone(true);
@@ -988,7 +995,7 @@ function FillGapGame({ color, onClose, t, play }) {
       </div>
       {!selected && !hintUsed && (
         <button type="button" onClick={() => {
-          play?.("tap");
+          play?.("hint_used");
           setHintUsed(true);
           const wrongs = q.options.filter(o => o !== q.answer);
           const keep = wrongs[Math.floor(Math.random() * wrongs.length)];
@@ -1024,15 +1031,17 @@ function WordGuessGame({ color, t, play }) {
     if (current.length !== 5) {
       setShakeRow(true);
       setTimeout(() => setShakeRow(false), 400);
+      play?.("timer_out");
       return;
     }
     const g = current.toUpperCase();
     const next = [...guesses, g];
     setGuesses(next);
     setCurrent("");
-    play?.("tap");
-    if (g === target) { setWon(true); play?.("correct"); }
-    else if (next.length >= maxGuesses) { setLost(true); play?.("wrong"); }
+    play?.("build_word");
+    if (g === target) { setWon(true); play?.("level_up"); }
+    else if (next.length >= maxGuesses) { setLost(true); play?.("game_over"); }
+    else { play?.("word_wrong"); }
   };
 
   const getLetterState = (letter, pos, word) => {
@@ -1056,9 +1065,9 @@ function WordGuessGame({ color, t, play }) {
 
   const tapKey = (key) => {
     if (won || lost) return;
-    if (key === "⌫") { setCurrent(c => c.slice(0, -1)); play?.("tap"); }
+    if (key === "⌫") { setCurrent(c => c.slice(0, -1)); play?.("game_tap"); }
     else if (key === "ENTER") { submit(); }
-    else if (current.length < 5) { setCurrent(c => c + key); play?.("tap"); }
+    else if (current.length < 5) { setCurrent(c => c + key); play?.("key_press"); }
   };
 
   const keyStyle = (k) => {
@@ -1195,16 +1204,19 @@ function VocabMatchGame({ color, onClose, t, play }) {
     if (done) return;
     if (roundMatched.length === roundPairs.length) return;
     if (timeLeft <= 0) {
+      play?.("timer_out");
       if (round + 1 >= totalRounds) { setDone(true); return; }
       setTimeout(() => { setRound(r => r + 1); setTimeLeft(30); setSelected({ word: null, def: null }); }, 400);
       return;
     }
+    if (timeLeft <= 5) play?.("timer_tick");
     const timer = setTimeout(() => setTimeLeft(tl => tl - 1), 1000);
     return () => clearTimeout(timer);
-  }, [timeLeft, done, round, roundMatched.length, roundPairs.length, totalRounds]);
+  }, [timeLeft, done, round, roundMatched.length, roundPairs.length, totalRounds, play]);
 
   useEffect(() => {
     if (roundMatched.length === roundPairs.length && roundPairs.length > 0) {
+      play?.("round_clear");
       setRoundComplete(true);
       setTimeout(() => {
         setRoundComplete(false);
@@ -1212,22 +1224,22 @@ function VocabMatchGame({ color, onClose, t, play }) {
         else { setRound(r => r + 1); setTimeLeft(30); setSelected({ word: null, def: null }); }
       }, 1400);
     }
-  }, [roundMatched.length, roundPairs.length, round, totalRounds]);
+  }, [roundMatched.length, roundPairs.length, round, totalRounds, play]);
 
   const pick = (type, val) => {
-    play?.("tap");
+    play?.("game_tap");
     const next = { ...selected, [type]: val };
     setSelected(next);
     if (next.word && next.def) {
       setMoves(m => m + 1);
       const pair = VOCAB_PAIRS.find(p => p.word === next.word);
       if (pair?.def === next.def) {
-        play?.("correct");
+        play?.("match_found");
         const newMatched = [...matched, next.word];
         setMatched(newMatched);
         setSelected({ word: null, def: null });
       } else {
-        play?.("wrong");
+        play?.("word_wrong");
         setWrong(true);
         setTimeout(() => { setWrong(false); setSelected({ word: null, def: null }); }, 700);
       }
@@ -1313,14 +1325,14 @@ function SentenceBuilderGame({ color, onClose, t, play }) {
 
   const addWord = (word, idx) => {
     if (result) return;
-    play?.("tap");
+    play?.("key_press");
     setBuilt(b => [...b, word]);
     setRemaining(r => r.filter((_, i) => i !== idx));
   };
 
   const removeWord = (idx) => {
     if (result) return;
-    play?.("tap");
+    play?.("game_tap");
     setFirstTry(false);
     const word = built[idx];
     setBuilt(b => b.filter((_, i) => i !== idx));
@@ -1332,13 +1344,15 @@ function SentenceBuilderGame({ color, onClose, t, play }) {
     setResult(correct ? "correct" : "wrong");
     if (correct) {
       setScore(s => s + (firstTry ? 2 : 1));
-      play?.("correct");
+      play?.("sentence_ok");
+      setTimeout(() => play?.("coin"), 180);
+      if (firstTry) setTimeout(() => play?.("streak_2"), 400);
       setTimeout(() => {
         if (qi + 1 >= SENTENCE_QS.length) setDone(true);
         else { setQi(qi + 1); setBuilt([]); setRemaining(shuffled[qi + 1]); setResult(null); setFirstTry(true); }
       }, 1000);
     } else {
-      play?.("wrong");
+      play?.("word_wrong");
     }
   };
 
@@ -1365,7 +1379,7 @@ function SentenceBuilderGame({ color, onClose, t, play }) {
       </div>
       {/* Shuffle + Word bank */}
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
-        <button type="button" onClick={() => { play?.("tap"); setRemaining(r => [...r].sort(() => Math.random() - 0.5)); }} style={{ padding: "7px 14px", borderRadius: 999, background: "rgba(255,255,255,0.06)", color: t?.muted || "#a1a1a1", border: `1px solid ${t?.border || "rgba(255,255,255,0.1)"}`, fontSize: 12, cursor: "pointer", fontFamily: FONT, WebkitTapHighlightColor: "transparent" }}>⇄ Shuffle</button>
+        <button type="button" onClick={() => { play?.("hint_used"); setRemaining(r => [...r].sort(() => Math.random() - 0.5)); }} style={{ padding: "7px 14px", borderRadius: 999, background: "rgba(255,255,255,0.06)", color: t?.muted || "#a1a1a1", border: `1px solid ${t?.border || "rgba(255,255,255,0.1)"}`, fontSize: 12, cursor: "pointer", fontFamily: FONT, WebkitTapHighlightColor: "transparent" }}>⇄ Shuffle</button>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
         {remaining.map((w, i) => (
@@ -1380,7 +1394,7 @@ function SentenceBuilderGame({ color, onClose, t, play }) {
       </button>
       {result === "wrong" && (
         <button type="button" onClick={() => {
-          play?.("tap");
+          play?.("game_tap");
           setBuilt([]);
           setRemaining(shuffled[qi]);
           setResult(null);
@@ -1419,6 +1433,7 @@ function MultiChoiceGame({ questions, color, onClose, t, play }) {
   useEffect(() => {
     if (selected || done) return;
     if (timeLeft <= 0) {
+      play?.("timer_out");
       setSelected(TIMEOUT_SENTINEL);
       setStreak(0);
       setTimeout(() => {
@@ -1427,20 +1442,25 @@ function MultiChoiceGame({ questions, color, onClose, t, play }) {
       }, 900);
       return;
     }
+    if (timeLeft <= 3) play?.("timer_tick");
     const t2 = setTimeout(() => setTimeLeft(tl => tl - 1), 1000);
     return () => clearTimeout(t2);
-  }, [timeLeft, selected, done, qi, questions.length]);
+  }, [timeLeft, selected, done, qi, questions.length, play]);
 
   const pick = (opt) => {
     if (selected) return;
+    play?.("game_tap");
     setSelected(opt);
     if (opt === q.ans) {
       setScore(s => s + multiplier);
-      setStreak(s => s + 1);
-      play?.("correct");
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      if (newStreak >= 5)      { setTimeout(() => play?.("streak_5"), 80); }
+      else if (newStreak >= 3) { setTimeout(() => play?.("streak_3"), 80); }
+      else                     { setTimeout(() => play?.("coin"), 80); }
     } else {
       setStreak(0);
-      play?.("wrong");
+      setTimeout(() => play?.("word_wrong"), 80);
     }
     setTimeout(() => {
       if (qi + 1 >= questions.length) setDone(true);
@@ -2096,12 +2116,12 @@ function WordLadderGame({ color, t, play }) {
     if (guess.length !== stepWord.length) return;
     if (!differsBy1(guess, prevWord)) {
       setShake(true);
-      play?.("wrong");
+      play?.("word_wrong");
       setTimeout(() => setShake(false), 400);
       return;
     }
     if (guess === stepWord) {
-      play?.("correct");
+      play?.("ladder_step");
       setCorrect(true);
       setScore(s => s + (hintUsed ? 0 : 1));
       setTotalSteps(s => s + 1);
@@ -2110,8 +2130,10 @@ function WordLadderGame({ color, t, play }) {
       setTimeout(() => {
         setCorrect(false);
         if (currentStep + 1 >= p.steps.length) {
-          if (pi + 1 >= WORD_LADDER_PUZZLES.length) { setDone(true); }
-          else {
+          play?.("round_clear");
+          if (pi + 1 >= WORD_LADDER_PUZZLES.length) {
+            setTimeout(() => { play?.("ladder_done"); setDone(true); }, 500);
+          } else {
             setTimeout(() => {
               setPi(pi + 1); setCurrentStep(1); setRevealed([0]); setInput(""); setHintUsed(false);
             }, 600);
@@ -2122,13 +2144,13 @@ function WordLadderGame({ color, t, play }) {
       }, 800);
     } else {
       setShake(true);
-      play?.("wrong");
+      play?.("word_wrong");
       setTimeout(() => setShake(false), 400);
     }
   };
 
   const useHint = () => {
-    play?.("tap");
+    play?.("hint_used");
     setHintUsed(true);
     setInput(stepWord);
   };
@@ -2234,9 +2256,9 @@ function WordLadderGame({ color, t, play }) {
                   const isWide = k === "ENTER" || k === "⌫";
                   return (
                     <button key={k} type="button" onClick={() => {
-                      if (k === "⌫") { setInput(v => v.slice(0, -1)); play?.("tap"); }
-                      else if (k === "ENTER") { submitStep(); }
-                      else if (input.length < stepWord.length) { setInput(v => v + k); play?.("tap"); }
+                      if (k === "⌫") { setInput(v => v.slice(0, -1)); play?.("game_tap"); }
+                      else if (k === "ENTER") { play?.("build_word"); submitStep(); }
+                      else if (input.length < stepWord.length) { setInput(v => v + k); play?.("key_press"); }
                     }} style={{
                       minWidth: isWide ? 48 : 32, height: 42, borderRadius: 8,
                       background: t?.light||"rgba(255,255,255,0.08)",
@@ -2299,9 +2321,9 @@ function ScoreScreen({ score, total, color, customMsg, onReplay, onClose, t, pla
   useEffect(() => {
     if (played.current) return;
     played.current = true;
-    if (pct === 100) play?.("star");
-    else if (pct >= 60) play?.("correct");
-    else play?.("ok");
+    if (pct === 100) { play?.("level_up"); setTimeout(() => play?.("streak_5"), 350); }
+    else if (pct >= 60) play?.("word_correct");
+    else play?.("word_wrong");
   }, [pct, play]);
   const confettiColors = ["#FF6B6B","#FFD93D","#6BCB77","#4D96FF","#FF6FF2","#FF9E4F","#A0F0A0","#B388FF","#FFB347","#4FC3F7","#FF80AB","#69F0AE"];
   return (
