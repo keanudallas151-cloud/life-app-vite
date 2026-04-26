@@ -10,13 +10,9 @@ import {
   useState,
 } from "react";
 import { TreeNode } from "./components/shell/Field";
-import {
-  allContent,
-  CONTENT,
-  GUIDED_ORDER,
-  LIBRARY,
-  MAP,
-} from "./data/content";
+// TODO (future): consider more granular per-section loading once the content
+// tree is split into separate files (e.g. only load finance section on demand).
+// content.js is loaded lazily the first time the "app" screen becomes active.
 import { auth, isFirebaseConfigured } from "./firebaseClient";
 import { Ic } from "./icons/Ic";
 import {
@@ -788,6 +784,33 @@ function LifeAppContent() {
   const [experienceOpen, setExperienceOpen] = useState(false);
   const [experienceTopic, setExperienceTopic] = useState(null);
 
+  // ─── Lazy content data ────────────────────────────────────────────────────
+  // content.js (~143 KB) is loaded dynamically the first time the main app
+  // screen becomes active, keeping the initial bundle lighter on mobile.
+  // TODO (future): split content.js into per-section chunks and load each one
+  // only when the user navigates to that section (e.g. "finance" on demand).
+  const [contentData, setContentData] = useState(null);
+  useEffect(() => {
+    if (screen !== "app" || contentData) return;
+    import("./data/content").then((m) => {
+      setContentData({
+        CONTENT: m.CONTENT,
+        LIBRARY: m.LIBRARY,
+        GUIDED_ORDER: m.GUIDED_ORDER,
+        MAP: m.MAP,
+        allContent: m.allContent,
+      });
+    });
+  }, [screen, contentData]);
+
+  // Memoized aliases — stable references, empty until the async load resolves.
+  // All consumers below gracefully handle empty collections during loading.
+  const CONTENT = useMemo(() => contentData?.CONTENT ?? {}, [contentData]);
+  const LIBRARY = useMemo(() => contentData?.LIBRARY ?? {}, [contentData]);
+  const GUIDED_ORDER = useMemo(() => contentData?.GUIDED_ORDER ?? [], [contentData]);
+  const MAP = useMemo(() => contentData?.MAP ?? {}, [contentData]);
+  const allContent = useMemo(() => contentData?.allContent ?? [], [contentData]);
+
   const sidebarSearchResults = useMemo(() => {
     const query = sidebarQuery.trim().toLowerCase();
     if (query.length < 2) return [];
@@ -805,7 +828,7 @@ function LifeAppContent() {
         return haystack.includes(query);
       })
       .slice(0, 24);
-  }, [sidebarQuery]);
+  }, [sidebarQuery, allContent]);
 
   const libraryCategoryCards = useMemo(() => {
     return Object.entries(LIBRARY).map(([key, node]) => {
@@ -814,7 +837,7 @@ function LifeAppContent() {
       ).length;
       return { key, node, topicCount };
     });
-  }, []);
+  }, [LIBRARY, allContent]);
   const [shareToast, setShareToast] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -1255,7 +1278,7 @@ function LifeAppContent() {
       "",
       window.location.pathname + window.location.search,
     );
-  }, [screen, user]);
+  }, [screen, user, MAP]);
 
   useEffect(() => {
     if (screen !== "app") return;
@@ -2058,6 +2081,23 @@ function LifeAppContent() {
     );
 
   // Keep the layout primitives straightforward because this will likely be ported into a native app shell later.
+  // Show a loading fallback while the content data chunk is being fetched on
+  // first entry to the app screen. Auth screens are not affected.
+  if (!contentData)
+    return (
+      <div
+        style={{
+          height: "100%",
+          background: t.skin,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <RouteFallback />
+      </div>
+    );
+
   return (
     <div
       data-page-tag="#dashboard_home"
