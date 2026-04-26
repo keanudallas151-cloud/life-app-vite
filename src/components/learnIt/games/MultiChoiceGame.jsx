@@ -46,10 +46,10 @@ export function MultiChoiceGame({ questions, color, onClose, t, play }) {
       setStreak(newStreak);
       if (newStreak >= 5)      { setTimeout(() => play?.("streak_5"), 80); }
       else if (newStreak >= 3) { setTimeout(() => play?.("streak_3"), 80); }
-      else                     { setTimeout(() => play?.("coin"), 80); }
+      else                     { setTimeout(() => play?.("correct"), 80); }
     } else {
       setStreak(0);
-      setTimeout(() => play?.("word_wrong"), 80);
+      setTimeout(() => play?.("wrong"), 80);
     }
     setTimeout(() => {
       if (qi + 1 >= questions.length) setDone(true);
@@ -89,18 +89,35 @@ export function MultiChoiceGame({ questions, color, onClose, t, play }) {
         {q.opts.map(opt => {
           const isCorrect = opt === q.ans;
           const isWrong = selected === opt && !isCorrect;
+          const showBadge = selected && (isCorrect || isWrong);
           return (
             <button key={opt} type="button" onClick={() => pick(opt)}
               onTouchStart={(e) => { e.currentTarget.style.transform = "scale(0.96)"; }}
               onTouchEnd={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
               style={{
-              padding: "14px 16px", borderRadius: 14, textAlign: "left",
+              position: "relative",
+              padding: `14px ${showBadge ? "40px" : "16px"} 14px 16px`, borderRadius: 14, textAlign: "left",
               border: `1.5px solid ${selected ? isCorrect ? color : isWrong ? "#e5484d" : t?.border || "rgba(255,255,255,0.07)" : t?.border || "rgba(255,255,255,0.1)"}`,
               background: selected ? isCorrect ? `${color}18` : isWrong ? "rgba(229,72,77,0.12)" : t?.light || "rgba(255,255,255,0.03)" : t?.light || "rgba(255,255,255,0.05)",
               color: selected ? isCorrect ? color : isWrong ? "#e5484d" : "#666" : t?.ink || "#ededed",
               fontSize: 14, fontWeight: 500, cursor: "pointer", fontFamily: FONT,
               transition: "all 0.15s cubic-bezier(0.34,1.56,0.64,1)", WebkitTapHighlightColor: "transparent",
-            }}>{opt}</button>
+            }}>
+              {opt}
+              {showBadge && (
+                <span style={{
+                  position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
+                  width: 22, height: 22, borderRadius: "50%",
+                  background: isCorrect ? "#50c878" : "#e5484d",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 12, fontWeight: 800, color: "#000",
+                  animation: "popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both",
+                  flexShrink: 0, pointerEvents: "none",
+                }}>
+                  {isCorrect ? "✓" : "✗"}
+                </span>
+              )}
+            </button>
           );
         })}
       </div>

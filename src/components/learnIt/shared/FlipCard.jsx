@@ -156,13 +156,13 @@ export function FlipCard({ game, color, lightColor, borderColor, index, onPlay }
             type="button"
             onClick={(e) => { e.stopPropagation(); onPlay(game.id); }}
             style={{
-              marginTop: 2,
-              padding: "8px 20px",
+              marginTop: 0,
+              padding: "6px 16px",
               background: color,
               color: "#000",
               border: "none",
               borderRadius: 999,
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: 700,
               cursor: "pointer",
               fontFamily: FONT,

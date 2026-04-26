@@ -13,9 +13,9 @@ import { SpeakItGame, FillerCatcherGame, ConfidenceQuiz, DailyDemChallenge } fro
 import { MultiChoiceGame } from "./games/MultiChoiceGame.jsx";
 
 // Data
-import { WORD_TRIVIA } from "./data/englishData.js";
-import { FIN_TERMS, FIN_TRIVIA } from "./data/financeData.js";
-import { TONE_QS, BODY_QS } from "./data/demeanorData.js";
+import { FILL_GAP_QS, WORD_TRIVIA } from "./data/englishData.js";
+import { FIN_TERMS, FIN_TRIVIA, INVEST_QS } from "./data/financeData.js";
+import { SPEAK_QS, TONE_QS, BODY_QS } from "./data/demeanorData.js";
 
 /* ──────────────────────────────────────────────────────────────
    SUBJECT CONFIG
@@ -57,28 +57,60 @@ const GAMES = {
 };
 
 /* ──────────────────────────────────────────────────────────────
+   DIFFICULTY SYSTEM
+────────────────────────────────────────────────────────────── */
+// Pre-mapped question arrays for games that transform before passing to MultiChoiceGame
+const TONE_MAPPED = TONE_QS.map(q => ({ q: `Tone of: "${q.message}"`, opts: q.tones, ans: q.ans, tip: q.tip }));
+const BODY_MAPPED = BODY_QS.map(q => ({ q: q.q, opts: q.opts, ans: q.ans, tip: q.tip }));
+
+const DIFFICULTY_CONFIG = {
+  fill_gap:    { qs: FILL_GAP_QS, easy: [0, 15], medium: [15, 30], hard: [30, 45] },
+  word_trivia: { qs: WORD_TRIVIA,  easy: [0, 15], medium: [15, 30], hard: [30, 45] },
+  fin_trivia:  { qs: FIN_TRIVIA,   easy: [0, 10], medium: [10, 20], hard: [20, 30] },
+  invest_save: { qs: INVEST_QS,    easy: [0, 7],  medium: [7, 14],  hard: [14, 20] },
+  speak_it:    { qs: SPEAK_QS,     easy: [0, 7],  medium: [7, 14],  hard: [14, 21] },
+  tone_detect: { qs: TONE_MAPPED,  easy: [0, 7],  medium: [7, 14],  hard: [14, 21] },
+  body_lang:   { qs: BODY_MAPPED,  easy: [0, 7],  medium: [7, 14],  hard: [14, 20] },
+};
+
+const DIFFICULTY_GAME_IDS = new Set(Object.keys(DIFFICULTY_CONFIG));
+
+function getQuestionsForDifficulty(gameId, difficulty) {
+  const cfg = DIFFICULTY_CONFIG[gameId];
+  if (!cfg) return null;
+  const [start, end] = cfg[difficulty];
+  return cfg.qs.slice(start, end);
+}
+
+const DIFFICULTY_OPTIONS = [
+  { key: "easy",   label: "🟢 Easy",   bg: "#50c878", textColor: "#000" },
+  { key: "medium", label: "🟡 Medium", bg: "#f59e0b", textColor: "#000" },
+  { key: "hard",   label: "🔴 Hard",   bg: "#e5484d", textColor: "#fff" },
+];
+
+/* ──────────────────────────────────────────────────────────────
    GAME ROUTER
 ────────────────────────────────────────────────────────────── */
-function GameRouter({ gameId, color, onClose, t, play }) {
+function GameRouter({ gameId, questions, color, onClose, t, play }) {
   const games = {
-    fill_gap:     () => <FillGapGame color={color} onClose={onClose} t={t} play={play} />,
+    fill_gap:     () => <FillGapGame questions={questions} color={color} onClose={onClose} t={t} play={play} />,
     word_guess:   () => <WordGuessGame color={color} onClose={onClose} t={t} play={play} />,
     vocab_match:  () => <VocabMatchGame color={color} onClose={onClose} t={t} play={play} />,
     sentence:     () => <SentenceBuilderGame color={color} onClose={onClose} t={t} play={play} />,
-    word_trivia:  () => <MultiChoiceGame questions={WORD_TRIVIA} color={color} onClose={onClose} t={t} play={play} />,
+    word_trivia:  () => <MultiChoiceGame questions={questions || WORD_TRIVIA} color={color} onClose={onClose} t={t} play={play} />,
     word_ladder:  () => <WordLadderGame color={color} onClose={onClose} t={t} play={play} />,
     fin_terms:    () => <FlashcardGame cards={FIN_TERMS} color={color} onClose={onClose} t={t} play={play} />,
     budget:       () => <BudgetGame color={color} onClose={onClose} t={t} play={play} />,
-    fin_trivia:   () => <MultiChoiceGame questions={FIN_TRIVIA} color={color} onClose={onClose} t={t} play={play} />,
-    invest_save:  () => <InvestSaveGame color={color} onClose={onClose} t={t} play={play} />,
+    fin_trivia:   () => <MultiChoiceGame questions={questions || FIN_TRIVIA} color={color} onClose={onClose} t={t} play={play} />,
+    invest_save:  () => <InvestSaveGame questions={questions} color={color} onClose={onClose} t={t} play={play} />,
     money_math:   () => <MoneyMathGame color={color} onClose={onClose} t={t} play={play} />,
     compound:     () => <CompoundGrowthGame color={color} onClose={onClose} t={t} play={play} />,
-    speak_it:     () => <SpeakItGame color={color} onClose={onClose} t={t} play={play} />,
+    speak_it:     () => <SpeakItGame questions={questions} color={color} onClose={onClose} t={t} play={play} />,
     filler_catch: () => <FillerCatcherGame color={color} onClose={onClose} t={t} play={play} />,
-    tone_detect:  () => <MultiChoiceGame questions={TONE_QS.map(q => ({ q: `Tone of: "${q.message}"`, opts: q.tones, ans: q.ans, tip: q.tip }))} color={color} onClose={onClose} t={t} play={play} />,
+    tone_detect:  () => <MultiChoiceGame questions={questions || TONE_MAPPED} color={color} onClose={onClose} t={t} play={play} />,
     conf_quiz:    () => <ConfidenceQuiz color={color} onClose={onClose} t={t} play={play} />,
     daily_dem:    () => <DailyDemChallenge color={color} onClose={onClose} t={t} play={play} />,
-    body_lang:    () => <MultiChoiceGame questions={BODY_QS.map(q => ({ q: q.q, opts: q.opts, ans: q.ans, tip: q.tip }))} color={color} onClose={onClose} t={t} play={play} />,
+    body_lang:    () => <MultiChoiceGame questions={questions || BODY_MAPPED} color={color} onClose={onClose} t={t} play={play} />,
   };
   return games[gameId]?.() ?? <div style={{ padding: 24, color: t?.muted || "#a1a1a1", textAlign: "center", fontFamily: FONT }}>Coming soon…</div>;
 }
@@ -88,18 +120,34 @@ function GameRouter({ gameId, color, onClose, t, play }) {
 ────────────────────────────────────────────────────────────── */
 export function LearnItSubjectPage({ t, play, subject, onBack }) {
   const [activeGame, setActiveGame] = useState(null);
+  const [difficultyPending, setDifficultyPending] = useState(null);
+  const [activeQuestions, setActiveQuestions] = useState(null);
   const meta = SUBJECT_META[subject] || SUBJECT_META.english;
   const games = GAMES[subject] || GAMES.english;
   const { color, lightColor, borderColor, label, emoji } = meta;
 
   const openGame = (id) => {
     play?.("tap");
-    setActiveGame(id);
+    if (DIFFICULTY_GAME_IDS.has(id)) {
+      setDifficultyPending(id);
+    } else {
+      setActiveQuestions(null);
+      setActiveGame(id);
+    }
+  };
+
+  const selectDifficulty = (difficulty) => {
+    const qs = getQuestionsForDifficulty(difficultyPending, difficulty);
+    setActiveQuestions(qs);
+    setActiveGame(difficultyPending);
+    setDifficultyPending(null);
+    play?.("tap");
   };
 
   const closeGame = () => {
     play?.("back");
     setActiveGame(null);
+    setActiveQuestions(null);
   };
 
   const activeGameMeta = games.find(g => g.id === activeGame);
@@ -114,6 +162,13 @@ export function LearnItSubjectPage({ t, play, subject, onBack }) {
         position: "relative",
       }}
     >
+      <style>{`
+        @keyframes diffPickerIn {
+          from { opacity: 0; transform: scale(0.82); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
+
       {/* Header */}
       <div style={{
         padding: "28px 18px 22px",
@@ -186,10 +241,66 @@ export function LearnItSubjectPage({ t, play, subject, onBack }) {
         ))}
       </div>
 
+      {/* Difficulty picker overlay */}
+      {difficultyPending && (
+        <div
+          onClick={() => setDifficultyPending(null)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 2000,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(0,0,0,0.65)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "rgba(18,18,18,0.97)",
+              borderRadius: 999,
+              border: "1px solid rgba(255,255,255,0.14)",
+              padding: 6,
+              display: "flex",
+              gap: 6,
+              animation: "diffPickerIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both",
+              boxShadow: "0 12px 48px rgba(0,0,0,0.7)",
+            }}
+          >
+            {DIFFICULTY_OPTIONS.map(({ key, label: dlabel, bg, textColor }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => selectDifficulty(key)}
+                onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.93)"; }}
+                onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                onTouchStart={(e) => { e.stopPropagation(); e.currentTarget.style.transform = "scale(0.93)"; }}
+                onTouchEnd={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                style={{
+                  padding: "11px 22px",
+                  borderRadius: 999,
+                  background: bg,
+                  color: textColor,
+                  border: "none",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  fontFamily: FONT,
+                  letterSpacing: "-0.01em",
+                  WebkitTapHighlightColor: "transparent",
+                  transition: "transform 0.15s cubic-bezier(0.34,1.56,0.64,1)",
+                }}
+              >
+                {dlabel}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Game modal */}
       {activeGame && (
         <GameModal onClose={closeGame} color={color} title={activeGameMeta?.title || "Game"} t={t} play={play}>
-          <GameRouter gameId={activeGame} color={color} onClose={closeGame} t={t} play={play} />
+          <GameRouter gameId={activeGame} questions={activeQuestions} color={color} onClose={closeGame} t={t} play={play} />
         </GameModal>
       )}
     </div>

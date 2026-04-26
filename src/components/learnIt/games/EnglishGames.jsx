@@ -10,22 +10,24 @@ import {
   WORD_LADDER_PUZZLES,
 } from "../data/englishData.js";
 
-export function FillGapGame({ color, onClose, t, play }) {
+export function FillGapGame({ questions: questionsProp, color, onClose, t, play }) {
+  const qs = questionsProp || FILL_GAP_QS;
   const [qi, setQi] = useState(0);
   const [selected, setSelected] = useState(null);
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
   const [streak, setStreak] = useState(0);
   const [hintUsed, setHintUsed] = useState(false);
-  const [options, setOptions] = useState(FILL_GAP_QS[0].options);
+  const [options, setOptions] = useState(qs[0]?.options || []);
   const [shake, setShake] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15);
   const [showCorrect, setShowCorrect] = useState(false);
-  const q = FILL_GAP_QS[qi];
+  const q = qs[qi];
 
   useEffect(() => {
-    setOptions(FILL_GAP_QS[qi]?.options || []);
+    setOptions(qs[qi]?.options || []);
     setHintUsed(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [qi]);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export function FillGapGame({ color, onClose, t, play }) {
       const p = play;
       p?.("timer_out");
       setTimeout(() => {
-        if (qi + 1 >= FILL_GAP_QS.length) setDone(true);
+        if (qi + 1 >= qs.length) setDone(true);
         else { setQi(q2 => q2 + 1); setSelected(null); setTimeLeft(15); }
       }, 400);
       return;
@@ -47,6 +49,7 @@ export function FillGapGame({ color, onClose, t, play }) {
     if (timeLeft <= 5) play?.("timer_tick");
     const timer = setTimeout(() => setTimeLeft(tl => tl - 1), 1000);
     return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, selected, done, qi, play]);
 
   const pick = (opt) => {
@@ -69,12 +72,12 @@ export function FillGapGame({ color, onClose, t, play }) {
       play?.("word_wrong");
     }
     setTimeout(() => {
-      if (qi + 1 >= FILL_GAP_QS.length) setDone(true);
+      if (qi + 1 >= qs.length) setDone(true);
       else { setQi(qi + 1); setSelected(null); }
     }, 900);
   };
 
-  if (done) return <ScoreScreen score={score} total={FILL_GAP_QS.length} color={color} onReplay={() => { setQi(0); setScore(0); setSelected(null); setDone(false); setStreak(0); }} onClose={onClose} t={t} play={play} />;
+  if (done) return <ScoreScreen score={score} total={qs.length} color={color} onReplay={() => { setQi(0); setScore(0); setSelected(null); setDone(false); setStreak(0); }} onClose={onClose} t={t} play={play} />;
 
   return (
     <div style={{ padding: "20px 20px 40px", fontFamily: FONT, position: "relative" }}>
@@ -109,7 +112,7 @@ export function FillGapGame({ color, onClose, t, play }) {
           }}>{timeLeft}</div>
         </div>
       </div>
-      <Progress current={qi} total={FILL_GAP_QS.length} color={color} t={t} />
+      <Progress current={qi} total={qs.length} color={color} t={t} />
       {streak >= 3 && (
         <div style={{ textAlign: "right", marginTop: -14, marginBottom: 8 }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", fontFamily: FONT, animation: "streakPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both" }}>🔥 ×{streak} streak!</span>
