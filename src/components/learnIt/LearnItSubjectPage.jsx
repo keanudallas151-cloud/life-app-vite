@@ -167,6 +167,14 @@ export function LearnItSubjectPage({ t, play, subject, onBack }) {
           from { opacity: 0; transform: scale(0.82); }
           to   { opacity: 1; transform: scale(1); }
         }
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+            scroll-behavior: auto !important;
+          }
+        }
       `}</style>
 
       {/* Header */}
@@ -281,8 +289,11 @@ export function LearnItSubjectPage({ t, play, subject, onBack }) {
               borderRadius: 999,
               border: "1px solid rgba(255,255,255,0.14)",
               padding: 6,
-              display: "flex",
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
               gap: 6,
+              width: "min(100%, 360px)",
+              boxSizing: "border-box",
               animation: "diffPickerIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both",
               boxShadow: "0 12px 48px rgba(0,0,0,0.7)",
             }}
@@ -316,13 +327,16 @@ export function LearnItSubjectPage({ t, play, subject, onBack }) {
             ))}
           </div>
 
-          {/* Question count subtitle row — mirrors pill positions */}
+          {/* Question count subtitle row — mirrors pill positions via matching 3-col grid */}
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              display: "flex",
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
               gap: 6,
               padding: "0 6px",
+              width: "min(100%, 360px)",
+              boxSizing: "border-box",
               animation: "diffPickerIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both",
             }}
           >
@@ -333,13 +347,11 @@ export function LearnItSubjectPage({ t, play, subject, onBack }) {
                 <div
                   key={key}
                   style={{
-                    flex: 1,
                     textAlign: "center",
                     fontSize: 11,
                     fontWeight: 500,
                     color: t?.muted || "rgba(255,255,255,0.55)",
                     fontFamily: FONT,
-                    minWidth: 90,
                   }}
                 >
                   {count} questions

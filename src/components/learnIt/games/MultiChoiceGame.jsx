@@ -98,7 +98,7 @@ export function MultiChoiceGame({ questions, color, onClose, t, play }) {
           key={milestoneFlash}
           aria-hidden="true"
           style={{
-            position: "absolute", left: 0, right: 0, top: -20, height: 80,
+            position: "absolute", left: 0, right: 0, top: 0, height: 80,
             background: `linear-gradient(180deg, ${streakColor}80 0%, transparent 100%)`,
             pointerEvents: "none",
             animation: "streakFlash 0.45s ease both",
@@ -133,14 +133,16 @@ export function MultiChoiceGame({ questions, color, onClose, t, play }) {
           transition: "width 0.9s linear, background 0.3s ease",
         }} />
       </div>
-      {/* Numeric timer (visible when low for urgency pulse) */}
-      {lowTime && (
-        <div style={{
+      {/* Numeric timer (always rendered to avoid layout shift; visible when low for urgency pulse) */}
+      <div
+        aria-hidden={!lowTime}
+        style={{
           textAlign: "center", marginBottom: 10, fontSize: 13, fontWeight: 800,
           color: "#e5484d", fontFamily: FONT,
-          animation: "timerPulse 0.6s ease-in-out infinite",
-        }}>{timeLeft}s</div>
-      )}
+          visibility: lowTime ? "visible" : "hidden",
+          animation: lowTime ? "timerPulse 0.6s ease-in-out infinite" : "none",
+        }}
+      >{lowTime ? `${timeLeft}s` : "0s"}</div>
       <div key={qi} style={{
         background: t?.light || "rgba(255,255,255,0.05)",
         borderRadius: 18,

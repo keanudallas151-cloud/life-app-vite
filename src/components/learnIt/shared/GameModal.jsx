@@ -138,6 +138,14 @@ export function GameModal({ children, onClose, color, title, t, play }) {
           0%   { transform: translateY(-40px) rotate(0deg); opacity: 1; }
           100% { transform: translateY(220px) rotate(720deg); opacity: 0; }
         }
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+            scroll-behavior: auto !important;
+          }
+        }
       `}</style>
       {/* Header */}
       <div style={{
