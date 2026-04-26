@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FONT } from "./shared/constants.js";
 import { FlipCard } from "./shared/FlipCard.jsx";
 import { GameModal } from "./shared/GameModal.jsx";
@@ -31,28 +31,100 @@ const SUBJECT_META = {
 ────────────────────────────────────────────────────────────── */
 const GAMES = {
   english: [
-    { id: "fill_gap",     icon: "✏️", title: "Fill the Gap",     desc: "Complete the sentence with the right word.",    type: "game" },
-    { id: "word_guess",   icon: "🔤", title: "Word Guess",       desc: "Guess the hidden word one letter at a time.",   type: "game" },
-    { id: "vocab_match",  icon: "🔗", title: "Vocab Match",      desc: "Match words to their definitions fast.",        type: "game" },
-    { id: "sentence",     icon: "🔀", title: "Sentence Builder", desc: "Tap words in the correct order.",               type: "game" },
-    { id: "word_trivia",  icon: "❓", title: "Word Trivia",      desc: "Test your knowledge of the English language.",  type: "game" },
-    { id: "word_ladder",  icon: "🪜", title: "Word Ladder",      desc: "Change one letter at a time to reach the goal.",type: "game" },
+    {
+      id: "fill_gap", icon: "✏️", title: "Fill the Gap", type: "game",
+      desc: "Complete the sentence with the right word.",
+      longDesc: "Read each sentence with a missing word, then tap the choice that fits best. Builds vocabulary, grammar instincts, and reading fluency across three difficulty tiers.",
+    },
+    {
+      id: "word_guess", icon: "🔤", title: "Word Guess", type: "game",
+      desc: "Guess the hidden word one letter at a time.",
+      longDesc: "A clean Hangman-style round: pick letters to reveal a hidden word before your guesses run out. Sharpens spelling, pattern recognition, and vocabulary recall.",
+    },
+    {
+      id: "vocab_match", icon: "🔗", title: "Vocab Match", type: "game",
+      desc: "Match words to their definitions fast.",
+      longDesc: "Pair each word with its correct meaning before the timer runs out. A fast-paced way to lock in new vocabulary and strengthen reading comprehension.",
+    },
+    {
+      id: "sentence", icon: "🔀", title: "Sentence Builder", type: "game",
+      desc: "Tap words in the correct order.",
+      longDesc: "Words appear scrambled — tap them in the right order to rebuild the sentence. Trains grammar, sentence structure, and the rhythm of natural English.",
+    },
+    {
+      id: "word_trivia", icon: "❓", title: "Word Trivia", type: "game",
+      desc: "Test your knowledge of the English language.",
+      longDesc: "Multiple-choice trivia covering meanings, synonyms, idioms, and quirks of English. Choose Easy, Medium, or Hard to match your level.",
+    },
+    {
+      id: "word_ladder", icon: "🪜", title: "Word Ladder", type: "game",
+      desc: "Change one letter at a time to reach the goal.",
+      longDesc: "Climb from a start word to a target word by changing exactly one letter per step, keeping every rung a real word. A classic puzzle for vocabulary and lateral thinking.",
+    },
   ],
   finance: [
-    { id: "fin_terms",    icon: "📚", title: "Finance Terms",    desc: "Flip cards to learn key money vocabulary.",     type: "tool" },
-    { id: "budget",       icon: "📊", title: "Budget Builder",   desc: "Allocate your monthly income wisely.",          type: "tool" },
-    { id: "fin_trivia",   icon: "🧠", title: "Finance Trivia",   desc: "Quiz yourself on real money concepts.",         type: "game" },
-    { id: "invest_save",  icon: "📈", title: "Invest or Save?",  desc: "Make smart decisions in live scenarios.",       type: "game" },
-    { id: "money_math",   icon: "🔢", title: "Money Math",       desc: "Quick mental maths — beat the clock.",          type: "game" },
-    { id: "compound",     icon: "📈", title: "Compound Growth",  desc: "Estimate compound interest — beat the clock.",   type: "game" },
+    {
+      id: "fin_terms", icon: "📚", title: "Finance Terms", type: "tool",
+      desc: "Flip cards to learn key money vocabulary.",
+      longDesc: "A flashcard deck of essential money terms — assets, liabilities, APR, compound interest and more. Tap to flip; learn at your own pace, no timer.",
+    },
+    {
+      id: "budget", icon: "📊", title: "Budget Builder", type: "tool",
+      desc: "Allocate your monthly income wisely.",
+      longDesc: "Split a sample paycheck across needs, wants, and savings to see how a healthy budget feels. A hands-on tool for understanding the 50/30/20 rule and trade-offs.",
+    },
+    {
+      id: "fin_trivia", icon: "🧠", title: "Finance Trivia", type: "game",
+      desc: "Quiz yourself on real money concepts.",
+      longDesc: "Multiple-choice questions on saving, investing, debt, and everyday money decisions. Three difficulties with explanations after each answer.",
+    },
+    {
+      id: "invest_save", icon: "📈", title: "Invest or Save?", type: "game",
+      desc: "Make smart decisions in live scenarios.",
+      longDesc: "Real-life money scenarios: pick whether to invest, save, or spend, and see the long-term impact. Trains judgment for the choices that actually move the needle.",
+    },
+    {
+      id: "money_math", icon: "🔢", title: "Money Math", type: "game",
+      desc: "Quick mental maths — beat the clock.",
+      longDesc: "Tip splits, percentage discounts, simple interest — fast questions, short timer. Builds the mental math you actually use at the counter and in your bank app.",
+    },
+    {
+      id: "compound", icon: "📈", title: "Compound Growth", type: "game",
+      desc: "Estimate compound interest — beat the clock.",
+      longDesc: "Estimate what a balance grows to with compounding over time. Quick rounds that build intuition for why time-in-the-market beats timing the market.",
+    },
   ],
   demeanor: [
-    { id: "speak_it",     icon: "🗣️", title: "Speak It",        desc: "Pick the most confident response.",             type: "game" },
-    { id: "filler_catch", icon: "🚫", title: "Filler Catcher",  desc: "Tap every filler word in the paragraph.",       type: "game" },
-    { id: "tone_detect",  icon: "🎵", title: "Tone Detector",   desc: "Identify the tone of different messages.",      type: "game" },
-    { id: "conf_quiz",    icon: "⭐", title: "Confidence Quiz", desc: "Find out where your confidence really stands.", type: "game" },
-    { id: "daily_dem",    icon: "📅", title: "Daily Challenge", desc: "One challenge a day to sharpen your presence.", type: "tool" },
-    { id: "body_lang",    icon: "🧍", title: "Body Language IQ",desc: "Read the room with body language mastery.",     type: "game" },
+    {
+      id: "speak_it", icon: "🗣️", title: "Speak It", type: "game",
+      desc: "Pick the most confident response.",
+      longDesc: "You're handed a tricky social moment — pick the reply that lands with confidence and respect. Trains tone, assertiveness, and the words that actually work in real conversations.",
+    },
+    {
+      id: "filler_catch", icon: "🚫", title: "Filler Catcher", type: "game",
+      desc: "Tap every filler word in the paragraph.",
+      longDesc: "A short paragraph appears — tap every \"um,\" \"like,\" \"basically\" you can spot. Builds the ear for filler words so you can cut them from your own speech.",
+    },
+    {
+      id: "tone_detect", icon: "🎵", title: "Tone Detector", type: "game",
+      desc: "Identify the tone of different messages.",
+      longDesc: "Read short messages and classify the tone — passive, assertive, sarcastic, warm. Sharpens emotional intelligence and helps you read the room before you reply.",
+    },
+    {
+      id: "conf_quiz", icon: "⭐", title: "Confidence Quiz", type: "game",
+      desc: "Find out where your confidence really stands.",
+      longDesc: "Honest self-assessment across body language, voice, and decision-making. Get a confidence score plus the specific habit to work on next.",
+    },
+    {
+      id: "daily_dem", icon: "📅", title: "Daily Challenge", type: "tool",
+      desc: "One challenge a day to sharpen your presence.",
+      longDesc: "A new micro-challenge every day — make eye contact for a full sentence, slow your speech, hold a pause. Small reps that compound into real presence.",
+    },
+    {
+      id: "body_lang", icon: "🧍", title: "Body Language IQ", type: "game",
+      desc: "Read the room with body language mastery.",
+      longDesc: "Identify what posture, gesture, and expression are really saying. Builds the silent half of communication — what you read off others and signal back.",
+    },
   ],
 };
 
@@ -125,6 +197,44 @@ export function LearnItSubjectPage({ t, play, subject, onBack }) {
   const meta = SUBJECT_META[subject] || SUBJECT_META.english;
   const games = GAMES[subject] || GAMES.english;
   const { color, lightColor, borderColor, label, emoji } = meta;
+
+  // Reduced-motion preference
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(mq.matches);
+    update();
+    mq.addEventListener?.("change", update);
+    return () => mq.removeEventListener?.("change", update);
+  }, []);
+
+  // One-time FLIP hint per subject, persisted in sessionStorage so the dot
+  // stops pulsing once the user has flipped any card.
+  const hintKey = `life-learnit-flipped-${subject}`;
+  const [hasFlipped, setHasFlipped] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if (window.sessionStorage?.getItem(hintKey) === "1") {
+        setHasFlipped(true);
+      } else {
+        setHasFlipped(false);
+      }
+    } catch {
+      // sessionStorage may be unavailable (private mode) — ignore
+    }
+  }, [hintKey]);
+
+  const markFlipped = () => {
+    if (hasFlipped) return;
+    setHasFlipped(true);
+    try {
+      window.sessionStorage?.setItem(hintKey, "1");
+    } catch {
+      // ignore
+    }
+  };
 
   const openGame = (id) => {
     play?.("tap");
@@ -245,6 +355,10 @@ export function LearnItSubjectPage({ t, play, subject, onBack }) {
             borderColor={borderColor}
             index={i}
             onPlay={openGame}
+            showHint={!hasFlipped}
+            onFlip={markFlipped}
+            reducedMotion={reducedMotion}
+            play={play}
           />
         ))}
       </div>
