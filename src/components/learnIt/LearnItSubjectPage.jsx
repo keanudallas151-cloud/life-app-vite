@@ -561,8 +561,8 @@ export function LearnItSubjectPage({ t, play, subject, onBack }) {
         role="tablist"
         aria-label="Activity filter"
         style={{
-          ["--life-segment-active-bg"]: `${color}26`,
-          ["--life-segment-active-fg"]: color,
+          "--life-segment-active-bg": `${color}26`,
+          "--life-segment-active-fg": color,
         }}
       >
         {[

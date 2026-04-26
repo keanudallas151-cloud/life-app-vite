@@ -8,7 +8,6 @@ import {
   COMPOUND_QS,
   NEEDS_WANTS,
 } from "../data/financeData.js";
-import { recordBestScore } from "../shared/constants.js";
 
 export function FlashcardGame({ cards, color, t, play }) {
   const [i, setI] = useState(0);
@@ -405,7 +404,6 @@ export function NeedsWantsGame({ color, onClose, t, play }) {
   };
 
   if (done) {
-    recordBestScore("needs_wants", score, pool.length);
     return (
       <ScoreScreen
         score={score}

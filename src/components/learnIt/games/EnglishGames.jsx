@@ -10,7 +10,6 @@ import {
   WORD_LADDER_PUZZLES,
   SPELL_SPRINT_WORDS,
 } from "../data/englishData.js";
-import { recordBestScore } from "../shared/constants.js";
 
 export function FillGapGame({ questions: questionsProp, color, onClose, t, play }) {
   const qs = questionsProp || FILL_GAP_QS;
@@ -886,7 +885,6 @@ export function SpellSprintGame({ color, onClose, t, play }) {
   const skip = () => advance(false);
 
   if (done) {
-    recordBestScore("spell_sprint", score, pool.length);
     return (
       <ScoreScreen
         score={score}

@@ -185,7 +185,7 @@ export function FlipCard({
           ? "none"
           : `opacity 0.4s ease ${index * 65}ms, transform 0.5s cubic-bezier(0.34,1.56,0.64,1) ${index * 65}ms`,
         // Used by learnit-ios.css :focus-visible rule to colour the ring.
-        ["--life-flipcard-color"]: color,
+        "--life-flipcard-color": color,
       }}
     >
       <div
