@@ -790,17 +790,20 @@ function LifeAppContent() {
   // TODO (future): split content.js into per-section chunks and load each one
   // only when the user navigates to that section (e.g. "finance" on demand).
   const [contentData, setContentData] = useState(null);
+  const [contentLoadErr, setContentLoadErr] = useState(false);
   useEffect(() => {
     if (screen !== "app" || contentData) return;
-    import("./data/content").then((m) => {
-      setContentData({
-        CONTENT: m.CONTENT,
-        LIBRARY: m.LIBRARY,
-        GUIDED_ORDER: m.GUIDED_ORDER,
-        MAP: m.MAP,
-        allContent: m.allContent,
-      });
-    });
+    import("./data/content")
+      .then((m) => {
+        setContentData({
+          CONTENT: m.CONTENT,
+          LIBRARY: m.LIBRARY,
+          GUIDED_ORDER: m.GUIDED_ORDER,
+          MAP: m.MAP,
+          allContent: m.allContent,
+        });
+      })
+      .catch(() => setContentLoadErr(true));
   }, [screen, contentData]);
 
   // Memoized aliases — stable references, empty until the async load resolves.
@@ -2082,8 +2085,8 @@ function LifeAppContent() {
 
   // Keep the layout primitives straightforward because this will likely be ported into a native app shell later.
   // Show a loading fallback while the content data chunk is being fetched on
-  // first entry to the app screen. Auth screens are not affected.
-  if (!contentData)
+  // first entry to the app screen. Auth screens all early-return above this point.
+  if (screen === "app" && !contentData)
     return (
       <div
         style={{
@@ -2094,7 +2097,26 @@ function LifeAppContent() {
           justifyContent: "center",
         }}
       >
-        <RouteFallback />
+        {contentLoadErr ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "32px 24px",
+              fontFamily:
+                "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
+            }}
+          >
+            <div style={{ fontSize: 36, marginBottom: 12 }}>⚠️</div>
+            <p style={{ fontSize: 16, color: t.ink, marginBottom: 8 }}>
+              Failed to load content
+            </p>
+            <p style={{ fontSize: 13, color: t.muted }}>
+              Check your connection and reload the app.
+            </p>
+          </div>
+        ) : (
+          <RouteFallback />
+        )}
       </div>
     );
 

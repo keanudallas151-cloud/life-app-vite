@@ -877,8 +877,11 @@ export function QuizPage({
   // TODO (future): split quiz.js by topic so only the selected topic's
   // questions are fetched (e.g. import(`../../data/quiz/${topic}`)).
   const [quizQuestions, setQuizQuestions] = useState(null);
+  const [quizLoadErr, setQuizLoadErr] = useState(false);
   useEffect(() => {
-    import("../../data/quiz").then((m) => setQuizQuestions(m.QUIZ_QUESTIONS));
+    import("../../data/quiz")
+      .then((m) => setQuizQuestions(m.QUIZ_QUESTIONS))
+      .catch(() => setQuizLoadErr(true));
   }, []);
 
   useEffect(() => {
@@ -1006,8 +1009,28 @@ export function QuizPage({
     ? Math.round((stats.totalCorrect / stats.totalAnswered) * 100)
     : 0;
 
-  // Show a skeleton while quiz.js is still being fetched (lazy load).
+  // Show a skeleton (or error) while quiz.js is still being fetched (lazy load).
   if (!quizQuestions) {
+    if (quizLoadErr) {
+      return (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "48px 24px",
+            fontFamily:
+              "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
+          }}
+        >
+          <div style={{ fontSize: 36, marginBottom: 12 }}>⚠️</div>
+          <p style={{ fontSize: 16, color: t.ink, margin: "0 0 8px" }}>
+            Failed to load quiz data
+          </p>
+          <p style={{ fontSize: 13, color: t.muted, margin: 0 }}>
+            Check your connection and try again.
+          </p>
+        </div>
+      );
+    }
     return (
       <div style={{ padding: "32px 20px", maxWidth: 560, margin: "0 auto" }}>
         {[1, 2, 3].map((i) => (
