@@ -8,12 +8,13 @@ import {
   CONF_QUIZ,
 } from "../data/demeanorData.js";
 
-export function SpeakItGame({ color, onClose, t, play }) {
+export function SpeakItGame({ questions: questionsProp, color, onClose, t, play }) {
+  const qs = questionsProp || SPEAK_QS;
   const [qi, setQi] = useState(0);
   const [selected, setSelected] = useState(null);
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
-  const q = SPEAK_QS[qi];
+  const q = qs[qi];
 
   const pick = (idx) => {
     if (selected !== null) return;
@@ -21,16 +22,16 @@ export function SpeakItGame({ color, onClose, t, play }) {
     if (idx === q.best) { setScore(s => s + 1); play?.("correct"); }
     else play?.("wrong");
     setTimeout(() => {
-      if (qi + 1 >= SPEAK_QS.length) setDone(true);
+      if (qi + 1 >= qs.length) setDone(true);
       else { setQi(qi + 1); setSelected(null); }
     }, 1400);
   };
 
-  if (done) return <ScoreScreen score={score} total={SPEAK_QS.length} color={color} onReplay={() => { setQi(0); setScore(0); setSelected(null); setDone(false); }} onClose={onClose} t={t} play={play} />;
+  if (done) return <ScoreScreen score={score} total={qs.length} color={color} onReplay={() => { setQi(0); setScore(0); setSelected(null); setDone(false); }} onClose={onClose} t={t} play={play} />;
 
   return (
     <div style={{ padding: "20px 20px 40px", fontFamily: FONT }}>
-      <Progress current={qi} total={SPEAK_QS.length} color={color} t={t} />
+      <Progress current={qi} total={qs.length} color={color} t={t} />
       <div key={qi} style={{ background: t?.light || "rgba(255,255,255,0.05)", borderRadius: 18, padding: "20px", marginBottom: 20, border: `1px solid ${t?.border || "rgba(255,255,255,0.08)"}`, animation: "questionIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both" }}>
         <p style={{ fontSize: 11, fontWeight: 600, color, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Situation</p>
         <p style={{ fontSize: 15, color: t?.ink || "#ededed", lineHeight: 1.6, margin: 0 }}>{q.scenario}</p>
@@ -40,18 +41,36 @@ export function SpeakItGame({ color, onClose, t, play }) {
         {q.opts.map((opt, idx) => {
           const isBest = idx === q.best;
           const isPicked = selected === idx;
+          const showBadge = selected !== null && (isBest || isPicked);
           return (
             <button key={idx} type="button" onClick={() => pick(idx)}
               onTouchStart={(e) => { e.currentTarget.style.transform = "scale(0.96)"; }}
               onTouchEnd={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
               style={{
-              padding: "14px 16px", borderRadius: 14, textAlign: "left",
+              position: "relative",
+              padding: `14px ${showBadge ? "40px" : "16px"} 14px 16px`, borderRadius: 14, textAlign: "left",
               border: `1.5px solid ${selected !== null ? isBest ? color : isPicked ? "#e5484d" : t?.border || "rgba(255,255,255,0.07)" : t?.border || "rgba(255,255,255,0.1)"}`,
               background: selected !== null ? isBest ? `${color}18` : isPicked ? "rgba(229,72,77,0.12)" : "transparent" : t?.light || "rgba(255,255,255,0.05)",
               color: selected !== null ? isBest ? color : isPicked ? "#e5484d" : "#555" : t?.ink || "#ededed",
               fontSize: 13.5, cursor: "pointer", fontFamily: FONT, fontWeight: 400,
               transition: "all 0.15s cubic-bezier(0.34,1.56,0.64,1)", fontStyle: "italic",
-            }}>{opt}</button>
+              WebkitTapHighlightColor: "transparent",
+            }}>
+              {opt}
+              {showBadge && (
+                <span style={{
+                  position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
+                  width: 22, height: 22, borderRadius: "50%",
+                  background: isBest ? "#50c878" : "#e5484d",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 12, fontWeight: 800, color: "#000",
+                  animation: "popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both",
+                  flexShrink: 0, pointerEvents: "none",
+                }}>
+                  {isBest ? "✓" : "✗"}
+                </span>
+              )}
+            </button>
           );
         })}
       </div>

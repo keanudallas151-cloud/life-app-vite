@@ -123,12 +123,13 @@ export function BudgetGame({ color, t, play }) {
   );
 }
 
-export function InvestSaveGame({ color, onClose, t, play }) {
+export function InvestSaveGame({ questions: questionsProp, color, onClose, t, play }) {
+  const qs = questionsProp || INVEST_QS;
   const [qi, setQi] = useState(0);
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState(null);
   const [done, setDone] = useState(false);
-  const q = INVEST_QS[qi];
+  const q = qs[qi];
 
   const pick = (idx) => {
     if (selected !== null) return;
@@ -136,16 +137,16 @@ export function InvestSaveGame({ color, onClose, t, play }) {
     if (idx === q.best) { setScore(s => s + 1); play?.("correct"); }
     else play?.("wrong");
     setTimeout(() => {
-      if (qi + 1 >= INVEST_QS.length) setDone(true);
+      if (qi + 1 >= qs.length) setDone(true);
       else { setQi(qi + 1); setSelected(null); }
     }, 1400);
   };
 
-  if (done) return <ScoreScreen score={score} total={INVEST_QS.length} color={color} onReplay={() => { setQi(0); setScore(0); setSelected(null); setDone(false); }} onClose={onClose} t={t} play={play} />;
+  if (done) return <ScoreScreen score={score} total={qs.length} color={color} onReplay={() => { setQi(0); setScore(0); setSelected(null); setDone(false); }} onClose={onClose} t={t} play={play} />;
 
   return (
     <div style={{ padding: "20px 20px 40px", fontFamily: FONT }}>
-      <Progress current={qi} total={INVEST_QS.length} color={color} t={t} />
+      <Progress current={qi} total={qs.length} color={color} t={t} />
       <div key={qi} style={{ background: t?.light || "rgba(255,255,255,0.05)", borderRadius: 18, padding: "20px", marginBottom: 20, border: `1px solid ${t?.border || "rgba(255,255,255,0.08)"}`, animation: "questionIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both" }}>
         <p style={{ fontSize: 11, fontWeight: 600, color, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Scenario</p>
         <p style={{ fontSize: 15, color: t?.ink || "#ededed", lineHeight: 1.6, margin: 0 }}>{q.scenario}</p>
@@ -154,18 +155,35 @@ export function InvestSaveGame({ color, onClose, t, play }) {
         {q.opts.map((opt, idx) => {
           const isBest = idx === q.best;
           const isPicked = selected === idx;
+          const showBadge = selected !== null && (isBest || isPicked);
           return (
             <button key={idx} type="button" onClick={() => pick(idx)}
               onTouchStart={(e) => { e.currentTarget.style.transform = "scale(0.96)"; }}
               onTouchEnd={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
               style={{
-              padding: "14px 16px", borderRadius: 14, textAlign: "left",
+              position: "relative",
+              padding: `14px ${showBadge ? "40px" : "16px"} 14px 16px`, borderRadius: 14, textAlign: "left",
               border: `1.5px solid ${selected !== null ? isBest ? color : isPicked ? "#e5484d" : t?.border || "rgba(255,255,255,0.07)" : t?.border || "rgba(255,255,255,0.1)"}`,
               background: selected !== null ? isBest ? `${color}18` : isPicked ? "rgba(229,72,77,0.12)" : "transparent" : t?.light || "rgba(255,255,255,0.05)",
               color: selected !== null ? isBest ? color : isPicked ? "#e5484d" : "#555" : t?.ink || "#ededed",
               fontSize: 14, cursor: "pointer", fontFamily: FONT, fontWeight: 500,
               transition: "all 0.15s cubic-bezier(0.34,1.56,0.64,1)", WebkitTapHighlightColor: "transparent",
-            }}>{opt}</button>
+            }}>
+              {opt}
+              {showBadge && (
+                <span style={{
+                  position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
+                  width: 22, height: 22, borderRadius: "50%",
+                  background: isBest ? "#50c878" : "#e5484d",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 12, fontWeight: 800, color: "#000",
+                  animation: "popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both",
+                  flexShrink: 0, pointerEvents: "none",
+                }}>
+                  {isBest ? "✓" : "✗"}
+                </span>
+              )}
+            </button>
           );
         })}
       </div>
@@ -285,11 +303,13 @@ export function CompoundGrowthGame({ color, onClose, t, play }) {
         {q.opts.map(opt => {
           const isCorrect = opt === q.ans;
           const isWrong = selected === opt && !isCorrect;
+          const showBadge = selected && (isCorrect || isWrong);
           return (
             <button key={opt} type="button" onClick={() => pick(opt)}
               onTouchStart={(e) => { e.currentTarget.style.transform = "scale(0.96)"; }}
               onTouchEnd={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
               style={{
+                position: "relative",
                 padding: "16px 10px", borderRadius: 16, fontFamily: FONT,
                 border: `1.5px solid ${selected ? isCorrect ? color : isWrong ? "#e5484d" : t?.border || "rgba(255,255,255,0.07)" : t?.border || "rgba(255,255,255,0.1)"}`,
                 background: selected ? isCorrect ? `${color}20` : isWrong ? "rgba(229,72,77,0.15)" : t?.light || "rgba(255,255,255,0.03)" : t?.light || "rgba(255,255,255,0.05)",
@@ -298,7 +318,22 @@ export function CompoundGrowthGame({ color, onClose, t, play }) {
                 transition: "all 0.15s cubic-bezier(0.34,1.56,0.64,1)",
                 WebkitTapHighlightColor: "transparent",
               }}
-            >{opt.startsWith("$") ? opt : `$${opt}`}</button>
+            >
+              {opt.startsWith("$") ? opt : `$${opt}`}
+              {showBadge && (
+                <span style={{
+                  position: "absolute", right: 6, top: 6,
+                  width: 20, height: 20, borderRadius: "50%",
+                  background: isCorrect ? "#50c878" : "#e5484d",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 11, fontWeight: 800, color: "#000",
+                  animation: "popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both",
+                  pointerEvents: "none",
+                }}>
+                  {isCorrect ? "✓" : "✗"}
+                </span>
+              )}
+            </button>
           );
         })}
       </div>
