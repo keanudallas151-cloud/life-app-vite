@@ -1,8 +1,10 @@
 // v1.0.1 - auth fixes: DOB validation, 3s loading, Firebase migration follow-up
 // Auth state/mutations are now in src/contexts/AuthContext.jsx (Step 1 refactor).
 import { sendEmailVerification } from "firebase/auth";
+import { FixedSizeList } from "react-window";
 import {
   Suspense,
+  memo,
   useCallback,
   useDeferredValue,
   useEffect,
@@ -103,6 +105,84 @@ const PREF_DEFAULTS = {
 // Swipe left beyond 72px to delete; direction-locked to avoid vertical-scroll conflicts.
 const SWIPE_HORIZONTAL_BIAS = 1.5;
 const SECRET_SIENNA_SEARCH_CODE = "160705kc";
+
+// ── react-window row renderer for the global search results list ─────────────
+// Defined outside LifeAppContent so the reference is stable across renders —
+// prevents react-window from remounting every row on each parent render.
+const _SEARCH_FONT = "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif";
+function SearchResultRow({ index, style, data }) {
+  const { searchResults, t, handleSelect, setShowSearch, setSearch } = data;
+  const item = searchResults[index];
+  return (
+    <div style={style}>
+      <button
+        onClick={() => {
+          handleSelect(item.key, item.node);
+          setShowSearch(false);
+          setSearch("");
+        }}
+        style={{
+          display: "block",
+          width: "100%",
+          height: "100%",
+          textAlign: "left",
+          background: "transparent",
+          border: "none",
+          borderBottom: `1px solid ${t.light}`,
+          padding: "10px 24px",
+          cursor: "pointer",
+          fontFamily: _SEARCH_FONT,
+          boxSizing: "border-box",
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = t.light)}
+        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+      >
+        <div style={{ fontSize: 15, fontWeight: 600, color: t.ink }}>
+          {item.node.icon && <span style={{ marginRight: 8 }}>{item.node.icon}</span>}
+          {item.node.label}
+        </div>
+        <div style={{ fontSize: 12, color: t.muted, marginTop: 2, fontStyle: "italic" }}>
+          {item.path.join(" — ")}
+        </div>
+      </button>
+    </div>
+  );
+}
+
+// ── Memoized sidebar search result item ─────────────────────────────────────
+// Defined outside LifeAppContent so the component reference is stable and
+// React.memo actually prevents re-renders between parent renders.
+const _SB_FONT = "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif";
+const SidebarSearchItem = memo(function SidebarSearchItem({ item, t, onSelect, play }) {
+  const handleClick = useCallback(() => {
+    play("open");
+    onSelect(item.key, item.node);
+  }, [item.key, item.node, onSelect, play]);
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      style={{
+        width: "100%",
+        textAlign: "left",
+        border: `1px solid ${t.border}`,
+        background: t.white,
+        borderRadius: 12,
+        padding: "10px 12px",
+        cursor: "pointer",
+        fontFamily: _SB_FONT,
+      }}
+    >
+      <div className="life-sidebar-result-label" style={{ color: t.ink }}>
+        {item.node.label}
+      </div>
+      <div className="life-sidebar-result-path" style={{ color: t.muted }}>
+        {item.path.join(" / ")}
+      </div>
+    </button>
+  );
+});
 
 // Maps notification type/activity to an iOS-style SVG icon.
 function notifIconKey(n) {
@@ -692,7 +772,7 @@ function LifeAppContent() {
       setSidebarOpen(false);
       if (typeof setSectionOpen === "function") setSectionOpen(true);
     },
-    [play, setPage],
+    [play, setPage, setSidebarOpen],
   );
 
   const [categoryPageData, setCategoryPageData] = useState(null);
@@ -939,7 +1019,7 @@ function LifeAppContent() {
     setShowSearch(false);
     setShowNotif(false);
     setSidebarOpen(false);
-  }, []);
+  }, [setSidebarOpen]);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const pushSystemNotification = useCallback(
@@ -980,7 +1060,7 @@ function LifeAppContent() {
       setSidebarOpen(false);
       setShowNotif(false);
     };
-  }, []);
+  }, [setSidebarOpen]);
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
@@ -1052,12 +1132,17 @@ function LifeAppContent() {
 
   const [catStep, setCatStep] = useState(0);
 
-  // TODO (perf/style): Direct DOM style mutation bypasses React's rendering model.
-  // A cleaner approach is to set --life-bg CSS variable on :root once and let
-  // child elements inherit it, avoiding imperative style mutations in effects.
+  // Background color is set via a single --life-bg CSS variable on :root rather
+  // than imperative direct mutations on body/html. All surfaces that need the page
+  // background colour should use var(--life-bg) instead of hardcoded values.
+  // This is cleaner than separate body + html style assignments and avoids
+  // bypassing React's rendering model.
   useEffect(() => {
-    document.body.style.background = t.skin;
-    document.documentElement.style.background = t.skin;
+    const root = document.documentElement;
+    root.style.setProperty("--life-bg", t.skin);
+    // Keep body/html background in sync so there is no flash behind the app shell.
+    document.body.style.background = "var(--life-bg)";
+    root.style.background = "var(--life-bg)";
   }, [t.skin]);
   const [isOffline, setIsOffline] = useState(
     typeof navigator !== "undefined" ? !navigator.onLine : false,
@@ -1092,7 +1177,7 @@ function LifeAppContent() {
     setShowSearch(false);
     setSidebarOpen(false);
     searchInputRef.current?.blur();
-  }, [setPage]);
+  }, [setPage, setSidebarOpen]);
 
   useEffect(() => {
     closeTransientOverlays();
@@ -1349,7 +1434,7 @@ function LifeAppContent() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [screen, setPage]);
+  }, [screen, setPage, setSidebarOpen]);
 
   const goHome = () => {
     play("home_return");
@@ -1426,7 +1511,7 @@ function LifeAppContent() {
     handleScroll();
     scroller.addEventListener("scroll", handleScroll, { passive: true });
     return () => scroller.removeEventListener("scroll", handleScroll);
-  }, [screen]);
+  }, [screen, setShowScrollTop]);
 
   useEffect(() => {
     const toOnline = () => setIsOffline(false);
@@ -2790,8 +2875,6 @@ function LifeAppContent() {
             backdropFilter: "blur(14px)",
             WebkitBackdropFilter: "blur(14px)",
             borderBottom: `1px solid ${t.border}`,
-            maxHeight: 320,
-            overflowY: "auto",
             boxShadow: "0 12px 40px rgba(0,0,0,0.12)",
             animation: "life-fade-in 0.25s ease",
           }}
@@ -2809,50 +2892,19 @@ function LifeAppContent() {
               No results.
             </p>
           ) : (
-            searchResults.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => {
-                  handleSelect(item.key, item.node);
-                  setShowSearch(false);
-                  setSearch("");
-                }}
-                style={{
-                  display: "block",
-                  width: "100%",
-                  textAlign: "left",
-                  background: "transparent",
-                  border: "none",
-                  borderBottom: `1px solid ${t.light}`,
-                  padding: "14px 24px",
-                  cursor: "pointer",
-                  fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = t.light)
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "transparent")
-                }
-              >
-                <div style={{ fontSize: 15, fontWeight: 600, color: t.ink }}>
-                  {item.node.icon && (
-                    <span style={{ marginRight: 8 }}>{item.node.icon}</span>
-                  )}
-                  {item.node.label}
-                </div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: t.muted,
-                    marginTop: 2,
-                    fontStyle: "italic",
-                  }}
-                >
-                  {item.path.join(" — ")}
-                </div>
-              </button>
-            ))
+            /* react-window virtualization — only renders the visible search-result
+               rows instead of all 60+ DOM nodes. Each row is 60px tall; the list
+               grows up to 300px (5 visible rows) before scrolling kicks in. */
+            <FixedSizeList
+              height={Math.min(300, searchResults.length * 60)}
+              itemCount={searchResults.length}
+              itemSize={60}
+              width="100%"
+              overscanCount={3}
+              itemData={{ searchResults, t, handleSelect, setShowSearch, setSearch }}
+            >
+              {SearchResultRow}
+            </FixedSizeList>
           )}
         </div>
       )}
@@ -3144,49 +3196,14 @@ function LifeAppContent() {
                   </p>
                 ) : (
                   <div style={{ display: "grid", gap: 8 }}>
-                    {/* TODO (perf): If allContent grows beyond ~50 items, replace this
-                        .map() with a react-window FixedSizeList (item height ~56px)
-                        to avoid rendering all DOM nodes at once. Currently capped at
-                        24 results (see sidebarSearchResults useMemo slice). */}
                     {sidebarSearchResults.map((item) => (
-                      <button
+                      <SidebarSearchItem
                         key={item.key}
-                        type="button"
-                        onClick={() => {
-                          play("open");
-                          handleSelect(item.key, item.node);
-                        }}
-                        style={{
-                          width: "100%",
-                          textAlign: "left",
-                          border: `1px solid ${t.border}`,
-                          background: t.white,
-                          borderRadius: 12,
-                          padding: "10px 12px",
-                          cursor: "pointer",
-                          fontFamily: "-apple-system,'SF Pro Display','SF Pro Text','Helvetica Neue',Arial,sans-serif",
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 700,
-                            color: t.ink,
-                          }}
-                        >
-                          {item.node.label}
-                        </div>
-                        <div
-                          style={{
-                            marginTop: 3,
-                            fontSize: 11,
-                            color: t.muted,
-                            lineHeight: 1.5,
-                          }}
-                        >
-                          {item.path.join(" / ")}
-                        </div>
-                      </button>
+                        item={item}
+                        t={t}
+                        onSelect={handleSelect}
+                        play={play}
+                      />
                     ))}
                   </div>
                 )}
@@ -3462,12 +3479,16 @@ function LifeAppContent() {
                 const node = CONTENT[k];
                 if (!node) return null;
                 return (
+                  // onSelect + nodeKey + nodeData: SL creates a stable internal
+                  // useCallback handler so React.memo on SL actually bails out.
                   <SL
                     theme={t}
                     key={k}
                     label={node.label}
                     icon={node.icon}
-                    onClick={() => handleSelect(k, node)}
+                    onSelect={handleSelect}
+                    nodeKey={k}
+                    nodeData={node}
                     active={selKey === k}
                   />
                 );
@@ -3509,9 +3530,9 @@ function LifeAppContent() {
                       key={item.key}
                       label={item.node.label}
                       icon={item.node.icon}
-                      onClick={() => {
-                        handleSelect(item.key, item.node);
-                      }}
+                      onSelect={handleSelect}
+                      nodeKey={item.key}
+                      nodeData={item.node}
                       active={false}
                     />
                   ))
