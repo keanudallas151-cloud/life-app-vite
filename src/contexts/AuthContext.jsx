@@ -651,8 +651,10 @@ export function AuthProvider({ children }) {
   // ─── Auth mutation: perform confirmed account deletion ────────────────────
   const performDeleteAccount = async () => {
     setDeleteInProgress(true);
-    // Derive LS key prefix from current user — same pattern as App.jsx uid.
+    // Derive LS key prefix from current user — data keys use email (same as App.jsx uid),
+    // but onboarded flag uses Firebase uid (same as everywhere it's set/read).
     const uid = user?.email || "_";
+    const userId = user?.id || "_";
     try {
       const currentUser = auth?.currentUser;
       // Best-effort: wipe local-only keys for this user first so a partial failure
@@ -665,7 +667,7 @@ export function AuthProvider({ children }) {
         LS.del(`tools_todos_${uid}`);
         LS.del(`tools_lockin_${uid}`);
         LS.del(`prefs_${uid}`);
-        LS.del(`onboarded_${uid}`);
+        LS.del(`onboarded_${userId}`); // onboarded uses Firebase uid, not email
       } catch {
         /* ignore LS wipe errors */
       }
