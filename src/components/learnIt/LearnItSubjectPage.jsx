@@ -1443,8 +1443,8 @@ function MultiChoiceGame({ questions, color, onClose, t, play }) {
       return;
     }
     if (timeLeft <= 3) play?.("timer_tick");
-    const t2 = setTimeout(() => setTimeLeft(tl => tl - 1), 1000);
-    return () => clearTimeout(t2);
+    const tickTimer = setTimeout(() => setTimeLeft(tl => tl - 1), 1000);
+    return () => clearTimeout(tickTimer);
   }, [timeLeft, selected, done, qi, questions.length, play]);
 
   const pick = (opt) => {
