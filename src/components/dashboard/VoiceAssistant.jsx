@@ -28,6 +28,8 @@ export function VoiceAssistant({ t, play, isOpen, onClose, displayName, onNaviga
   const [pendingPage, setPendingPage] = useState(null);
   const [mounted, setMounted] = useState(false);
   const recognitionRef = useRef(null);
+  const statusRef = useRef(status);
+  useEffect(() => { statusRef.current = status; }, [status]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -93,7 +95,7 @@ export function VoiceAssistant({ t, play, isOpen, onClose, displayName, onNaviga
     };
 
     recognition.onend = () => {
-      if (status === "listening") setStatus("idle");
+      if (statusRef.current === "listening") setStatus("idle");
     };
 
     return () => {

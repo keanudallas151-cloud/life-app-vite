@@ -1066,7 +1066,6 @@ export function HomePage({
           onClose={() => setVoiceOpen(false)}
           displayName={preferredName || userName || ""}
           onNavigate={onNavigate}
-          onAddTask={() => {}}
         />
       )}
     </div>
