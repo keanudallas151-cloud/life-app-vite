@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { SystemStatusNotice } from "../shell/SystemStatusNotice";
+import { LS } from "../../systems/storage";
 
 export function SignInPage({
   C,
@@ -31,7 +32,7 @@ export function SignInPage({
   const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
-    const savedEmail = localStorage.getItem('life_remembered_email');
+    const savedEmail = LS.get('life_remembered_email', null);
     if (savedEmail && !siEmail) {
       setSiEmail(savedEmail);
       setRememberMe(true);
@@ -42,9 +43,9 @@ export function SignInPage({
     const next = !rememberMe;
     setRememberMe(next);
     if (next) {
-      if (siEmail) localStorage.setItem('life_remembered_email', siEmail);
+      if (siEmail) LS.set('life_remembered_email', siEmail);
     } else {
-      localStorage.removeItem('life_remembered_email');
+      LS.del('life_remembered_email');
     }
   };
 
@@ -153,7 +154,7 @@ export function SignInPage({
         className="life-auth-card"
         onSubmit={(e) => {
           e.preventDefault();
-          if (rememberMe && siEmail) localStorage.setItem('life_remembered_email', siEmail);
+          if (rememberMe && siEmail) LS.set('life_remembered_email', siEmail);
           if (!authLoading) doEmailSignIn();
         }}
         style={{

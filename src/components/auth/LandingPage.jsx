@@ -98,6 +98,19 @@ export function LandingPage({
   const panelDragRef = useRef({ active:false, startY:0, pointerId:null });
   const prefersReducedMotion = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
+  // Resets all drag/phase/fullscreen state (used both when opening and closing the panel).
+  const resetDragState = () => {
+    setPanelDragY(0);
+    setPanelPhase("idle");
+    setPanelFullScreen(false);
+  };
+
+  // Closes the panel and resets all state.
+  const resetPanel = () => {
+    setActiveValueProp(null);
+    resetDragState();
+  };
+
   return (
     <div
       data-page-tag="#landing_page"
@@ -217,7 +230,7 @@ export function LandingPage({
               key={v.label}
               type="button"
               className="landing-row-btn"
-              onClick={() => { play("tap"); setActiveValueProp(v.label); setPanelDragY(0); setPanelPhase("idle"); setPanelFullScreen(false); }}
+              onClick={() => { play("tap"); setActiveValueProp(v.label); resetDragState(); }}
               data-page-tag={`#landing_value_prop_${v.label.toLowerCase().replace(/\s+/g, "_")}`}
               aria-label={`Open ${v.label} overview`}
               style={{
@@ -465,7 +478,7 @@ export function LandingPage({
           if (dy > panelH * 0.3) {
             setPanelPhase("snapping");
             setPanelDragY(window.innerHeight);
-            setTimeout(() => { setActiveValueProp(null); setPanelDragY(0); setPanelPhase("idle"); setPanelFullScreen(false); }, 350);
+            setTimeout(() => { resetPanel(); }, 350);
           } else if (!panelFullScreen && dy < -(panelH * 0.2)) {
             setPanelFullScreen(true);
             setPanelDragY(0);
@@ -493,7 +506,7 @@ export function LandingPage({
             <button
               type="button"
               aria-label="Close"
-              onClick={() => { setActiveValueProp(null); setPanelDragY(0); setPanelPhase("idle"); setPanelFullScreen(false); }}
+              onClick={() => resetPanel()}
               style={{
                 position:"fixed", inset:0,
                 background:`rgba(0,0,0,${backdropOpacity})`,
@@ -542,7 +555,7 @@ export function LandingPage({
                   </div>
                   <button
                     type="button"
-                    onClick={() => { setActiveValueProp(null); setPanelDragY(0); setPanelPhase("idle"); setPanelFullScreen(false); }}
+                    onClick={() => resetPanel()}
                     aria-label="Close"
                     style={{ width:30, height:30, borderRadius:"50%", border:"none", background:"rgba(255,255,255,0.12)", color:"#ffffff", fontSize:18, lineHeight:1, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, WebkitTapHighlightColor:"transparent" }}
                   >
